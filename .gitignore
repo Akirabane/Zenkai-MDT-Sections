@@ -1,0 +1,30 @@
+# Dépendances
+node_modules/
+
+# Base de données & données sensibles
+DB/police.db
+DB/police.db.*
+DB/data.json
+DB/users.json
+DB/backups/
+
+# Variables d'environnement
+.env
+.env.*
+
+# Uploads utilisateurs
+uploads/
+
+# Dossiers de backup locaux
+CSS_backup_konoha/
+
+# Logs PM2
+logs/
+*.log
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
