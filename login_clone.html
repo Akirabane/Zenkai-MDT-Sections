@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identification - Police de Konoha [Hall interactif]</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/login_clone.css?v=3">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<div class="test-banner">&#9651; Hall interactif</div>
+
+<div class="hud-layer">
+  <div class="hud-chip" id="control-chip">Clique dans le hall pour prendre le controle. ZQSD pour avancer.</div>
+  <div class="hud-chip hud-chip-focus" id="focus-chip">Avance dans le hall ceremonial pour acceder aux differents espaces.</div>
+</div>
+
+<div class="message-toast" id="message-toast"></div>
+
+<div class="access-overlay" id="access-overlay">
+  <div class="access-panel" data-panel="police" id="panel-police">
+    <button class="panel-close" type="button" data-close-panel>&times;</button>
+    <div class="panel-core">
+      <div class="auth-card auth-card-main">
+        <div class="card-inner">
+          <div class="logo-wrap">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+              <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+              <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+              <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+              <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+              <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+              <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+              <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+            </svg>
+          </div>
+          <h1 class="auth-title">Identification des Shinobi</h1>
+          <p class="auth-subtitle">Section Police de Konoha</p>
+          <div class="divider"></div>
+          <div class="tabs">
+            <button class="tab-btn active" type="button" data-tab-target="login">Se connecter</button>
+            <button class="tab-btn" type="button" data-tab-target="register">S'enroler</button>
+          </div>
+          <div class="auth-pane active" id="pane-login">
+            <div class="field">
+              <label for="login-pseudo">Pseudo</label>
+              <input id="login-pseudo" type="text" placeholder="Ton pseudo HRP" autocomplete="username">
+            </div>
+            <div class="field">
+              <label for="login-password">Mot de passe</label>
+              <input id="login-password" type="password" placeholder="********" autocomplete="current-password">
+            </div>
+            <button class="btn-submit" type="button" id="btn-login">S'identifier</button>
+          </div>
+          <div class="auth-pane" id="pane-register">
+            <div class="field">
+              <label for="reg-pseudo">Pseudo</label>
+              <input id="reg-pseudo" type="text" placeholder="Ton pseudo HRP" autocomplete="username">
+            </div>
+            <div class="field">
+              <label for="reg-password">Mot de passe</label>
+              <input id="reg-password" type="password" placeholder="********" autocomplete="new-password">
+              <small class="field-hint">10 caracteres minimum avec une majuscule, une minuscule et un chiffre.</small>
+            </div>
+            <div class="field">
+              <label for="reg-confirm">Confirmer le mot de passe</label>
+              <input id="reg-confirm" type="password" placeholder="********" autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="reg-secret">Code Secret Police</label>
+              <input id="reg-secret" type="password" placeholder="Transmis par le Commandement" autocomplete="off">
+            </div>
+            <button class="btn-submit" type="button" id="btn-register">Rejoindre la police</button>
+          </div>
+          <p class="auth-footer">Acces strictement reserve au personnel autorise</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="access-panel" data-panel="justice" id="panel-justice">
+    <button class="panel-close" type="button" data-close-panel>&times;</button>
+    <div class="panel-core">
+      <div class="auth-card">
+        <div class="card-inner guest-inner">
+          <div class="guest-kicker">Acces Justice</div>
+          <h2 class="guest-title justice-title">Justice de Konoha</h2>
+          <p class="guest-text">Acces commun pour les membres de la Justice souhaitant consulter l'ensemble du site en lecture large, avec edition autorisee du Code penal.</p>
+          <ul class="guest-list justice-list">
+            <li>Toutes les pages accessibles en lecture</li>
+            <li>Gestion des rapports consultable</li>
+            <li>Code penal modifiable</li>
+          </ul>
+          <div class="justice-form">
+            <div class="field">
+              <label for="justice-pseudo">Login Justice</label>
+              <input id="justice-pseudo" type="text" placeholder="Identifiant Justice" autocomplete="username">
+            </div>
+            <div class="field">
+              <label for="justice-password">Mot de passe</label>
+              <input id="justice-password" type="password" placeholder="********" autocomplete="current-password">
+            </div>
+          </div>
+          <button class="btn-guest-card btn-justice-card" type="button" id="btn-justice">Entrer cote Justice</button>
+          <p class="guest-footnote">Compte partage. Plusieurs membres peuvent s'y connecter en meme temps sans se deconnecter mutuellement.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="access-panel" data-panel="visitor" id="panel-visitor">
+    <button class="panel-close" type="button" data-close-panel>&times;</button>
+    <div class="panel-core">
+      <div class="auth-card">
+        <div class="card-inner guest-inner">
+          <div class="guest-kicker">Acces visiteur</div>
+          <h2 class="guest-title">Explorer le site sans rejoindre la Police</h2>
+          <p class="guest-text">Les joueurs non policiers peuvent consulter les espaces publics du QG sans disposer des outils internes de la section.</p>
+          <ul class="guest-list">
+            <li>Hierarchie accessible</li>
+            <li>Registre en lecture seule</li>
+            <li>Code penal consultable</li>
+          </ul>
+          <button class="btn-guest-card" type="button" id="btn-guest">Entrer comme visiteur</button>
+          <p class="guest-footnote">Pour les civils, ninjas exterieurs et visiteurs souhaitant simplement parcourir le site.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="JS/login_clone.js?v=12"></script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identification — Police de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/login.css">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+</head>
+<body>
+
+<div class="auth-shell">
+  <aside class="auth-card auth-card-justice">
+    <div class="card-inner guest-inner justice-inner">
+      <div class="guest-kicker justice-kicker">Acces Justice</div>
+      <h2 class="guest-title justice-title">Justice de Konoha</h2>
+      <p class="guest-text">
+        Acces commun pour les membres de la Justice souhaitant consulter l'ensemble du site en lecture seule,
+        avec edition autorisee du Code penal.
+      </p>
+      <ul class="guest-list justice-list">
+        <li>Toutes les pages accessibles en lecture</li>
+        <li>Gestion des rapports consultable</li>
+        <li>Code penal modifiable</li>
+      </ul>
+      <div class="justice-form">
+        <div class="field justice-field">
+          <label for="justice-pseudo">Login Justice</label>
+          <input id="justice-pseudo" type="text" placeholder="Identifiant Justice" autocomplete="username">
+        </div>
+        <div class="field justice-field">
+          <label for="justice-password">Mot de passe</label>
+          <input id="justice-password" type="password" placeholder="********" autocomplete="current-password">
+        </div>
+      </div>
+      <button class="btn-guest-card btn-justice-card" onclick="doJusticeLogin()">Entrer cote Justice</button>
+      <p class="guest-footnote">Compte partage. Plusieurs membres peuvent s'y connecter en meme temps sans se deconnecter mutuellement.</p>
+    </div>
+  </aside>
+
+  <div class="auth-card auth-card-main">
+    <div class="card-inner">
+
+      <!-- Logo Uchiha Police -->
+      <div class="logo-wrap">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+          <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+          <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+          <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+          <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+          <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+          <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+          <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+        </svg>
+      </div>
+
+      <h1 class="auth-title">Identification des Shinobi</h1>
+      <p class="auth-subtitle">Section Police de Konoha</p>
+      <div class="divider"></div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('login')">Se connecter</button>
+        <button class="tab-btn" onclick="showTab('register')">S'enrôler</button>
+      </div>
+
+      <div id="pane-login" class="auth-pane active">
+        <div class="field">
+          <label>Pseudo</label>
+          <input id="login-pseudo" type="text" placeholder="Ton pseudo HRP" autocomplete="username">
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-submit" onclick="doLogin()">S'identifier</button>
+      </div>
+
+      <div id="pane-register" class="auth-pane">
+        <div class="field">
+          <label>Pseudo</label>
+          <input id="reg-pseudo" type="text" placeholder="Ton pseudo HRP" autocomplete="username">
+        </div>
+        <div class="field">
+          <label>Mot de passe</label>
+          <input id="reg-password" type="password" placeholder="••••••••" autocomplete="new-password">
+          <small class="field-hint">10 caracteres minimum avec une majuscule, une minuscule et un chiffre.</small>
+        </div>
+        <div class="field">
+          <label>Confirmer le mot de passe</label>
+          <input id="reg-confirm" type="password" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label>Code Secret Police</label>
+          <input id="reg-secret" type="password" placeholder="Transmis par le Commandement" autocomplete="off">
+        </div>
+        <button class="btn-submit" onclick="doRegister()">Rejoindre la police</button>
+      </div>
+
+      <div class="auth-msg" id="auth-msg"></div>
+
+      <p class="auth-footer">Accès strictement réservé au personnel autorisé</p>
+    </div>
+  </div>
+
+  <aside class="auth-card auth-card-guest">
+    <div class="card-inner guest-inner">
+      <div class="guest-kicker">Acc&egrave;s visiteur</div>
+      <h2 class="guest-title">Consulter le Code P&eacute;nal</h2>
+      <p class="guest-text">
+        Les civils et joueurs ext&eacute;rieurs peuvent consulter le Code P&eacute;nal en vigueur sur le territoire de Konoha.
+      </p>
+      <ul class="guest-list">
+        <li>Code p&eacute;nal consultable</li>
+      </ul>
+      <button class="btn-guest-card" onclick="doGuest()">Entrer comme visiteur</button>
+      <p class="guest-footnote">Pour les civils, ninjas ext&eacute;rieurs et visiteurs souhaitant consulter les textes en vigueur.</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* â”€â”€ Utilitaires auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function saveAuth(token, pseudo, permission, policeRole) {
+  sessionStorage.removeItem('policeGuest');
+  sessionStorage.removeItem('policeGuestId');
+  sessionStorage.setItem('policeToken', token);
+  sessionStorage.setItem('policeUser', JSON.stringify({ pseudo: pseudo, permission: permission, policeRole: policeRole || false }));
+}
+
+function doGuest() {
+  sessionStorage.removeItem('policeToken');
+  sessionStorage.removeItem('policeUser');
+  sessionStorage.removeItem('policeGuestId');
+  sessionStorage.setItem('policeGuest', 'true');
+  redirect();
+}
+
+async function doJusticeLogin() {
+  hideMsg();
+  var pseudo = (document.getElementById('justice-pseudo').value || '').trim();
+  var password = document.getElementById('justice-password').value || '';
+  if (!pseudo || !password) {
+    showMsg('Renseigne les identifiants Justice.', 'error');
+    return;
+  }
+  try {
+    var r = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pseudo: pseudo, password: password })
+    });
+    var data = await r.json();
+    if (!r.ok) {
+      showMsg(data.error || 'Connexion Justice impossible.', 'error');
+      return;
+    }
+    saveAuth(data.token, data.pseudo, data.permission, data.policeRole);
+    showMsg('Accès Justice établi, redirection…', 'success');
+    setTimeout(redirect, 600);
+  } catch (e) {
+    showMsg('Serveur inaccessible.', 'error');
+  }
+}
+
+function redirect() {
+  var params = new URLSearchParams(window.location.search);
+  var dest = params.get('redirect') || 'index.html';
+  window.location.href = dest;
+}
+
+/* Si déjà connecté, rediriger */
+(function() {
+  var token = sessionStorage.getItem('policeToken');
+  if (!token) return;
+  fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { if (r.ok) redirect(); })
+    .catch(function() {});
+})();
+
+/* â”€â”€ Onglets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function showTab(tab) {
+  document.querySelectorAll('.auth-pane').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('pane-' + tab).classList.add('active');
+  var btns = document.querySelectorAll('.tab-btn');
+  if (tab === 'login') btns[0].classList.add('active');
+  else btns[1].classList.add('active');
+  hideMsg();
+}
+
+/* â”€â”€ Messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function showMsg(msg, type) {
+  var el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + type;
+}
+function hideMsg() {
+  var el = document.getElementById('auth-msg');
+  el.className = 'auth-msg';
+}
+
+/* â”€â”€ Connexion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+async function doLogin() {
+  var pseudo   = document.getElementById('login-pseudo').value.trim();
+  var password = document.getElementById('login-password').value;
+  if (!pseudo || !password) return showMsg('Remplis tous les champs.', 'error');
+
+  var btn = document.querySelector('#pane-login .btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Vérification…';
+
+  try {
+    var r = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pseudo: pseudo, password: password })
+    });
+    var data = await r.json();
+    if (!r.ok) { showMsg(data.error || 'Erreur de connexion.', 'error'); }
+    else {
+      saveAuth(data.token, data.pseudo, data.permission, data.policeRole);
+      showMsg('Connexion réussie, redirection…', 'success');
+      setTimeout(redirect, 600);
+    }
+  } catch(e) {
+    showMsg('Serveur inaccessible.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'S\'identifier';
+  }
+}
+
+/* â”€â”€ Enrôlement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+async function doRegister() {
+  var pseudo   = document.getElementById('reg-pseudo').value.trim();
+  var password = document.getElementById('reg-password').value;
+  var confirm  = document.getElementById('reg-confirm').value;
+  var secret   = document.getElementById('reg-secret').value;
+
+  if (!pseudo || !password || !confirm || !secret) return showMsg('Remplis tous les champs.', 'error');
+  if (password !== confirm) return showMsg('Les mots de passe ne correspondent pas.', 'error');
+  if (password.length < 10) return showMsg('Mot de passe trop court (10 caractères minimum).', 'error');
+  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) return showMsg('Le mot de passe doit contenir une majuscule, une minuscule et un chiffre.', 'error');
+
+  var btn = document.querySelector('#pane-register .btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Enrôlement…';
+
+  try {
+    var r = await fetch('/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pseudo: pseudo, password: password, secret: secret })
+    });
+    var data = await r.json();
+    if (!r.ok) { showMsg(data.error || 'Erreur d\'enrôlement.', 'error'); }
+    else {
+      saveAuth(data.token, data.pseudo, data.permission, data.policeRole);
+      showMsg('Enrôlement réussi, redirection…', 'success');
+      setTimeout(redirect, 600);
+    }
+  } catch(e) {
+    showMsg('Serveur inaccessible.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Rejoindre la police';
+  }
+}
+
+/* â”€â”€ Entrée clavier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  var active = document.querySelector('.auth-pane.active');
+  if (!active) return;
+  if (active.id === 'pane-login') doLogin();
+  else doRegister();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.title = 'Identification — Police de Konoha';
+
+  var tabButtons = document.querySelectorAll('.tab-btn');
+  if (tabButtons[1]) tabButtons[1].innerHTML = "S'enr&ocirc;ler";
+
+  var loginPassword = document.getElementById('login-password');
+  var registerPassword = document.getElementById('reg-password');
+  var confirmPassword = document.getElementById('reg-confirm');
+  if (loginPassword) loginPassword.placeholder = '********';
+  if (registerPassword) registerPassword.placeholder = '********';
+  if (confirmPassword) confirmPassword.placeholder = '********';
+
+  var footer = document.querySelector('.auth-footer');
+  if (footer) footer.innerHTML = 'Acc&egrave;s strictement r&eacute;serv&eacute; au personnel autoris&eacute;';
+
+});
+</script>
+</body>
+</html>
