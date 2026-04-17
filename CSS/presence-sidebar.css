@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --presence-sidebar-offset-top: clamp(68px, 7vh, 94px);
+  --presence-sidebar-offset-edge: clamp(8px, 0.8vw, 18px);
+  --presence-sidebar-width: clamp(176px, 12vw, 228px);
+  --presence-sidebar-max-height: calc(100vh - var(--presence-sidebar-offset-top) - 16px);
+}
+
+.presence-sidebar {
+  position: fixed;
+  right: var(--presence-sidebar-offset-edge);
+  top: var(--presence-sidebar-offset-top);
+  width: var(--presence-sidebar-width);
+  max-height: var(--presence-sidebar-max-height);
+  z-index: 860;
+  background: rgba(8, 5, 1, 0.93);
+  border: 1px solid rgba(42,144,64,0.45);
+  border-radius: 4px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, transform 0.22s ease;
+}
+
+.presence-sidebar.collapsed {
+  width: 28px;
+}
+
+.presence-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(42,144,64,0.22);
+  box-shadow: none;
+  cursor: pointer;
+  color: #2a9040;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.presence-toggle:hover {
+  background: rgba(42,144,64,0.1);
+  color: #72d840;
+}
+
+.presence-toggle-icon {
+  flex-shrink: 0;
+  font-size: 11px;
+  margin-right: 7px;
+}
+
+.presence-toggle-text {
+  color: inherit;
+}
+
+.presence-sidebar.collapsed .presence-toggle-text {
+  display: none;
+}
+
+.presence-sidebar.collapsed .presence-toggle-icon {
+  margin-right: 0;
+}
+
+.presence-body {
+  padding: 6px 0 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.presence-sidebar.collapsed .presence-body {
+  display: none;
+}
+
+.presence-user,
+.presence-guest-row,
+.presence-justice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  min-height: 34px;
+  transition: background 0.15s ease;
+}
+
+.presence-user:hover,
+.presence-guest-row:hover,
+.presence-justice-row:hover {
+  background: rgba(42,144,64,0.08);
+}
+
+.presence-dot,
+.presence-guest-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.presence-dot.active {
+  background: #4caf50;
+  box-shadow: 0 0 5px #4caf50, 0 0 10px rgba(76, 175, 80, 0.45);
+}
+
+.presence-dot.away {
+  background: #9c27b0;
+  box-shadow: 0 0 5px #9c27b0, 0 0 10px rgba(156, 39, 176, 0.45);
+}
+
+.presence-dot.mobile {
+  background: #2196f3;
+  box-shadow: 0 0 6px rgba(33, 150, 243, 0.6);
+}
+
+.presence-dot.justice {
+  background: radial-gradient(circle at 35% 35%, #fff2b0 0%, #f6d77f 28%, #d9a826 62%, #9b6a08 100%);
+  box-shadow:
+    0 0 6px rgba(94,220,60,0.9),
+    0 0 12px rgba(94,220,60,0.45),
+    0 0 18px rgba(255, 224, 128, 0.22);
+  animation: justiceTwinkle 1.9s ease-in-out infinite;
+}
+
+.presence-police-icon {
+  font-size: 8px;
+  color: #3db54a;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.presence-justice-icon {
+  font-size: 10px;
+  color: #3db54a;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.presence-name {
+  font-family: 'Crimson Text', serif;
+  color: #f6deb0;
+  font-size: 15px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.presence-empty {
+  padding: 5px 12px;
+  font-family: 'Crimson Text', serif;
+  color: rgba(246, 222, 176, 0.7);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.presence-guest-row {
+  border-top: 1px dashed rgba(42,144,64,0.18);
+  margin-top: 3px;
+}
+
+.presence-justice-row {
+  border-top: 1px dashed rgba(42,144,64,0.18);
+  margin-top: 3px;
+}
+
+.presence-guest-row .presence-name {
+  font-style: italic;
+}
+
+@keyframes justiceTwinkle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+    box-shadow:
+      0 0 5px rgba(94,220,60,0.75),
+      0 0 10px rgba(94,220,60,0.32),
+      0 0 16px rgba(255, 224, 128, 0.16);
+  }
+
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+    box-shadow:
+      0 0 8px rgba(255, 215, 96, 0.96),
+      0 0 15px rgba(255, 215, 96, 0.5),
+      0 0 24px rgba(255, 235, 150, 0.24);
+  }
+}
+
+@media (max-width: 700px) {
+  .presence-sidebar {
+    top: auto;
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: min(52vh, 360px);
+    border-radius: 14px 14px 0 0;
+    transform: translateY(calc(100% - 52px));
+  }
+
+  .presence-sidebar.mobile-open {
+    transform: translateY(0);
+  }
+
+  .presence-sidebar.collapsed {
+    width: auto;
+  }
+
+  .presence-sidebar.collapsed .presence-toggle-text,
+  .presence-sidebar.collapsed .presence-body {
+    display: initial;
+  }
+
+  .presence-toggle {
+    justify-content: flex-start;
+    min-height: 52px;
+    padding: 12px 16px;
+  }
+
+  .presence-body {
+    max-height: min(36vh, 280px);
+  }
+}

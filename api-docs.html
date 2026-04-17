@@ -1,0 +1,584 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Docs - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css">
+<link rel="stylesheet" href="CSS/api-docs.css?v=20260411a">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="docs-header">
+  <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+    <circle fill="#427b8f" cx="39" cy="39" r="12"/><circle fill="#427b8f" cx="161" cy="39" r="12"/>
+    <circle fill="#427b8f" cx="39" cy="161" r="12"/><circle fill="#427b8f" cx="161" cy="161" r="12"/>
+    <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+    <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+  </svg>
+  <div class="docs-header-text">
+    <div class="docs-header-title">Police Militaire de Konoha</div>
+    <div class="docs-header-sub">Documentation de l'API publique, staff et backoffice</div>
+  </div>
+  <div class="docs-header-badge">&#9679; Swagger reutilise le token de session si present</div>
+  <div class="docs-header-version" id="docs-version">Spec API</div>
+</header>
+
+<!-- SECTION DISCORD -->
+<div class="discord-section">
+  <div class="discord-card">
+    <div class="discord-card-header">
+      <svg class="discord-logo" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.401329 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4831 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z" fill="#5865F2"/>
+      </svg>
+      <div class="discord-card-title">Integration Bot Discord</div>
+    </div>
+    <div class="discord-card-desc">
+      Les endpoints publics ci-dessous sont accessibles sans token. Certains endpoints internes affiches dans le Swagger necessitent une authentification Bearer. Voici des exemples prets a l'emploi pour l'API publique en JavaScript (discord.js v14) et Python (discord.py).
+    </div>
+    <div class="code-tabs">
+      <button class="code-tab active" onclick="switchTab(event, 'js')">discord.js (JS)</button>
+      <button class="code-tab" onclick="switchTab(event, 'py')">discord.py (Python)</button>
+      <button class="code-tab" onclick="switchTab(event, 'curl')">cURL / HTTP</button>
+    </div>
+
+    <div id="tab-js" class="code-panel active">
+<pre class="code-block">const BASE = 'https://zenkai-police.tech/api/v1';
+
+async function listMembres(rang) {
+  const url = rang
+    ? `${BASE}/membres?rang=${encodeURIComponent(rang)}`
+    : `${BASE}/membres`;
+
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Impossible de lire le registre');
+  return response.json();
+}
+
+async function ficheMembre(pseudoHRP) {
+  const response = await fetch(`${BASE}/membres/${encodeURIComponent(pseudoHRP)}`);
+  if (!response.ok) throw new Error(`Membre introuvable : ${pseudoHRP}`);
+  return response.json();
+}
+
+async function presencePublique() {
+  const response = await fetch(`${BASE}/presence`);
+  return response.json();
+}
+
+async function capacites(token) {
+  const response = await fetch('https://zenkai-police.tech/auth/capabilities', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) throw new Error('Acces refuse');
+  return response.json();
+}
+
+async function statusOverview(token) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/status/overview', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) throw new Error('Status indisponible');
+  return response.json();
+}
+
+async function publicStatusMonitor() {
+  const response = await fetch('https://zenkai-police.tech/api/status-monitor/overview');
+  if (!response.ok) throw new Error('Monitor public indisponible');
+  return response.json();
+}
+
+async function publicCodePenal() {
+  const response = await fetch('https://zenkai-police.tech/api/v1/public/codepenal');
+  if (!response.ok) throw new Error('Code penal public indisponible');
+  return response.json();
+}
+
+async function policeAcademyMeta(token) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/police-academies/meta', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) throw new Error('Meta Police Academie indisponible');
+  return response.json();
+}
+
+async function investigationsMeta(token) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/investigations/meta', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) throw new Error('Meta Enquetes indisponible');
+  return response.json();
+}
+
+async function listInvestigations(token) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/investigations?sort=updated&limit=20', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) throw new Error('Liste des enquetes indisponible');
+  return response.json();
+}
+
+async function createInvestigation(token, payload) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/investigations', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error('Creation enquete impossible');
+  return response.json();
+}
+
+async function addInvestigationEntry(token, investigationId, payload) {
+  const response = await fetch(`https://zenkai-police.tech/api/v1/investigations/${encodeURIComponent(investigationId)}/updates`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error('Ajout de suivi impossible');
+  return response.json();
+}
+
+async function createPoliceAcademySession(token, payload) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/police-academies/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error('Creation session Police Academie impossible');
+  return response.json();
+}
+
+async function addPoliceAcademyCandidate(token, payload) {
+  const response = await fetch('https://zenkai-police.tech/api/v1/police-academies/rows', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error('Ajout candidat Police Academie impossible');
+  return response.json();
+}
+
+async function finalizePoliceAcademySession(token, sessionId, results) {
+  const response = await fetch(`https://zenkai-police.tech/api/v1/police-academies/sessions/${encodeURIComponent(sessionId)}/finalize`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ results })
+  });
+
+  if (!response.ok) throw new Error('Finalisation Police Academie impossible');
+  return response.json();
+}</pre>
+    </div>
+
+    <div id="tab-py" class="code-panel">
+<pre class="code-block">import aiohttp
+import urllib.parse
+
+BASE = "https://zenkai-police.tech/api/v1"
+
+async def list_membres(rang=None):
+    url = f"{BASE}/membres"
+    if rang:
+        url += f"?rang={urllib.parse.quote(rang)}"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def fiche_membre(pseudo_hrp):
+    url = f"{BASE}/membres/{urllib.parse.quote(pseudo_hrp)}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def presence_publique():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{BASE}/presence") as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def capacites(token):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://zenkai-police.tech/auth/capabilities",
+            headers={"Authorization": f"Bearer {token}"}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def status_overview(token):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://zenkai-police.tech/api/v1/status/overview",
+            headers={"Authorization": f"Bearer {token}"}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def public_status_monitor():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://zenkai-police.tech/api/status-monitor/overview") as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def public_code_penal():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://zenkai-police.tech/api/v1/public/codepenal") as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def police_academy_meta(token):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://zenkai-police.tech/api/v1/police-academies/meta",
+            headers={"Authorization": f"Bearer {token}"}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def investigations_meta(token):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://zenkai-police.tech/api/v1/investigations/meta",
+            headers={"Authorization": f"Bearer {token}"}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def list_investigations(token):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            "https://zenkai-police.tech/api/v1/investigations?sort=updated&limit=20",
+            headers={"Authorization": f"Bearer {token}"}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def create_investigation(token, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            "https://zenkai-police.tech/api/v1/investigations",
+            headers={"Authorization": f"Bearer {token}"},
+            json=payload
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def add_investigation_entry(token, investigation_id, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            f"https://zenkai-police.tech/api/v1/investigations/{urllib.parse.quote(investigation_id)}/updates",
+            headers={"Authorization": f"Bearer {token}"},
+            json=payload
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def create_police_academy_session(token, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            "https://zenkai-police.tech/api/v1/police-academies/sessions",
+            headers={"Authorization": f"Bearer {token}"},
+            json=payload
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def add_police_academy_candidate(token, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            "https://zenkai-police.tech/api/v1/police-academies/rows",
+            headers={"Authorization": f"Bearer {token}"},
+            json=payload
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+async def finalize_police_academy_session(token, session_id, results):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            f"https://zenkai-police.tech/api/v1/police-academies/sessions/{urllib.parse.quote(session_id)}/finalize",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"results": results}
+        ) as response:
+            response.raise_for_status()
+            return await response.json()</pre>
+    </div>
+
+    <div id="tab-curl" class="code-panel">
+<pre class="code-block"># Sante du service
+curl https://zenkai-police.tech/health
+
+# Heartbeat disponible via /api/v1
+curl https://zenkai-police.tech/api/v1/status/heartbeat
+
+# Monitor public independant du MDT
+curl https://zenkai-police.tech/api/status-monitor/heartbeat
+curl https://zenkai-police.tech/api/status-monitor/overview
+
+# Code penal public (visiteur / bot)
+curl https://zenkai-police.tech/codepenal.json
+curl https://zenkai-police.tech/api/v1/public/codepenal
+
+# Tous les membres
+curl https://zenkai-police.tech/api/v1/membres
+
+# Filtrer les membres par rang
+curl "https://zenkai-police.tech/api/v1/membres?rang=CMD%20Police"
+
+# Fiche d'un membre
+curl "https://zenkai-police.tech/api/v1/membres/Akirabane"
+
+# Presence publique
+curl https://zenkai-police.tech/api/v1/presence
+
+# Capacites du compte courant
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/auth/capabilities
+
+# Vue de supervision detaillee
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/api/v1/status/overview
+
+# Meta Police Academie
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/api/v1/police-academies/meta
+
+# Meta Enquetes
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/api/v1/investigations/meta
+
+# Liste des enquetes
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://zenkai-police.tech/api/v1/investigations?sort=updated&limit=20"
+
+# Creer une enquete
+curl -X POST https://zenkai-police.tech/api/v1/investigations \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Trafic discret au pont nord",
+    "status": "En cours",
+    "assignedAgent": "soullera",
+    "summary": "Ouverture d enquete apres plusieurs signalements concordants."
+  }'
+
+# Ajouter une entree de suivi a une enquete
+curl -X POST https://zenkai-police.tech/api/v1/investigations/enq-ab12cd34/updates \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "Suivi",
+    "content": "Poursuite des auditions de voisinage."
+  }'
+
+# Session Police Academie active
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/api/v1/police-academies/sessions/active
+
+# Creer ou reprendre une session Police Academie
+curl -X POST https://zenkai-police.tech/api/v1/police-academies/sessions \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "officerNom": "Akibane",
+    "officerPrenom": "Joshi",
+    "officerGradeSection": "Inspecteur"
+  }'
+
+# Ajouter un candidat Police Academie dans une session
+curl -X POST https://zenkai-police.tech/api/v1/police-academies/rows \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "pas-ab12cd34xyz567",
+    "candidateNom": "Uchiha",
+    "candidatePrenom": "Shinra",
+    "candidateAge": "17",
+    "chakraNature": "Katon",
+    "kg": "Aucun",
+    "armyRank": "Genin Confirme",
+    "epreuve1": "Reussie",
+    "epreuve2": "Reussie",
+    "epreuve3": "Non reussie",
+    "commentaire": "Bonne tenue generale, vigilance a renforcer."
+  }'
+
+# Finaliser une session Police Academie
+curl -X POST https://zenkai-police.tech/api/v1/police-academies/sessions/pas-ab12cd34xyz567/finalize \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "results": [
+      { "candidateId": "pa-ab12cd34xyz567", "outcome": "success" }
+    ]
+  }'
+
+# Droit de gestion des rapports
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/auth/can-manage-casiers
+
+# Lire le code penal authentifie
+curl -H "Authorization: Bearer $TOKEN" \
+  https://zenkai-police.tech/api/v1/codepenal
+
+# Sauvegarder le code penal
+curl -X PUT https://zenkai-police.tech/api/v1/codepenal \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "sections": [], "lexique": { "avertissement": { "thresholdForSignalement": 2 } } }'
+
+# Creer un rapport d'incident
+curl -X POST https://zenkai-police.tech/api/v1/casier/save \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reportType": "incident",
+    "suspectNom": "Uchiha",
+    "suspectPrenom": "Itachi",
+    "suspectGrade": "Konin",
+    "agentGrade": "Inspecteur",
+    "date": "07/04/2026",
+    "rapport": "Suspect interpelle a la porte nord.",
+    "delits": ["C1.1 - Trouble a l ordre public"],
+    "peine": "Avertissement"
+  }'
+
+# Lister les rapports
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://zenkai-police.tech/api/v1/casier/records?type=incident&sort=newest"
+
+# Lister les dossiers
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://zenkai-police.tech/api/v1/casier/dossiers?suspect=Uchiha"
+
+# Historique staff
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://zenkai-police.tech/api/v1/history?action=report_update&limit=20"
+
+# Prise de service
+curl -X POST https://zenkai-police.tech/api/v1/service/toggle \
+  -H "Authorization: Bearer $TOKEN"
+
+# Spec OpenAPI
+curl https://zenkai-police.tech/api/v1/openapi.json</pre>
+    </div>
+  </div>
+</div>
+
+<!-- SWAGGER UI -->
+<div id="swagger-wrap">
+  <div id="swagger-ui"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js"></script>
+<script>
+function switchTab(event, id) {
+  document.querySelectorAll('.code-tab').forEach(function(tab) {
+    tab.classList.remove('active');
+  });
+  document.querySelectorAll('.code-panel').forEach(function(panel) {
+    panel.classList.remove('active');
+  });
+  document.getElementById('tab-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+window.addEventListener('load', function() {
+  var specUrl = '/api/v1/openapi.json';
+  var versionNode = document.getElementById('docs-version');
+
+  SwaggerUIBundle({
+    url: specUrl,
+    dom_id: '#swagger-ui',
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    layout: 'StandaloneLayout',
+    deepLinking: true,
+    displayRequestDuration: true,
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 2,
+    docExpansion: 'list',
+    filter: false,
+    tryItOutEnabled: true,
+    persistAuthorization: true,
+    validatorUrl: null,
+    tagsSorter: 'alpha',
+    operationsSorter: 'alpha',
+    requestInterceptor: function(req) {
+      var token = sessionStorage.getItem('policeToken');
+      req.headers = req.headers || {};
+      if (token && !req.headers.Authorization) {
+        req.headers.Authorization = 'Bearer ' + token;
+      }
+      return req;
+    }
+  });
+
+  fetch(specUrl)
+    .then(function(response) {
+      if (!response.ok) throw new Error('spec');
+      return response.json();
+    })
+    .then(function(spec) {
+      if (versionNode && spec && spec.info && spec.info.version) {
+        versionNode.textContent = 'v' + spec.info.version;
+      }
+    })
+    .catch(function() {
+      if (versionNode) {
+        versionNode.textContent = 'Spec API';
+      }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+:root {
+  --page-transition-duration: 760ms;
+  --page-transition-enter-duration: 720ms;
+  --page-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.page-transitions-enabled {
+  background: #040e04;
+}
+
+body {
+  opacity: 0;
+  transition:
+    opacity 440ms ease;
+  will-change: opacity;
+}
+
+body.page-ready {
+  opacity: 1;
+}
+
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(248, 219, 146, 0.14) 0%, transparent 14%),
+    radial-gradient(circle at 50% 50%, rgba(248, 219, 146, 0.06) 0%, transparent 24%);
+  transition: opacity 260ms ease;
+  overflow: hidden;
+}
+
+.page-transition-overlay::before,
+.page-transition-overlay::after {
+  content: '';
+  position: absolute;
+  left: -6vw;
+  width: 112vw;
+  height: 58vh;
+  background:
+    linear-gradient(180deg, rgba(31, 20, 6, 0.9), rgba(14, 9, 3, 0.97)),
+    radial-gradient(circle at 50% 100%, rgba(248, 219, 146, 0.08), transparent 42%);
+  box-shadow:
+    inset 0 0 42px rgba(0, 0, 0, 0.34),
+    0 0 26px rgba(0, 0, 0, 0.18);
+  transition: transform var(--page-transition-duration) var(--page-transition-ease);
+}
+
+.page-transition-overlay::before {
+  top: -2vh;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  transform: translateY(-118%);
+}
+
+.page-transition-overlay::after {
+  bottom: -2vh;
+  clip-path: polygon(0 22%, 50% 0, 100% 22%, 100% 100%, 0 100%);
+  transform: translateY(118%);
+}
+
+.page-transition-core {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.page-transition-core::before,
+.page-transition-core::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.page-transition-core::before {
+  width: min(72vw, 1080px);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(248, 219, 146, 0.08) 8%,
+    rgba(248, 219, 146, 0.96) 50%,
+    rgba(248, 219, 146, 0.08) 92%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 16px rgba(248, 219, 146, 0.24),
+    0 0 36px rgba(248, 219, 146, 0.12);
+  opacity: 0;
+  scale: 0.1 1;
+  transition:
+    opacity 220ms ease,
+    scale var(--page-transition-duration) var(--page-transition-ease);
+}
+
+.page-transition-core::after {
+  width: clamp(66px, 7vw, 92px);
+  height: clamp(66px, 7vw, 92px);
+  border-radius: 26%;
+  rotate: 45deg;
+  background:
+    radial-gradient(circle at center, rgba(248, 219, 146, 0.18), rgba(248, 219, 146, 0.02) 58%, transparent 72%);
+  border: 1px solid rgba(248, 219, 146, 0.38);
+  box-shadow:
+    inset 0 0 26px rgba(248, 219, 146, 0.14),
+    0 0 28px rgba(248, 219, 146, 0.12);
+  opacity: 0;
+  scale: 0.55;
+  transition:
+    opacity 240ms ease,
+    scale var(--page-transition-duration) var(--page-transition-ease),
+    rotate var(--page-transition-duration) var(--page-transition-ease);
+}
+
+body.page-leaving {
+  cursor: progress;
+  opacity: 0 !important;
+}
+
+body.page-leaving .page-transition-overlay {
+  opacity: 1;
+}
+
+body.page-leaving .page-transition-overlay::before {
+  transform: translateY(-8%);
+}
+
+body.page-leaving .page-transition-overlay::after {
+  transform: translateY(8%);
+}
+
+body.page-leaving .page-transition-core::before {
+  opacity: 1;
+  scale: 1 1;
+}
+
+body.page-leaving .page-transition-core::after {
+  opacity: 1;
+  scale: 1;
+  rotate: 135deg;
+}
+
+body.page-leaving * {
+  pointer-events: none !important;
+}
+
+body.page-leaving .page-transition-overlay {
+  pointer-events: auto;
+}
+
+body.login-page::before {
+  transition:
+    opacity 760ms ease,
+    transform 1400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.login-page.page-ready::before {
+  opacity: 1;
+  transform: none;
+}
+
+body.login-page .auth-shell {
+  transition:
+    transform 920ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 620ms ease,
+    filter 620ms ease;
+  transform: translateY(24px) scale(0.986);
+  opacity: 0;
+  filter: blur(10px);
+}
+
+body.login-page.page-ready .auth-shell {
+  transform: none;
+  opacity: 1;
+  filter: none;
+}
+
+body.login-page .auth-card {
+  opacity: 0;
+  transform: translateY(34px) scale(0.982);
+  filter: blur(10px);
+}
+
+body.login-page.page-ready .auth-card {
+  animation: loginCardRise 980ms var(--page-transition-ease) both;
+}
+
+body.login-page.page-ready .auth-card:nth-child(1) {
+  animation-delay: 90ms;
+}
+
+body.login-page.page-ready .auth-card:nth-child(2) {
+  animation-delay: 180ms;
+}
+
+body.login-page.page-ready .auth-card:nth-child(3) {
+  animation-delay: 270ms;
+}
+
+@keyframes loginCardRise {
+  0% {
+    opacity: 0;
+    transform: translateY(38px) scale(0.98);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .page-transition-overlay,
+  .page-transition-overlay::before,
+  .page-transition-overlay::after,
+  .page-transition-core::before,
+  .page-transition-core::after,
+  body.login-page .auth-shell,
+  body.login-page .auth-card {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    scale: 1 !important;
+    rotate: 0deg !important;
+  }
+}

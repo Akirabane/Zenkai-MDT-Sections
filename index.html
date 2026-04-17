@@ -1,0 +1,669 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Police Militaire de Konoha — Quartier Général</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/index.css?v=20260424b">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  document.title = 'Police Militaire de Konoha — Quartier Général';
+  (function() {
+    var hasToken = sessionStorage.getItem('policeToken');
+    var isGuest  = sessionStorage.getItem('policeGuest') === 'true';
+    if (!hasToken && !isGuest) {
+      window.location.replace('login.html?redirect=index.html');
+    }
+  })();
+</script>
+</head>
+<body class="home-landing">
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="home-layout" id="home-layout">
+  <aside class="dri-side-panel" id="dri-side-panel" style="display:none">
+    <span class="dri-corner dri-corner-tl">&#10022;</span>
+    <span class="dri-corner dri-corner-br">&#10022;</span>
+    <div class="dri-watermark">CLASSIFI&Eacute;</div>
+
+    <div class="dri-side-kicker">&#9674; Division</div>
+    <h2>Renseignements<br>Int&eacute;rieurs</h2>
+    <div class="dri-side-subtitle">Acc&egrave;s restreint &mdash; agents accr&eacute;dit&eacute;s</div>
+
+    <div class="dri-side-divider"></div>
+    <div class="dri-side-kanji">&#35426; &middot; &#23494; &middot; &#24433; &middot; &#22577;</div>
+
+    <p>Suivi des ninjas, artefacts et enqu&ecirc;tes internes &mdash; r&eacute;serv&eacute; &agrave; la Division des Renseignements Int&eacute;rieurs.</p>
+
+    <a href="DRI.html" class="dri-side-primary">&#9674; Ouvrir la DRI</a>
+
+    <div class="dri-side-stamp">Classifi&eacute;</div>
+  </aside>
+
+<div class="landing-frame">
+  <span class="corner-tr">&#10022;</span>
+  <span class="corner-bl">&#10022;</span>
+  <div class="watermark">CONFIDENTIEL</div>
+
+  <!-- Shuriken decorations -->
+  <svg class="shuriken-deco shuriken-tl" width="50" height="50" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 4 L36 28 L60 32 L36 36 L32 60 L28 36 L4 32 L28 28 Z" fill="#b8860b" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="6" fill="#1a1208" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2.5" fill="#d4a017"/>
+  </svg>
+  <svg class="shuriken-deco shuriken-br" width="50" height="50" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 4 L36 28 L60 32 L36 36 L32 60 L28 36 L4 32 L28 28 Z" fill="#b8860b" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="6" fill="#1a1208" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2.5" fill="#d4a017"/>
+  </svg>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+      <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+      <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+      <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+      <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+      <path fill="#e10000" d="M 100,63.93 C 80.09,63.93 63.93,79.70 63.93,99.13 C 63.93,102.06 64.33,104.90 65.08,107.99 C 73.31,99.81 85.90,94.71 100,94.71 C 114.10,94.71 126.69,99.81 134.92,107.99 C 135.67,104.90 136.07,102.06 136.07,99.13 C 136.07,79.70 119.91,63.93 100,63.93 Z"/>
+      <path fill="#ffffff" d="M 100,100.99 C 86.40,100.99 74.52,106.97 68.13,115.58 C 73.43,125.35 83.29,132.38 94.95,133.97 L 94.95,160.07 L 105.05,160.07 L 105.05,133.97 C 116.71,132.38 126.57,125.35 131.88,115.58 C 125.49,106.97 113.60,100.99 100,100.99 Z"/>
+    </svg>
+  </div>
+
+  <!-- Title -->
+  <div class="title-block">
+    <h1>Police Militaire de Konoha</h1>
+    <div class="subtitle">Quartier G&eacute;n&eacute;ral &mdash; Acc&egrave;s Restreint</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="kanji-row">&#24544; &middot; &#32681; &middot; &#21191; &middot; &#35465;</div>
+
+  <!-- Navigation -->
+  <div class="nav-shell">
+    <section class="nav-overview">
+      <div class="nav-overview-kicker">&#9674; Orientation rapide</div>
+      <div class="nav-overview-copy">
+        Navigue par pole : consultation, terrain, enquetes et pilotage. L accueil revele uniquement les espaces utiles a ta fonction.
+      </div>
+      <div class="nav-overview-ribbon">
+        <span>Lecture</span>
+        <span>Operations</span>
+        <span>Enquetes</span>
+        <span>Pilotage</span>
+      </div>
+    </section>
+
+    <section class="hub-section hub-section-public" data-section-key="public">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Consultation</div>
+        <h2>Referentiels Officiels</h2>
+        <p>Les bases documentaires et organigrammes consultables par l ensemble du village.</p>
+      </div>
+      <div class="nav-grid nav-grid-public">
+        <a href="Hierarchie_police.html" class="nav-card nav-card--public" id="nav-hierarchy" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="2" width="12" height="8" rx="1" fill="#5a0a0a" stroke="#b8860b" stroke-width="1"/>
+          <rect x="2" y="16" width="12" height="7" rx="1" fill="#28184a" stroke="#b8860b" stroke-width="1"/>
+          <rect x="22" y="16" width="12" height="7" rx="1" fill="#28184a" stroke="#b8860b" stroke-width="1"/>
+          <rect x="2" y="28" width="12" height="6" rx="1" fill="#2c3e1a" stroke="#b8860b" stroke-width="1"/>
+          <rect x="22" y="28" width="12" height="6" rx="1" fill="#2c3e1a" stroke="#b8860b" stroke-width="1"/>
+          <line x1="18" y1="10" x2="18" y2="16" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="8" y1="14" x2="28" y2="14" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="8" y1="14" x2="8" y2="16" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="28" y1="14" x2="28" y2="16" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="8" y1="23" x2="8" y2="28" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="28" y1="23" x2="28" y2="28" stroke="#b8860b" stroke-width="1.5"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Hi&eacute;rarchie</div>
+      <div class="nav-card-desc">Organigramme officiel, grades et divisions de la section</div>
+        </a>
+
+        <a href="Police_Registre.html" class="nav-card nav-card--public" id="nav-register" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="3" width="28" height="30" rx="2" fill="#e8d5a3" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="9" y1="11" x2="27" y2="11" stroke="#7a5c1e" stroke-width="1"/>
+          <line x1="9" y1="16" x2="27" y2="16" stroke="#7a5c1e" stroke-width="1"/>
+          <line x1="9" y1="21" x2="27" y2="21" stroke="#7a5c1e" stroke-width="1"/>
+          <line x1="9" y1="26" x2="22" y2="26" stroke="#7a5c1e" stroke-width="1"/>
+          <rect x="8" y="5" width="8" height="3" rx="0.5" fill="#2a2a0a"/>
+          <circle cx="28" cy="28" r="6" fill="#8b1a1a" stroke="#e8d5a3" stroke-width="1.5"/>
+          <text x="28" y="31" text-anchor="middle" fill="#e8d5a3" font-size="8" font-family="Cinzel,serif" font-weight="700">&#23553;</text>
+        </svg>
+      </span>
+      <div class="nav-card-title">Registre</div>
+      <div class="nav-card-desc">Dossiers individuels des ninjas affect&eacute;s &agrave; la section</div>
+        </a>
+
+        <a href="CodePenal.html" class="nav-card nav-card--public">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="2" width="26" height="32" rx="2" fill="#2a0a0a" stroke="#b8860b" stroke-width="1.5"/>
+          <rect x="5" y="2" width="26" height="9" rx="2" fill="#5a0a0a" stroke="#b8860b" stroke-width="1.5"/>
+          <line x1="10" y1="16" x2="26" y2="16" stroke="#b8860b" stroke-width="1"/>
+          <line x1="10" y1="20" x2="26" y2="20" stroke="#b8860b" stroke-width="1"/>
+          <line x1="10" y1="24" x2="22" y2="24" stroke="#b8860b" stroke-width="1"/>
+          <text x="18" y="10" text-anchor="middle" fill="#f0a0a0" font-size="7" font-family="Cinzel,serif" font-weight="700">C&#xD7;P</text>
+          <circle cx="26" cy="28" r="5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="1"/>
+          <text x="26" y="31" text-anchor="middle" fill="#f0c0a0" font-size="7" font-family="sans-serif" font-weight="700">&#9878;</text>
+        </svg>
+      </span>
+      <div class="nav-card-title">Code P&eacute;nal</div>
+      <div class="nav-card-desc">Infractions, peines et sanctions en vigueur sur le territoire</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="hub-section hub-section-ops" data-auto-hide="true" style="display:none">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Terrain</div>
+        <h2>Rapports et Actions</h2>
+        <p>Les outils de redaction et de suivi operationnel reserves aux effectifs engages sur le terrain.</p>
+      </div>
+      <div class="nav-grid nav-grid-ops">
+        <a href="Casier.html" class="nav-card nav-card--ops nav-card--feature" id="nav-casier" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="30" height="28" rx="2" fill="#1a1a2e" stroke="#b8860b" stroke-width="1.5"/>
+          <rect x="7" y="8" width="22" height="5" rx="1" fill="#2a1a08" stroke="#7a5c1e" stroke-width="0.8"/>
+          <line x1="10" y1="10.5" x2="26" y2="10.5" stroke="#b8860b" stroke-width="0.7"/>
+          <rect x="7" y="16" width="22" height="12" rx="1" fill="#0d0d02" stroke="#7a5c1e" stroke-width="0.8"/>
+          <line x1="10" y1="20" x2="26" y2="20" stroke="rgba(184,134,11,0.4)" stroke-width="0.5"/>
+          <line x1="10" y1="23" x2="26" y2="23" stroke="rgba(184,134,11,0.4)" stroke-width="0.5"/>
+          <line x1="10" y1="26" x2="20" y2="26" stroke="rgba(184,134,11,0.4)" stroke-width="0.5"/>
+          <circle cx="28" cy="28" r="5.5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="1"/>
+          <text x="28" y="31" text-anchor="middle" fill="#f0c0a0" font-size="7" font-family="Cinzel,serif" font-weight="700">&#32618;</text>
+        </svg>
+      </span>
+      <div class="nav-card-title">Rapport d'incident</div>
+      <div class="nav-card-desc">R&eacute;diger et publier un rapport officiel d&rsquo;incident pour le commandement</div>
+        </a>
+
+        <a href="Rapport_Patrouille.html" class="nav-card nav-card--ops" id="nav-patrol" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="28" height="28" rx="2" fill="#1f1809" stroke="#b8860b" stroke-width="1.5"/>
+          <path d="M11 26V15l7-4 7 4v11" stroke="#b8860b" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M14 18h8" stroke="#b8860b" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M18 11V7" stroke="#8b1a1a" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="18" cy="7" r="2.5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.8"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Rapport de patrouille</div>
+      <div class="nav-card-desc">Rendre compte d&rsquo;une patrouille, avec mention d&rsquo;&eacute;v&eacute;nement grave si n&eacute;cessaire</div>
+        </a>
+
+        <a href="Plainte.html" class="nav-card nav-card--ops" id="nav-complaint-form" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="3" width="28" height="30" rx="2.2" fill="#f0d890" stroke="#b8860b" stroke-width="1.5"/>
+          <path d="M11 11h14" stroke="#7a5c1e" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M11 16h14" stroke="#7a5c1e" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M11 21h10" stroke="#7a5c1e" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M24 22l3 3 5-7" stroke="#8b1a1a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">D&eacute;poser une plainte</div>
+      <div class="nav-card-desc">R&eacute;diger une plainte officielle &agrave; partir d&rsquo;un objet issu du Code P&eacute;nal</div>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="hub-section hub-section-training" data-auto-hide="true" style="display:none">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Enquetes</div>
+        <h2>Suivi et Formation</h2>
+        <p>Les espaces de suivi d investigations et d academie pour les effectifs de supervision.</p>
+      </div>
+      <div class="nav-grid nav-grid-training">
+        <a href="Gestion_Enquetes.html" class="nav-card nav-card--command" id="nav-investigations" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="28" height="28" rx="2" fill="#24170a" stroke="#b8860b" stroke-width="1.5"/>
+          <circle cx="15" cy="15" r="5.2" stroke="#f0d890" stroke-width="1.5"/>
+          <path d="M19 19l7 7" stroke="#f0d890" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M10 25h10" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M10 28h12" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Enqu&ecirc;tes</div>
+      <div class="nav-card-desc">Ouvrir, suivre et documenter les investigations avec preuves, temoignages et liens MDT</div>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="hub-section hub-section-command" data-auto-hide="true" style="display:none">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Pilotage</div>
+        <h2>Supervision et Archives</h2>
+        <p>Les espaces de supervision pour la chaine de commandement, la justice et les profils de controle.</p>
+      </div>
+      <div class="nav-grid nav-grid-command">
+        <a href="Dashboard.html" class="nav-card nav-card--command nav-card--feature" id="nav-dashboard" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="30" height="28" rx="2" fill="#1a1a2e" stroke="#b8860b" stroke-width="1.5"/>
+          <rect x="6" y="8" width="5" height="14" rx="1" fill="#b8860b" opacity="0.8"/>
+          <rect x="14" y="6" width="5" height="16" rx="1" fill="#b8860b" opacity="0.8"/>
+          <rect x="22" y="10" width="5" height="12" rx="1" fill="#b8860b" opacity="0.8"/>
+          <line x1="3" y1="25" x2="33" y2="25" stroke="#7a5c1e" stroke-width="1.5"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Dashboard</div>
+      <div class="nav-card-desc">Statistiques et analyses des arrestations en temps r&eacute;el</div>
+        </a>
+
+        <a href="Gestion_Casiers.html" class="nav-card nav-card--command" id="nav-casier-crud" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="30" height="28" rx="2" fill="#24170a" stroke="#b8860b" stroke-width="1.5"/>
+          <rect x="7" y="8" width="22" height="20" rx="1.5" fill="#f0d890" stroke="#7a5c1e" stroke-width="1"/>
+          <line x1="11" y1="13" x2="25" y2="13" stroke="#7a5c1e" stroke-width="1.2"/>
+          <line x1="11" y1="17" x2="25" y2="17" stroke="#7a5c1e" stroke-width="1.2"/>
+          <line x1="11" y1="21" x2="20" y2="21" stroke="#7a5c1e" stroke-width="1.2"/>
+          <circle cx="26.5" cy="26.5" r="5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="1"/>
+          <path d="M24.5 26.5h4" stroke="#f0c0a0" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M26.5 24.5v4" stroke="#f0c0a0" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Gestion Rapports/Incidents</div>
+      <div class="nav-card-desc">Consulter, modifier et trier les rapports d&rsquo;incident et de patrouille</div>
+        </a>
+
+        <a href="Historique.html" class="nav-card nav-card--command" id="nav-history" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="28" height="28" rx="2" fill="#24170a" stroke="#b8860b" stroke-width="1.5"/>
+          <circle cx="18" cy="18" r="8" stroke="#f0c040" stroke-width="1.5"/>
+          <path d="M18 13v5l4 2" stroke="#f0c040" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 11h4" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M23 25h4" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Historique</div>
+      <div class="nav-card-desc">Tracer les grades modifies, rapports ajustes et publications staff</div>
+        </a>
+
+        <a href="Gestion_Plaintes.html" class="nav-card nav-card--command" id="nav-complaints-manage" style="display:none">
+      <span class="nav-card-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="28" height="28" rx="2" fill="#24170a" stroke="#b8860b" stroke-width="1.5"/>
+          <path d="M11 12h14" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M11 17h14" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M11 22h9" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+          <rect x="21.5" y="20.5" width="7" height="7" rx="1.2" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.9"/>
+          <path d="M25 22.3v3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M23.3 24h3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="nav-card-title">Gestion des plaintes</div>
+      <div class="nav-card-desc">Consulter, corriger et superviser les plaintes enregistr&eacute;es par les effectifs</div>
+        </a>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <div class="stamp-section">
+    <div class="stamp">CLASSIFI&Eacute;</div>
+    <div class="footer-text">Document interne &mdash; Toute diffusion non autoris&eacute;e sera sanctionn&eacute;e par le Commandement.</div>
+  </div>
+</div>
+</div>
+
+<script>
+(function() {
+  try { JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) {}
+
+  function refreshNavSections() {
+    var visibleSections = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.hub-section:not([data-auto-hide="true"])'), function(section) {
+      visibleSections.push(section);
+      var baseCards = Array.prototype.filter.call(section.querySelectorAll('.nav-card'), function(card) {
+        return card.style.display !== 'none';
+      });
+      section.classList.remove('cards-1', 'cards-2', 'cards-3', 'cards-4plus');
+      if (baseCards.length >= 4) {
+        section.classList.add('cards-4plus');
+      } else if (baseCards.length >= 1) {
+        section.classList.add('cards-' + baseCards.length);
+      }
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.hub-section[data-auto-hide="true"]'), function(section) {
+      var visibleCards = Array.prototype.filter.call(section.querySelectorAll('.nav-card'), function(card) {
+        return card.style.display !== 'none';
+      });
+      section.style.display = visibleCards.length ? '' : 'none';
+      section.classList.remove('cards-1', 'cards-2', 'cards-3', 'cards-4plus');
+      if (visibleCards.length >= 4) {
+        section.classList.add('cards-4plus');
+      } else if (visibleCards.length >= 1) {
+        section.classList.add('cards-' + visibleCards.length);
+      }
+      if (visibleCards.length) {
+        visibleSections.push(section);
+      }
+    });
+
+    var shell = document.querySelector('.nav-shell');
+    if (shell) {
+      shell.classList.remove('sections-1', 'sections-2', 'sections-3', 'sections-4');
+      shell.classList.add('sections-' + Math.max(1, visibleSections.length));
+      var isPublicOnly = visibleSections.length === 1 && visibleSections[0] && visibleSections[0].classList.contains('hub-section-public');
+      shell.classList.toggle('public-only', isPublicOnly);
+      var publicSection = document.querySelector('.hub-section-public');
+      var isGuestView = isPublicOnly && publicSection && publicSection.classList.contains('cards-1');
+      document.body.classList.toggle('guest-view', !!isGuestView);
+    }
+
+    document.body.classList.remove('visible-sections-1', 'visible-sections-2', 'visible-sections-3', 'visible-sections-4');
+    document.body.classList.add('visible-sections-' + Math.max(1, visibleSections.length));
+    document.body.classList.toggle('index-single-section', visibleSections.length === 1);
+  }
+
+  function revealNavCard(id) {
+    var card = document.getElementById(id);
+    if (!card) return;
+    card.style.display = '';
+    refreshNavSections();
+  }
+  window.refreshNavSections = refreshNavSections;
+  window.revealNavCard = revealNavCard;
+
+  refreshNavSections();
+})();
+</script>
+<script>
+(function() {
+  var token = sessionStorage.getItem('policeToken');
+  var isGuest = sessionStorage.getItem('policeGuest') === 'true';
+
+  if (!token || isGuest) return;
+
+  fetch('/auth/capabilities', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+    .then(function(r) {
+      if (!r.ok) return null;
+      return r.json();
+    })
+    .then(function(capabilities) {
+      if (!capabilities) return;
+
+      if (capabilities.canViewHierarchy) {
+        window.revealNavCard('nav-hierarchy');
+      }
+      if (capabilities.canViewRegister) {
+        window.revealNavCard('nav-register');
+      }
+      if (capabilities.canCreateIncidentReport) {
+        window.revealNavCard('nav-casier');
+      }
+      if (capabilities.canCreatePatrolReport) {
+        window.revealNavCard('nav-patrol');
+      }
+      if (capabilities.canViewIncidentReportPage && !capabilities.canCreateIncidentReport) {
+        window.revealNavCard('nav-casier');
+      }
+      if (capabilities.canViewPatrolReportPage && !capabilities.canCreatePatrolReport) {
+        window.revealNavCard('nav-patrol');
+      }
+      if (capabilities.canViewDashboard) {
+        window.revealNavCard('nav-dashboard');
+      }
+      if (capabilities.canViewReports) {
+        window.revealNavCard('nav-casier-crud');
+      }
+      if (capabilities.canViewHistory) {
+        window.revealNavCard('nav-history');
+      }
+      if (capabilities.canCreateComplaints) {
+        window.revealNavCard('nav-complaint-form');
+      }
+      if (capabilities.canViewComplaints) {
+        window.revealNavCard('nav-complaints-manage');
+      }
+      if (capabilities.canViewInvestigations) {
+        window.revealNavCard('nav-investigations');
+      }
+      if (capabilities.canAccessDRI) {
+        var panel = document.getElementById('dri-side-panel');
+        if (panel) {
+          panel.style.display = '';
+          document.body.classList.add('has-dri-panel');
+        }
+      }
+    })
+    .catch(function() {});
+})();
+</script>
+<script>
+(function() {
+  var _pFocused = document.hasFocus();
+  var _guestId = null;
+  window.currentUser = null;
+
+  function getToken() {
+    return window.UserShell.getToken();
+  }
+
+  function getCachedUser() {
+    return window.UserShell.getCachedUser();
+  }
+
+  async function checkAuth() {
+    if (!getToken() && sessionStorage.getItem('policeGuest') === 'true') {
+      return { pseudo: null, permission: 'GUEST', policeRole: false };
+    }
+
+    if (!getToken()) {
+      window.location.replace('login.html?redirect=index.html');
+      return null;
+    }
+
+    try {
+      var response = await fetch('/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
+
+      if (!response.ok) {
+        sessionStorage.clear();
+        window.location.replace('login.html?redirect=index.html');
+        return null;
+      }
+
+      var user = await response.json();
+      window.UserShell.saveUser(user);
+      return user;
+    } catch (error) {
+      return getCachedUser();
+    }
+  }
+
+  function setupUserBar(user) {
+    window.UserShell.applyUserBar(user);
+  }
+
+  function openAdminShortcut() {
+    window.UserShell.openAdminShortcut('Backoffice_Admin.html');
+  }
+
+  function toggleBurgerMenu() {
+    window.UserShell.toggleBurgerMenu();
+  }
+
+  function closeBurgerMenu() {
+    window.UserShell.closeBurgerMenu();
+  }
+
+  async function doLogout() {
+    if (sessionStorage.getItem('policeGuest') === 'true') {
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+      return;
+    }
+
+    await window.UserShell.logout({ redirectTo: 'login.html' });
+  }
+
+  function togglePresenceMobile() {
+    window.UserShell.togglePresenceMobile('presence-sidebar');
+  }
+
+  function currentPresenceStatus() {
+    if (document.hidden || !_pFocused) return 'away';
+    return window.UserShell.currentPresenceStatus();
+  }
+
+  function getGuestId() {
+    if (!_guestId) {
+      _guestId = sessionStorage.getItem('policeGuestId');
+      if (!_guestId) {
+        _guestId = 'g' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        sessionStorage.setItem('policeGuestId', _guestId);
+      }
+    }
+    return _guestId;
+  }
+
+  function renderPresence(data) {
+    window.UserShell.renderPresence('presence-list', data);
+  }
+
+  async function pingPresence() {
+    try {
+      if (sessionStorage.getItem('policeGuest') === 'true') {
+        var guestResponse = await fetch('/presence/guest-ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guestId: getGuestId() })
+        });
+        if (guestResponse.ok) {
+          renderPresence(await guestResponse.json());
+        }
+        return;
+      }
+
+      var token = getToken();
+      if (!token) return;
+
+      var response = await fetch('/presence/ping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ status: currentPresenceStatus() })
+      });
+
+      if (response.ok) {
+        renderPresence(await response.json());
+      }
+    } catch (error) {}
+  }
+
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('#user-bar')) closeBurgerMenu();
+  });
+
+  document.addEventListener('visibilitychange', function() {
+    pingPresence();
+  });
+
+  window.addEventListener('focus', function() {
+    _pFocused = true;
+    pingPresence();
+  });
+
+  window.addEventListener('blur', function() {
+    _pFocused = false;
+    pingPresence();
+  });
+
+  window.toggleBurgerMenu = toggleBurgerMenu;
+  window.closeBurgerMenu = closeBurgerMenu;
+  window.togglePresenceMobile = togglePresenceMobile;
+  window.openAdminShortcut = openAdminShortcut;
+  window.doLogout = doLogout;
+
+  (async function initUserChrome() {
+    window.currentUser = await checkAuth();
+    setupUserBar(window.currentUser);
+    await pingPresence();
+    setInterval(pingPresence, 25000);
+  })();
+})();
+</script>
+</body>
+</html>

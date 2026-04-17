@@ -1,0 +1,35 @@
+:root {
+  --bg-interaction-gold: rgba(80,180,80,0.34);
+  --bg-interaction-gold-strong: rgba(100,200,100,0.76);
+  --bg-interaction-glow: rgba(100,200,100,0.14);
+}
+
+body.background-interaction-ready {
+  position: relative;
+  isolation: isolate;
+}
+
+.background-interaction-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+body.background-interaction-ready .background-interaction-canvas {
+  opacity: 1;
+}
+
+body.background-interaction-disabled .background-interaction-canvas {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .background-interaction-canvas {
+    display: none !important;
+  }
+}

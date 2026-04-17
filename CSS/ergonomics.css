@@ -1,0 +1,684 @@
+:root {
+  --erg-content-max: min(1480px, calc(100vw - clamp(56px, 8vw, 260px)));
+  --erg-content-max-wide: min(1620px, calc(100vw - clamp(64px, 9vw, 320px)));
+  --erg-gap: clamp(12px, 1vw, 18px);
+  --erg-gap-tight: clamp(8px, 0.8vw, 12px);
+  --erg-pad: clamp(12px, 1.1vw, 18px);
+  --erg-radius: clamp(10px, 0.8vw, 14px);
+  --erg-shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.16);
+  --erg-shadow-gold: 0 18px 36px rgba(102, 68, 10, 0.18), 0 0 22px rgba(58,178,72,0.07);
+  --erg-border-soft: rgba(42,144,64,0.2);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-size: clamp(14px, 0.82vw, 15.5px);
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.landing-frame,
+.frame,
+.frame-outer,
+.auth-shell,
+.docs-header,
+#swagger-ui {
+  width: min(100%, var(--erg-content-max));
+  margin-inline: auto;
+}
+
+.landing-frame {
+  max-width: var(--erg-content-max-wide);
+}
+
+.frame-outer {
+  max-width: var(--erg-content-max-wide);
+}
+
+.auth-shell {
+  max-width: min(1420px, calc(100vw - clamp(44px, 7vw, 240px)));
+}
+
+.landing-frame,
+.frame,
+.frame-outer {
+  padding: clamp(18px, 1.35vw, 28px) !important;
+}
+
+.auth-card {
+  padding: 5px;
+}
+
+.card-inner,
+.guest-inner {
+  padding: clamp(22px, 1.8vw, 30px) !important;
+}
+
+.user-bar {
+  top: clamp(10px, 1vw, 20px);
+  right: clamp(10px, 1vw, 20px);
+  gap: clamp(8px, 0.7vw, 12px);
+}
+
+.user-bar-inner {
+  gap: clamp(8px, 0.7vw, 12px);
+}
+
+.user-badge,
+.btn-user-action {
+  min-height: clamp(32px, 1.8vw, 38px);
+  padding-inline: clamp(10px, 0.85vw, 16px);
+  font-size: clamp(9px, 0.68vw, 10px);
+}
+
+.presence-sidebar {
+  top: clamp(66px, 5vw, 92px);
+  right: clamp(8px, 0.8vw, 18px);
+  width: clamp(164px, 10.5vw, 212px);
+}
+
+.profile-popup {
+  top: clamp(58px, 5vw, 84px);
+  right: clamp(10px, 0.9vw, 18px);
+  width: min(390px, calc(100vw - 28px));
+  max-height: min(76vh, 760px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.nav-shell,
+.nav-grid,
+.nav-grid-public,
+.nav-grid-command,
+.stats-grid,
+.chart-grid,
+.filters-grid,
+.records-grid,
+.dossiers-grid,
+.history-detail-grid,
+.service-stats-grid {
+  gap: var(--erg-gap);
+}
+
+.nav-card,
+.chart-card,
+.stat-card,
+.record-card,
+.dossier-card,
+.service-history-item,
+.auth-card,
+.swagger-ui .opblock,
+.reports-modal,
+.modal-card,
+.dossier-modal-card,
+.profile-popup,
+.presence-sidebar,
+.nav-overview,
+.hub-section,
+.admin-panel-inner,
+.guest-inner,
+.card-inner {
+  border-radius: var(--erg-radius);
+}
+
+:where(.landing-frame h1, .frame h1, .frame-outer h1) {
+  font-size: clamp(1.55rem, 2.4vw, 2.5rem) !important;
+  line-height: 1.1;
+}
+
+:where(.landing-frame .subtitle, .frame .subtitle, .frame-outer .subtitle, .header .header-sub, .auth-subtitle) {
+  font-size: clamp(0.74rem, 0.9vw, 0.9rem) !important;
+}
+
+:where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card, .service-history-item) {
+  padding: clamp(12px, 1vw, 16px) !important;
+}
+
+:where(.nav-card, .record-card, .dossier-card) {
+  min-height: clamp(118px, 11.5vh, 150px) !important;
+}
+
+:where(.nav-card-title, .record-card-title, .dossier-card-title) {
+  font-size: clamp(0.86rem, 0.82vw, 0.98rem) !important;
+}
+
+:where(.nav-card-desc, .record-card-desc, .dossier-card-desc, .service-history-bottom, .service-history-top) {
+  font-size: clamp(0.84rem, 0.8vw, 0.94rem) !important;
+}
+
+:where(.chart-container, .service-table-wrapper, .table-wrapper) {
+  padding: clamp(8px, 0.75vw, 12px);
+}
+
+:where(table thead th, .service-table thead th) {
+  font-size: clamp(0.72rem, 0.74vw, 0.82rem) !important;
+}
+
+:where(table tbody td, .service-table tbody td) {
+  font-size: clamp(0.82rem, 0.8vw, 0.94rem) !important;
+}
+
+.table-wrapper,
+.service-table-wrapper,
+.presence-body,
+.service-history-list,
+.reports-modal-body,
+.history-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(42,144,64,0.46) rgba(0, 0, 0, 0.08);
+}
+
+:where(
+  .nav-card,
+  .chart-card,
+  .stat-card,
+  .record-card,
+  .dossier-card,
+  .service-history-item,
+  .auth-card,
+  .guest-inner,
+  .card-inner,
+  .reports-modal,
+  .modal-card,
+  .dossier-modal-card,
+  .btn-user-action,
+  .user-badge,
+  .presence-user,
+  .presence-guest-row,
+  .presence-justice-row,
+  .btn-back,
+  button,
+  a,
+  input,
+  select,
+  textarea
+) {
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease,
+    background-color 0.24s ease,
+    background 0.24s ease,
+    color 0.24s ease,
+    opacity 0.24s ease,
+    filter 0.24s ease;
+}
+
+:where(.nav-card, .chart-card, .stat-card, .record-card, .dossier-card, .auth-card, .guest-inner, .card-inner):hover {
+  box-shadow: var(--erg-shadow-soft);
+  filter: saturate(1.04);
+}
+
+:where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card):hover {
+  transform: translateY(-3px);
+}
+
+:where(.btn-user-action, .user-badge, .btn-back, .service-toggle-btn, .profile-save-btn, .profile-upload-label, .btn-submit, .btn-guest-card, button, a):hover {
+  filter: brightness(1.05);
+}
+
+:where(.btn-user-action, .user-badge, .btn-back, .service-toggle-btn, .profile-save-btn, .profile-upload-label, .btn-submit, .btn-guest-card, button, a):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+:where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card) {
+  position: relative;
+  overflow: hidden;
+}
+
+:where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.12) 18%, transparent 36%);
+  transform: translateX(-130%);
+  pointer-events: none;
+  transition: transform 0.55s ease;
+}
+
+:where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card):hover::after {
+  transform: translateX(130%);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+[contenteditable="true"]:focus {
+  outline: 2px solid rgba(58,178,72,0.32);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(58,178,72,0.1);
+}
+
+canvas {
+  max-width: 100%;
+}
+
+body.motion-ready [data-motion] {
+  opacity: 0;
+  transform: translateY(20px) scale(0.985);
+  filter: saturate(0.94);
+  transition:
+    opacity 0.52s ease,
+    transform 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.52s ease;
+  transition-delay: var(--motion-delay, 0ms);
+}
+
+body.motion-ready [data-motion].is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+body.motion-reduced [data-motion] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (min-width: 1440px) {
+  .landing-frame,
+  .frame,
+  .frame-outer {
+    width: min(100%, var(--erg-content-max-wide));
+  }
+
+  .nav-card,
+  .record-card,
+  .dossier-card {
+    min-height: clamp(122px, 10.5vh, 156px) !important;
+  }
+
+  .records-grid,
+  .dossiers-grid {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  }
+
+  .chart-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1900px) {
+  :root {
+    --erg-content-max: min(1560px, calc(100vw - 320px));
+    --erg-content-max-wide: min(1720px, calc(100vw - 360px));
+  }
+
+  body {
+    padding-inline: clamp(26px, 2vw, 44px);
+  }
+
+  .user-badge,
+  .btn-user-action {
+    min-height: 38px;
+    font-size: 10px;
+  }
+
+  .presence-sidebar {
+    width: 224px;
+  }
+
+  .profile-popup {
+    width: min(410px, calc(100vw - 40px));
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --erg-content-max: min(100vw - 26px, 1040px);
+    --erg-content-max-wide: min(100vw - 26px, 1120px);
+  }
+
+  body {
+    padding-inline: 12px;
+  }
+
+  .frame,
+  .frame-outer,
+  .landing-frame {
+    width: min(100%, calc(100vw - 12px));
+  }
+
+  .profile-popup {
+    width: min(400px, calc(100vw - 22px));
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    padding-bottom: 84px;
+  }
+
+  .user-bar {
+    top: 10px;
+    right: 10px;
+  }
+
+  .presence-sidebar {
+    width: auto;
+    top: auto;
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+  }
+
+  .profile-popup {
+    top: auto;
+    right: 8px;
+    left: 8px;
+    bottom: 58px;
+    width: auto;
+    max-height: min(74vh, 720px);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-inline: 8px;
+  }
+
+  .frame,
+  .frame-outer,
+  .landing-frame,
+  .auth-shell {
+    width: min(100%, calc(100vw - 8px));
+  }
+
+  .user-badge,
+  .btn-user-action {
+    min-height: 34px;
+    padding-inline: 12px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  :where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card, .auth-card, .guest-inner, .card-inner):hover {
+    box-shadow: none;
+    filter: none;
+  }
+
+  :where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card):hover {
+    transform: none;
+  }
+
+  :where(.nav-card, .record-card, .dossier-card, .chart-card, .stat-card)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  :root {
+    --erg-content-max: min(100vw - 18px, 100%);
+    --erg-content-max-wide: min(100vw - 18px, 100%);
+    --erg-gap: 12px;
+    --erg-gap-tight: 8px;
+    --erg-pad: 14px;
+  }
+
+  body {
+    font-size: 16px;
+    line-height: 1.45;
+    padding-inline: 8px;
+    padding-bottom: 108px;
+  }
+
+  .landing-frame,
+  .frame,
+  .frame-outer,
+  .auth-shell,
+  .docs-header,
+  #swagger-ui {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .landing-frame,
+  .frame,
+  .frame-outer,
+  .auth-shell {
+    padding: 14px !important;
+  }
+
+  .card-inner,
+  .guest-inner,
+  .auth-card,
+  .reports-modal,
+  .modal-card,
+  .dossier-modal-card {
+    padding: 16px !important;
+  }
+
+  :where(
+    .nav-shell,
+    .nav-grid,
+    .nav-grid-public,
+    .nav-grid-ops,
+    .nav-grid-training,
+    .nav-grid-command,
+    .stats-grid,
+    .chart-grid,
+    .filters-grid,
+    .filter-grid,
+    .records-grid,
+    .dossiers-grid,
+    .history-detail-grid,
+    .service-stats-grid,
+    .summary-grid,
+    .summary-stats,
+    .summary-row,
+    .status-state-grid,
+    .status-metrics-grid,
+    .status-service-grid,
+    .status-runtime-grid,
+    .status-chart-grid,
+    .status-service-metrics,
+    .detail-top-grid,
+    .detail-columns,
+    .investigation-grid,
+    .attachment-grid,
+    .activity-grid,
+    .metrics-grid
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  :where(
+    .dashboard-toolbar,
+    .dashboard-actions,
+    .records-section-head,
+    .results-head,
+    .dri-panel-head,
+    .history-detail-header,
+    .investigation-topline,
+    .investigation-meta,
+    .investigation-footer,
+    .detail-header,
+    .filter-actions,
+    .modal-btns,
+    .reset-info,
+    .service-recent-topline,
+    .profile-head-actions,
+    .status-header,
+    .status-header-meta,
+    .status-event-row,
+    .toolbar
+  ) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  :where(
+    .form-row,
+    .dri-form-row,
+    .dri-form-row-3,
+    .entry-form,
+    .link-form,
+    .attachment-form
+  ) {
+    grid-template-columns: 1fr !important;
+  }
+
+  :where(
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    .btn,
+    .btn-submit,
+    .btn-user-action,
+    .user-badge,
+    .btn-guest-card,
+    .service-toggle-btn,
+    .profile-save-btn,
+    .profile-upload-label,
+    .btn-back,
+    .tab-btn
+  ) {
+    min-height: 44px;
+    line-height: 1.25;
+  }
+
+  :where(
+    .btn-user-action,
+    .user-badge,
+    .btn-submit,
+    .btn-guest-card,
+    .service-toggle-btn,
+    .profile-save-btn,
+    .profile-upload-label,
+    .btn-back,
+    .tab-btn
+  ) {
+    white-space: normal;
+  }
+
+  :where(
+    .nav-card-title,
+    .record-card-title,
+    .dossier-card-title,
+    .hub-heading h2,
+    .profile-popup-title,
+    .status-panel h2,
+    .status-panel h3,
+    .results-head h2,
+    .dri-panel-head h2
+  ) {
+    letter-spacing: 1px !important;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  :where(
+    .nav-card-desc,
+    .record-card-desc,
+    .dossier-card-desc,
+    .profile-popup-subtitle,
+    .service-history-top,
+    .service-history-bottom,
+    .presence-name,
+    .nav-overview-copy
+  ) {
+    font-size: 0.96rem !important;
+    line-height: 1.45;
+  }
+
+  :where(
+    .nav-overview-kicker,
+    .dri-panel-kicker,
+    .profile-popup-kicker,
+    .profile-service-label,
+    .service-widget-title,
+    .nav-overview-ribbon span,
+    .profile-state-pill,
+    .dashboard-service-state
+  ) {
+    font-size: 0.74rem !important;
+    letter-spacing: 1.2px !important;
+  }
+
+  :where(
+    .table-wrapper,
+    .service-table-wrapper,
+    .reports-modal-body,
+    .history-modal-body
+  ) {
+    margin-inline: -4px;
+    padding-inline: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :where(.table-wrapper table, .service-table-wrapper table) {
+    min-width: 640px;
+  }
+
+  .presence-sidebar {
+    max-height: min(55vh, 420px);
+  }
+
+  .profile-popup {
+    max-height: min(72vh, 620px);
+  }
+}
+
+@media (max-width: 560px) {
+  body {
+    padding-inline: 6px;
+    padding-bottom: 104px;
+  }
+
+  .landing-frame,
+  .frame,
+  .frame-outer,
+  .auth-shell {
+    padding: 12px !important;
+  }
+
+  .card-inner,
+  .guest-inner,
+  .auth-card,
+  .reports-modal,
+  .modal-card,
+  .dossier-modal-card {
+    padding: 14px !important;
+  }
+
+  :where(.landing-frame h1, .frame h1, .frame-outer h1) {
+    font-size: clamp(1.42rem, 7vw, 1.9rem) !important;
+  }
+
+  :where(
+    .landing-frame .subtitle,
+    .frame .subtitle,
+    .frame-outer .subtitle,
+    .header .header-sub,
+    .auth-subtitle
+  ) {
+    font-size: 0.92rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
