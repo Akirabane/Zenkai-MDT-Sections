@@ -1,0 +1,104 @@
+.service-widget {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(42,144,64,0.22);
+}
+
+.service-flyout {
+  position: fixed;
+  top: 58px;
+  right: 18px;
+  width: min(320px, calc(100vw - 24px));
+  z-index: 1400;
+  display: none;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(248, 235, 191, 0.98), rgba(230, 201, 118, 0.97));
+  border: 1px solid rgba(42,144,64,0.4);
+  box-shadow: 0 18px 40px rgba(35, 22, 4, 0.22);
+}
+
+.service-flyout.open {
+  display: block;
+}
+
+.service-widget-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8f6b1d;
+  margin-bottom: 8px;
+}
+
+.service-widget-status {
+  font-family: 'IM Fell English', serif;
+  color: #4a3410;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.service-toggle-btn {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(42,144,64,0.45);
+  background: linear-gradient(180deg, rgba(82, 53, 17, 0.98), rgba(54, 35, 12, 0.98));
+  color: #f3d37a;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.service-toggle-btn.active {
+  border-color: rgba(86, 146, 96, 0.55);
+  color: #bde6b3;
+}
+
+.service-history-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.service-history-item {
+  padding: 8px 10px;
+  border: 1px solid rgba(42,144,64,0.16);
+  background: rgba(255, 247, 223, 0.72);
+}
+
+.service-history-top,
+.service-history-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: 'IM Fell English', serif;
+  color: #4a3410;
+  font-size: 13px;
+}
+
+.service-history-bottom {
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.service-history-empty {
+  font-family: 'IM Fell English', serif;
+  color: #755421;
+  font-size: 14px;
+}
+
+@media (max-width: 700px) {
+  .service-flyout {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    top: auto;
+    bottom: 74px;
+  }
+}
