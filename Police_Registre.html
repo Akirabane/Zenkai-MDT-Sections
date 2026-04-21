@@ -1,0 +1,1689 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registre Officiel - Section Police de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/police-registre.css?v=20260413a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="page-register">
+
+<!-- Barre utilisateur -->
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminBackoffice();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer;" title="Modifier mon profil">&#8230;</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<!-- Popup profil -->
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<!-- PANNEAU ADMIN -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-panel">
+    <div class="admin-panel-inner">
+      <div class="admin-hero">
+        <div class="admin-kicker">&#9674; Back-office du Registre</div>
+        <div class="admin-title">&#9881; Administration &mdash; Acc&egrave;s Shinobi</div>
+        <div class="admin-subtitle">G&egrave;re les permissions, le r&ocirc;le police et la liaison des comptes au registre officiel.</div>
+      </div>
+      <div class="admin-divider"></div>
+      <div class="admin-summary" id="admin-summary">
+        <div class="admin-summary-card">
+          <div class="admin-summary-label">Comptes</div>
+          <div class="admin-summary-value" id="admin-count-total">0</div>
+        </div>
+        <div class="admin-summary-card">
+          <div class="admin-summary-label">Admins</div>
+          <div class="admin-summary-value" id="admin-count-admin">0</div>
+        </div>
+        <div class="admin-summary-card">
+          <div class="admin-summary-label">Police</div>
+          <div class="admin-summary-value" id="admin-count-police">0</div>
+        </div>
+        <div class="admin-summary-card">
+          <div class="admin-summary-label">Li&eacute;s au registre</div>
+          <div class="admin-summary-value" id="admin-count-linked">0</div>
+        </div>
+      </div>
+      <div class="admin-toolbar">
+        <input type="text" id="admin-search" class="admin-search-input" placeholder="Rechercher un compte, un personnage li&eacute; ou un r&ocirc;le..." oninput="filterAdminUsers()">
+      </div>
+      <div id="admin-users-list" class="admin-card-grid"><div class="admin-empty">Chargement&hellip;</div></div>
+    </div>
+    <button class="admin-close-btn" onclick="closeAdminPanel()">Fermer le panneau</button>
+  </div>
+</div>
+
+<!-- Sidebar presence -->
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">◈</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <span>Generation du parchemin...</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="frame-outer" id="register-frame">
+  <span class="corner-tr">✦</span>
+  <span class="corner-bl">✦</span>
+
+  <svg class="shuriken shuriken-tr" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 4 L36 28 L60 32 L36 36 L32 60 L28 36 L4 32 L28 28 Z" fill="#b8860b" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="6" fill="#1a1208" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2.5" fill="#d4a017"/>
+  </svg>
+
+  <div class="header">
+    <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:60px;height:60px;">
+      <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+      <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+      <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+      <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+      <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+      <path fill="#e10000" d="
+        M 100,63.93
+        C 80.09,63.93 63.93,79.70 63.93,99.13
+        C 63.93,102.06 64.33,104.90 65.08,107.99
+        C 73.31,99.81 85.90,94.71 100,94.71
+        C 114.10,94.71 126.69,99.81 134.92,107.99
+        C 135.67,104.90 136.07,102.06 136.07,99.13
+        C 136.07,79.70 119.91,63.93 100,63.93 Z"/>
+      <path fill="#ffffff" d="
+        M 100,100.99
+        C 86.40,100.99 74.52,106.97 68.13,115.58
+        C 73.43,125.35 83.29,132.38 94.95,133.97
+        L 94.95,160.07
+        L 105.05,160.07
+        L 105.05,133.97
+        C 116.71,132.38 126.57,125.35 131.88,115.58
+        C 125.49,106.97 113.60,100.99 100,100.99 Z"/>
+    </svg>
+    <h1>REGISTRE OFFICIEL - SECTION POLICE DE KONOHA</h1>
+    <div class="header-divider"></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="filter-bar">
+    <label>Rechercher :</label>
+    <input type="text" class="filter-input" id="filter-search" placeholder="Nom, grade, chakra..." oninput="applyFilters()">
+    <label>Rang :</label>
+    <select class="filter-select" id="filter-rang" onchange="applyFilters()">
+      <option value="">Tous les rangs</option>
+    </select>
+    <label>Grade :</label>
+    <select class="filter-select" id="filter-grade" onchange="applyFilters()">
+      <option value="">Tous les grades</option>
+    </select>
+    <label>Division :</label>
+    <select class="filter-select" id="filter-division" onchange="applyFilters()">
+      <option value="">Toutes les divisions</option>
+    </select>
+    <label>Specialisation :</label>
+    <select class="filter-select" id="filter-specialisation" onchange="applyFilters()">
+      <option value="">Toutes les specialisations</option>
+    </select>
+    <label>Chakra :</label>
+    <select class="filter-select" id="filter-chakra" onchange="applyFilters()">
+      <option value="">Toutes les natures</option>
+    </select>
+    <label>Tri rapide :</label>
+    <select class="filter-select" id="filter-sort" onchange="applyFilters()">
+      <option value="rang-asc">Rang section</option>
+      <option value="pseudo-asc">Pseudo HRP</option>
+      <option value="grade-asc">Grade armee</option>
+      <option value="division-asc">Division</option>
+      <option value="date-desc">Date d'arrivee</option>
+    </select>
+  </div>
+
+  <div style="position:relative;">
+  <div class="watermark-confidential">CONFIDENTIEL</div>
+  <div class="table-wrapper" id="table-container">
+    <table id="register-table">
+      <thead>
+        <tr>
+          <th class="del-col" id="th-del"></th>
+          <th>Pseudo HRP</th>
+          <th>Nom RP</th>
+          <th>Grade Armee</th>
+          <th>Nature de Chakra</th>
+          <th>Specialisation</th>
+          <th>Division</th>
+          <th>Rang Section</th>
+          <th>Date d'Arrivee</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+  <div class="controls">
+    <div class="stamp">CONFIDENTIEL</div>
+    <div class="status-bar" id="status-bar">7 ninja enregistres · Cliquez sur une cellule pour modifier</div>
+    <div class="btn-group" id="btn-group">
+      <button class="btn btn-secondary" id="btn-add" onclick="addRow()" style="display:none">+ Ajouter un ninja</button>
+      <button class="btn btn-secondary" id="btn-sync" onclick="syncToHierarchy()" style="display:none">&#8644; Sync Hi&eacute;rarchie</button>
+      <button class="btn btn-secondary" id="btn-export-csv" onclick="exportRegisterCSV()" style="display:none">&#11015; Export CSV</button>
+      <button class="btn btn-primary" onclick="saveAsPNG()">&#11015; Sauvegarder en PNG</button>
+    </div>
+    <div class="save-indicator" id="save-indicator"></div>
+  </div>
+</div>
+
+<script>
+/* â”€â”€ Burger menu â”€â”€ */
+function toggleBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.toggle('open');
+}
+function closeBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.remove('open');
+}
+function openAdminBackoffice() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+/* â”€â”€ Sidebar mobile â”€â”€ */
+function togglePresenceMobile() {
+  if (window.innerWidth <= 700) {
+    document.getElementById('presence-sidebar').classList.toggle('mobile-open');
+  } else {
+    togglePresenceSidebar();
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CONFIGURATION
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var COLUMNS = [
+  'Pseudo HRP','Nom RP','Grade Armee','Nature de Chakra',
+  'Specialisation','Division','Rang Section',"Date d'Arrivee",'Notes'
+];
+var FIELDS = ['pseudoHRP','nomRP','grade','chakra','specialisation','division','rang','dateArrivee','notes'];
+
+var COL_RANG = 6;
+var COL_GRADE = 2;
+var COL_CHAKRA = 3;
+var COL_SPECIALISATION = 4;
+var COL_DIVISION = 5;
+var COL_NOTES = 8;
+
+var GRADE_OPTIONS = [
+  'Hokage',
+  'Sannin',
+  'Commandant-Jônin',
+  'Jônin',
+  'Tokubetsu-Jônin',
+  'Kônin',
+  'Chûnin',
+  'Génin Confirmé',
+  'Génin',
+  'Apprenti Génin'
+];
+
+var GRADE_CANONICAL_MAP = {
+  'Hokage': 'Hokage',
+  'Sannin': 'Sannin',
+  'Commandant-Jônin': 'Commandant-Jonin',
+  'Jônin': 'Jonin',
+  'Tokubetsu-Jônin': 'Tokubetsu-Jonin',
+  'Kônin': 'Konin',
+  'Chûnin': 'Chunin',
+  'Génin Confirmé': 'Genin Confirme',
+  'Génin': 'Genin',
+  'Apprenti Génin': 'Apprenti Genin'
+};
+
+var DIVISION_OPTIONS = [
+  'Aucune',
+  'DRI',
+  'DPE',
+  'DA'
+];
+
+var DIVISION_ALIASES = {
+  'DJN': 'DPE',
+  'Division Judiciaire Ninja et de Jugement': 'DPE',
+  'Division de la Discipline et Enquete': 'DPE',
+  'Division de la Discipline et Enquête': 'DPE'
+};
+
+var RANG_OPTIONS = [
+  '',
+  'CMD Police',
+  'Lieutenant-J\u00f4nin',
+  'Tokubetsu-Inspecteur',
+  'Inspecteur',
+  "Chef d'Unit\u00e9",
+  'Ch\u00fbnin Patrouilleur',
+  'Ch\u00fbnin \u00c9claireur',
+  'Auxiliaire de Police'
+];
+
+function normalizeSelectLookup(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function gradeOptionMatches(optionValue, currentValue) {
+  return normalizeSelectLookup(optionValue) === normalizeSelectLookup(currentValue);
+}
+
+function toCanonicalGrade(value) {
+  return GRADE_CANONICAL_MAP[value] || String(value || '').trim();
+}
+
+function toCanonicalDivision(value) {
+  var trimmed = String(value || '').trim();
+  if (!trimmed) return 'Aucune';
+  if (DIVISION_ALIASES[trimmed]) return DIVISION_ALIASES[trimmed];
+
+  var normalizedValue = normalizeSelectLookup(trimmed);
+  for (var alias in DIVISION_ALIASES) {
+    if (Object.prototype.hasOwnProperty.call(DIVISION_ALIASES, alias) && normalizeSelectLookup(alias) === normalizedValue) {
+      return DIVISION_ALIASES[alias];
+    }
+  }
+
+  for (var i = 0; i < DIVISION_OPTIONS.length; i++) {
+    if (normalizeSelectLookup(DIVISION_OPTIONS[i]) === normalizedValue) {
+      return DIVISION_OPTIONS[i];
+    }
+  }
+
+  return trimmed;
+}
+
+var API_SAVE = '/save';
+var DATA_URL = '/api/v1/membres';
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STATE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var tableData = [];
+var sortCol = COL_RANG; // Tri par rang par défaut
+var sortAsc = true;
+
+/* Ordre des rangs pour tri (index dans RANG_OPTIONS = rang décroissant) */
+var RANG_ORDER = {};
+RANG_OPTIONS.forEach(function(opt, i) { if (opt) RANG_ORDER[opt] = i; });
+var GRADE_ORDER = {};
+GRADE_OPTIONS.forEach(function(opt, i) { if (opt) GRADE_ORDER[normalizeSelectLookup(opt)] = i; });
+
+function getGradeOrder(value) {
+  var normalized = normalizeSelectLookup(value);
+  return Object.prototype.hasOwnProperty.call(GRADE_ORDER, normalized) ? GRADE_ORDER[normalized] : 999;
+}
+var saveTimer = null;
+var currentUser = null; // défini après auth check
+var canManageRanks = false;
+var canDeleteRegisterMembers = false;
+var canAddRegistryMembers = false;
+var canExportRegister = false;
+var registrySourceManaged = false;
+var adminPanelUsers = [];
+var adminPanelMembres = [];
+
+var tbody = document.getElementById('table-body');
+
+
+/* Rows ↔ JSON membres */
+function rowsToMembres(rows) {
+  return rows
+    .filter(function(r) { return !r.every(function(c) { return c === ''; }); })
+    .map(function(r) {
+      var obj = {};
+      FIELDS.forEach(function(f, i) { obj[f] = r[i] || ''; });
+      return obj;
+    });
+}
+
+function membresToRows(membres) {
+  return membres.map(function(m) {
+    return FIELDS.map(function(f) { return m[f] || ''; });
+  });
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUTH
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() {
+  try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) { return null; }
+}
+
+async function checkAuth() {
+  // Mode invité
+  if (!sessionStorage.getItem('policeToken') && sessionStorage.getItem('policeGuest') === 'true') {
+    return { pseudo: null, permission: 'GUEST', policeRole: false };
+  }
+  var token = getToken();
+  if (!token) { window.location.href = 'login.html?redirect=Police_Registre.html'; return null; }
+  try {
+    var r = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) { sessionStorage.clear(); window.location.href = 'login.html?redirect=Police_Registre.html'; return null; }
+    var user = await r.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch(e) { return getCachedUser(); }
+}
+
+function setupUserBar(user) {
+  if (user.permission === 'GUEST') {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = '◈ Visiteur';
+    badge.classList.add('guest');
+    document.getElementById('btn-add').style.display = 'none';
+    document.getElementById('btn-sync').style.display = 'none';
+    document.getElementById('btn-export-csv').style.display = 'none';
+    document.getElementById('th-del').style.display = 'none';
+    return;
+  }
+  document.getElementById('user-badge').textContent = '◆ ' + user.pseudo;
+  document.getElementById('btn-add').style.display = (canAddRegistryMembers && !registrySourceManaged) ? '' : 'none';
+  document.getElementById('btn-sync').style.display = '';
+  document.getElementById('btn-export-csv').style.display = canExportRegister ? '' : 'none';
+  document.getElementById('th-del').style.display = (canDeleteRegisterMembers && !registrySourceManaged) ? '' : 'none';
+  if (user.permission === 'ADMIN') {
+    document.getElementById('btn-admin-panel').style.display = '';
+  }
+}
+
+async function fetchCanManageRanks() {
+  if (!currentUser || currentUser.permission === 'GUEST') {
+    canManageRanks = false;
+    canDeleteRegisterMembers = false;
+    return false;
+  }
+
+  try {
+    var r = await fetch('/auth/can-manage-ranks', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error('Unauthorized');
+    var data = await r.json();
+    canManageRanks = !!data.canManage;
+    canDeleteRegisterMembers = !!data.canDelete;
+    return canManageRanks;
+  } catch(e) {
+    canManageRanks = false;
+    canDeleteRegisterMembers = false;
+    return false;
+  }
+}
+
+async function fetchCanAddRegistryMembers() {
+  if (!currentUser || currentUser.permission === 'GUEST') {
+    canAddRegistryMembers = false;
+    return false;
+  }
+
+  try {
+    var r = await fetch('/auth/can-add-registry-members', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error('Unauthorized');
+    var data = await r.json();
+    canAddRegistryMembers = !!data.canAdd;
+    return canAddRegistryMembers;
+  } catch(e) {
+    canAddRegistryMembers = false;
+    return false;
+  }
+}
+
+async function doLogout() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    return;
+  }
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch(e) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PANNEAU ADMIN
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+async function openAdminPanel() {
+  document.getElementById('admin-overlay').classList.add('active');
+  document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Chargement\u2026</div>';
+  var search = document.getElementById('admin-search');
+  if (search) search.value = '';
+  try {
+    var [rU, rM] = await Promise.all([
+      fetch('/admin/users', { headers: { 'Authorization': 'Bearer ' + getToken() } }),
+      fetch('/api/v1/membres')
+    ]);
+    if (!rU.ok) throw new Error();
+    adminPanelUsers = await rU.json();
+    adminPanelMembres = rM.ok ? ((await rM.json()).membres || []) : [];
+    renderAdminCards(adminPanelUsers, adminPanelMembres);
+  } catch(e) {
+    document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Erreur de chargement.</div>';
+  }
+}
+
+function updateAdminSummary(users) {
+  users = users || [];
+  document.getElementById('admin-count-total').textContent = users.length;
+  document.getElementById('admin-count-admin').textContent = users.filter(function(u) { return u.permission === 'ADMIN'; }).length;
+  document.getElementById('admin-count-police').textContent = users.filter(function(u) { return !!u.policeRole; }).length;
+  document.getElementById('admin-count-linked').textContent = users.filter(function(u) { return !!u.linkedMembre; }).length;
+}
+
+function filterAdminUsers() {
+  renderAdminCards(adminPanelUsers, adminPanelMembres);
+}
+
+function renderAdminUsers(users, membres) {
+  membres = membres || [];
+  var list = document.getElementById('admin-users-list');
+  if (!users.length) { list.innerHTML = '<div class="admin-empty">Aucun shinobi enregistr\u00e9.</div>'; return; }
+  list.innerHTML = '';
+  users.forEach(function(u) {
+    var row = document.createElement('div'); row.className = 'user-row';
+    var pseudo = document.createElement('span'); pseudo.className = 'user-row-pseudo'; pseudo.textContent = u.pseudo;
+    var badge  = document.createElement('span'); badge.className = 'perm-badge ' + u.permission; badge.textContent = u.permission;
+    row.appendChild(pseudo); row.appendChild(badge);
+    if (u.permission !== 'ADMIN') {
+      var toggleBtn = document.createElement('button');
+      if (u.permission === 'READ') {
+        toggleBtn.className = 'btn-toggle-perm to-update'; toggleBtn.textContent = '\u2192 Update';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'UPDATE'); }; })(u.pseudo);
+      } else {
+        toggleBtn.className = 'btn-toggle-perm to-read'; toggleBtn.textContent = '\u2192 Read';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'READ'); }; })(u.pseudo);
+      }
+      var policeBtn = document.createElement('button');
+      policeBtn.className = u.policeRole ? 'btn-police-on' : 'btn-police-off';
+      policeBtn.textContent = '\u2694 Police';
+      policeBtn.title = u.policeRole ? 'Retirer le rôle Police' : 'Accorder le rôle Police';
+      policeBtn.onclick = (function(p, r) { return function() { setPoliceRole(p, !r); }; })(u.pseudo, u.policeRole);
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn-del-user'; delBtn.textContent = '\u00d7'; delBtn.title = 'Supprimer ce compte';
+      delBtn.onclick = (function(p) { return function() { deleteUser(p); }; })(u.pseudo);
+      row.appendChild(toggleBtn); row.appendChild(policeBtn); row.appendChild(delBtn);
+
+      /* â”€â”€ Sélecteur de personnage RP â”€â”€ */
+      if (membres.length) {
+        var linkRow   = document.createElement('div');  linkRow.className = 'user-row-link';
+        var linkLabel = document.createElement('span'); linkLabel.className = 'user-row-link-label'; linkLabel.textContent = 'Personnage li\u00e9 :';
+        var sel = document.createElement('select');     sel.className = 'select-membre';
+        sel.title = 'Associer ce compte \u00e0 un personnage du registre';
+        var optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '\u2014 Non li\u00e9 \u2014';
+        sel.appendChild(optNone);
+        membres.forEach(function(m) {
+          var opt = document.createElement('option'); opt.value = m.pseudoHRP;
+          opt.textContent = m.pseudoHRP;
+          if (m.pseudoHRP === u.linkedMembre) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.onchange = (function(p) { return function() { linkMembre(p, this.value || null); }; })(u.pseudo);
+        linkRow.appendChild(linkLabel); linkRow.appendChild(sel);
+        row.appendChild(linkRow);
+      }
+    }
+    list.appendChild(row);
+  });
+}
+
+function renderAdminCards(users, membres) {
+  membres = membres || [];
+  var list = document.getElementById('admin-users-list');
+  var searchValue = ((document.getElementById('admin-search') || {}).value || '').trim().toLowerCase();
+  var sortedUsers = (users || []).slice().sort(function(a, b) {
+    function weight(user) {
+      if (user.permission === 'ADMIN') return 0;
+      if (user.policeRole) return 1;
+      return 2;
+    }
+    var diff = weight(a) - weight(b);
+    if (diff !== 0) return diff;
+    return (a.pseudo || '').localeCompare(b.pseudo || '', 'fr', { sensitivity: 'base' });
+  });
+  var filteredUsers = sortedUsers.filter(function(u) {
+    if (!searchValue) return true;
+    var haystack = [u.pseudo, u.permission, u.linkedMembre, u.policeRole ? 'police' : 'civil'].join(' ').toLowerCase();
+    return haystack.indexOf(searchValue) !== -1;
+  });
+
+  updateAdminSummary(users || []);
+
+  if (!filteredUsers.length) {
+    list.innerHTML = '<div class="admin-empty">Aucun compte ne correspond &agrave; cette recherche.</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  filteredUsers.forEach(function(u) {
+    var card = document.createElement('article');
+    card.className = 'user-row';
+
+    var header = document.createElement('div');
+    header.className = 'user-row-header';
+
+    var identity = document.createElement('div');
+    identity.className = 'user-row-identity';
+    var pseudo = document.createElement('span');
+    pseudo.className = 'user-row-pseudo';
+    pseudo.textContent = u.pseudo;
+    identity.appendChild(pseudo);
+
+    var meta = document.createElement('div');
+    meta.className = 'user-row-meta';
+    var permBadge = document.createElement('span');
+    permBadge.className = 'perm-badge ' + u.permission;
+    permBadge.textContent = u.permission;
+    meta.appendChild(permBadge);
+
+    var roleBadge = document.createElement('span');
+    roleBadge.className = 'role-badge ' + (u.policeRole ? 'police' : 'civil');
+    roleBadge.textContent = u.policeRole ? '\u2694 Police' : '\u25c8 Civil';
+    meta.appendChild(roleBadge);
+
+    header.appendChild(identity);
+    header.appendChild(meta);
+    card.appendChild(header);
+
+    var body = document.createElement('div');
+    body.className = 'user-row-body';
+
+    var linkRow = document.createElement('div');
+    linkRow.className = 'user-row-link';
+    var linkLabel = document.createElement('span');
+    linkLabel.className = 'user-row-link-label';
+    linkLabel.textContent = 'Personnage lié';
+    var linkedValue = document.createElement('div');
+    linkedValue.className = 'linked-membre-pill' + (u.linkedMembre ? '' : ' empty');
+    linkedValue.textContent = u.linkedMembre || 'Aucun personnage lié';
+    linkRow.appendChild(linkLabel);
+    linkRow.appendChild(linkedValue);
+    body.appendChild(linkRow);
+
+    if (u.permission !== 'ADMIN' && membres.length) {
+      var selectorWrap = document.createElement('div');
+      selectorWrap.className = 'user-row-selector';
+      var selectorLabel = document.createElement('span');
+      selectorLabel.className = 'user-row-selector-label';
+      selectorLabel.textContent = 'Changer la liaison';
+      var sel = document.createElement('select');
+      sel.className = 'select-membre';
+      sel.title = 'Associer ce compte à un personnage du registre';
+      var optNone = document.createElement('option');
+      optNone.value = '';
+      optNone.textContent = '— Non lié —';
+      sel.appendChild(optNone);
+      membres.forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m.pseudoHRP;
+        opt.textContent = m.pseudoHRP;
+        if (m.pseudoHRP === u.linkedMembre) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.onchange = (function(p) {
+        return function() { linkMembre(p, this.value || null); };
+      })(u.pseudo);
+      selectorWrap.appendChild(selectorLabel);
+      selectorWrap.appendChild(sel);
+      body.appendChild(selectorWrap);
+    }
+
+    var actions = document.createElement('div');
+    actions.className = 'user-row-actions';
+
+    if (u.permission !== 'ADMIN') {
+      var toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      if (u.permission === 'READ') {
+        toggleBtn.className = 'btn-toggle-perm to-update';
+        toggleBtn.textContent = '\u2192 Update';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'UPDATE'); }; })(u.pseudo);
+      } else {
+        toggleBtn.className = 'btn-toggle-perm to-read';
+        toggleBtn.textContent = '\u2192 Read';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'READ'); }; })(u.pseudo);
+      }
+
+      var policeBtn = document.createElement('button');
+      policeBtn.type = 'button';
+      policeBtn.className = u.policeRole ? 'btn-police-on' : 'btn-police-off';
+      policeBtn.textContent = '\u2694 Police';
+      policeBtn.title = u.policeRole ? 'Retirer le rôle Police' : 'Accorder le rôle Police';
+      policeBtn.onclick = (function(p, r) { return function() { setPoliceRole(p, !r); }; })(u.pseudo, u.policeRole);
+
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn-del-user';
+      delBtn.textContent = '\u00d7';
+      delBtn.title = 'Supprimer ce compte';
+      delBtn.onclick = (function(p) { return function() { deleteUser(p); }; })(u.pseudo);
+
+      actions.appendChild(toggleBtn);
+      actions.appendChild(policeBtn);
+      actions.appendChild(delBtn);
+    } else {
+      var adminNote = document.createElement('div');
+      adminNote.className = 'admin-owner-note';
+      adminNote.textContent = 'Compte fondateur : permissions verrouillées.';
+      actions.appendChild(adminNote);
+    }
+
+    body.appendChild(actions);
+    card.appendChild(body);
+    list.appendChild(card);
+  });
+}
+
+async function linkMembre(pseudo, pseudoHRP) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ pseudoHRP: pseudoHRP })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+  } catch(e) { alert('Liaison impossible : ' + e.message); openAdminPanel(); }
+}
+
+async function setPoliceRole(pseudo, policeRole) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/police', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ policeRole: policeRole })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour du r\u00f4le Police.'); }
+}
+
+async function setPermission(pseudo, permission) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/permission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ permission: permission })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour.'); }
+}
+
+async function deleteUser(pseudo) {
+  if (!confirm('Supprimer le compte de ' + pseudo + ' ')) return;
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la suppression.'); }
+}
+
+function closeAdminPanel() { document.getElementById('admin-overlay').classList.remove('active'); }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRÉSENCE EN LIGNE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pFocused = document.hasFocus();
+document.addEventListener('visibilitychange', function() { pingPresence(); });
+window.addEventListener('focus', function() { _pFocused = true; pingPresence(); });
+window.addEventListener('blur',  function() { _pFocused = false; pingPresence(); });
+
+function _pStatus() {
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  if (document.hidden || !_pFocused) return 'away';
+  if (isMobile) return 'mobile';
+
+  return 'active';
+}
+
+var _guestId = null;
+function getGuestId() {
+  if (!_guestId) {
+    _guestId = sessionStorage.getItem('policeGuestId');
+    if (!_guestId) {
+      _guestId = 'g' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem('policeGuestId', _guestId);
+    }
+  }
+  return _guestId;
+}
+
+async function pingPresence() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    try {
+      var r = await fetch('/presence/guest-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestId: getGuestId() })
+      });
+      if (r.ok) renderPresence(await r.json());
+    } catch(e) {}
+    return;
+  }
+  var token = getToken();
+  if (!token) return;
+  try {
+    var r = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: _pStatus() })
+    });
+    if (r.ok) renderPresence(await r.json());
+  } catch(e) {}
+}
+
+function renderPresence(data) {
+  if (window.PresenceUI) {
+    window.PresenceUI.renderPresence('presence-list', data);
+    return;
+  }
+
+  var list = document.getElementById('presence-list');
+  if (list) {
+    list.innerHTML = '<div class="presence-empty">Aucun shinobi</div>';
+  }
+}
+
+function togglePresenceSidebar() {
+  document.getElementById('presence-sidebar').classList.toggle('collapsed');
+}
+
+setInterval(pingPresence, 5000);
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   INIT — Auth puis charge le registre
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+async function init() {
+  var user = await checkAuth();
+  if (!user) return;
+  currentUser = user;
+  await fetchCanManageRanks();
+  await fetchCanAddRegistryMembers();
+  canExportRegister = !!(
+    user.permission === 'ADMIN' ||
+    user.permission === 'JUSTICE' ||
+    canAddRegistryMembers ||
+    (user.capabilities && user.capabilities.canAddRegisterMembers)
+  );
+  setupUserBar(user);
+  buildSortHeaders();
+  // Marquer la colonne Rang Section comme active par défaut (COL_RANG + 1 pour la col suppression)
+  (function() {
+    var ths = document.querySelectorAll('thead th');
+    var rankTh = ths[COL_RANG + 1];
+    if (rankTh) {
+      rankTh.classList.add('sort-active');
+      var arr = rankTh.querySelector('.sort-arrow');
+      if (arr) arr.textContent = ' \u25b2';
+    }
+  })();
+  try {
+    var r = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var json = await r.json();
+    registrySourceManaged = !!json.sourceManaged;
+    setupUserBar(currentUser);
+    tableData = json.membres ? membresToRows(json.membres).map(function(row) {
+      row[COL_DIVISION] = toCanonicalDivision(row[COL_DIVISION]);
+      return row;
+    }) : [];
+    showSaveIndicator(registrySourceManaged
+      ? 'Registre synchronise via le serveur Zenkai \u2713'
+      : 'Donn\u00e9es charg\u00e9es \u2713');
+  } catch(e) {
+    tableData = [];
+    showSaveIndicator('\u26a0 Registre introuvable');
+  }
+  populateFilterDropdowns();
+  renderTable();
+  pingPresence();
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SORT — Click column headers
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function buildSortHeaders() {
+  var ths = document.querySelectorAll('thead th');
+  ths.forEach(function(th, i) {
+    // Ignorer la colonne suppression (index 0)
+    if (i === 0) return;
+    var dataIdx = i - 1; // décalage : th[0] = col suppression
+
+    // Flèche de tri
+    var arrow = document.createElement('span');
+    arrow.className = 'sort-arrow';
+    arrow.textContent = ' ⇅';
+    th.appendChild(arrow);
+
+    th.addEventListener('click', function() {
+      if (sortCol === dataIdx) {
+        sortAsc = !sortAsc;
+      } else {
+        sortCol = dataIdx;
+        sortAsc = true;
+      }
+      // Mise à jour visuelle
+      ths.forEach(function(t) { t.classList.remove('sort-active'); });
+      th.classList.add('sort-active');
+      arrow.textContent = sortAsc ? ' ▲' : ' ▼';
+      // Réinitialiser les autres flèches
+      ths.forEach(function(t, j) {
+        if (j !== i && t.querySelector('.sort-arrow'))
+          t.querySelector('.sort-arrow').textContent = ' ⇅';
+      });
+      renderTable();
+    });
+  });
+}
+
+function getSortedData() {
+  var data = tableData.slice();
+  var col = sortCol >= 0 ? sortCol : COL_RANG;
+  var asc = sortAsc;
+  data.sort(function(a, b) {
+    if (col === COL_RANG) {
+      // Tri sémantique : ordre défini dans RANG_OPTIONS (CMD en haut, Auxiliaire en bas)
+      var ra = a[col] && RANG_ORDER[a[col]] !== undefined ? RANG_ORDER[a[col]] : 999;
+      var rb = b[col] && RANG_ORDER[b[col]] !== undefined ? RANG_ORDER[b[col]] : 999;
+        if (ra !== rb) return asc ? ra - rb : rb - ra;
+        return (a[0] || '').localeCompare(b[0] || ''); // secondaire : pseudo
+      }
+      if (col === COL_GRADE) {
+        var ga = getGradeOrder(a[col]);
+        var gb = getGradeOrder(b[col]);
+        if (ga !== gb) return asc ? ga - gb : gb - ga;
+        return (a[0] || '').localeCompare(b[0] || '', 'fr', { sensitivity: 'base' });
+      }
+      var va = (a[col] || '').toLowerCase();
+      var vb = (b[col] || '').toLowerCase();
+      if (va < vb) return asc ? -1 : 1;
+    if (va > vb) return asc ? 1 : -1;
+    return 0;
+  });
+  return data;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FILTERS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function populateFilterDropdowns() {
+  var rangSet = {};
+  var gradeSet = {};
+  var divisionSet = {};
+  var specialisationSet = {};
+  var chakraSet = {};
+  tableData.forEach(function(row) {
+    if (row[COL_RANG] && row[COL_RANG].trim()) rangSet[row[COL_RANG].trim()] = true;
+    if (row[COL_GRADE] && row[COL_GRADE].trim()) gradeSet[row[COL_GRADE].trim()] = true;
+    if (row[COL_DIVISION] && row[COL_DIVISION].trim()) divisionSet[row[COL_DIVISION].trim()] = true;
+    if (row[COL_SPECIALISATION] && row[COL_SPECIALISATION].trim()) specialisationSet[row[COL_SPECIALISATION].trim()] = true;
+    if (row[COL_CHAKRA] && row[COL_CHAKRA].trim()) chakraSet[row[COL_CHAKRA].trim()] = true;
+  });
+
+  var rangSelect = document.getElementById('filter-rang');
+  var gradeSelect = document.getElementById('filter-grade');
+  var divisionSelect = document.getElementById('filter-division');
+  var specialisationSelect = document.getElementById('filter-specialisation');
+  var chakraSelect = document.getElementById('filter-chakra');
+
+  // Keep current selection
+  var currentRang = rangSelect.value;
+  var currentGrade = gradeSelect.value;
+  var currentDivision = divisionSelect.value;
+  var currentSpecialisation = specialisationSelect.value;
+  var currentChakra = chakraSelect.value;
+
+  // Clear and rebuild
+  rangSelect.innerHTML = '<option value="">Tous les rangs</option>';
+  Object.keys(rangSet).sort().forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    rangSelect.appendChild(opt);
+  });
+
+  gradeSelect.innerHTML = '<option value="">Tous les grades</option>';
+  Object.keys(gradeSet).sort(function(a, b) {
+    var ga = getGradeOrder(a);
+    var gb = getGradeOrder(b);
+    if (ga !== gb) return ga - gb;
+    return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+  }).forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    gradeSelect.appendChild(opt);
+  });
+
+  divisionSelect.innerHTML = '<option value="">Toutes les divisions</option>';
+  Object.keys(divisionSet).sort().forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    divisionSelect.appendChild(opt);
+  });
+
+  specialisationSelect.innerHTML = '<option value="">Toutes les specialisations</option>';
+  Object.keys(specialisationSet).sort().forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    specialisationSelect.appendChild(opt);
+  });
+
+  chakraSelect.innerHTML = '<option value="">Toutes les natures</option>';
+  Object.keys(chakraSet).sort().forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    chakraSelect.appendChild(opt);
+  });
+
+  rangSelect.value = currentRang;
+  gradeSelect.value = currentGrade;
+  divisionSelect.value = currentDivision;
+  specialisationSelect.value = currentSpecialisation;
+  chakraSelect.value = currentChakra;
+}
+
+function applyFilters() {
+  applyQuickSortPreference();
+  renderTable();
+}
+
+function applyQuickSortPreference() {
+  var quickSort = document.getElementById('filter-sort').value || 'rang-asc';
+  var parts = quickSort.split('-');
+  var field = parts[0];
+  var direction = parts[1] || 'asc';
+
+  if (field === 'pseudo') sortCol = 0;
+  else if (field === 'grade') sortCol = COL_GRADE;
+  else if (field === 'division') sortCol = COL_DIVISION;
+  else if (field === 'date') sortCol = 7;
+  else sortCol = COL_RANG;
+
+  sortAsc = direction === 'asc';
+}
+
+function getFilteredData(data) {
+  var search = (document.getElementById('filter-search').value || '').toLowerCase().trim();
+  var rang = document.getElementById('filter-rang').value;
+  var grade = document.getElementById('filter-grade').value;
+  var division = document.getElementById('filter-division').value;
+  var specialisation = document.getElementById('filter-specialisation').value;
+  var chakra = document.getElementById('filter-chakra').value;
+
+  return data.filter(function(row) {
+    // Empty rows always shown
+    if (row.every(function(c) { return c === ''; })) return true;
+
+    // Text search across all columns
+    if (search) {
+      var found = row.some(function(cell) {
+        return (cell || '').toLowerCase().indexOf(search) !== -1;
+      });
+      if (!found) return false;
+    }
+
+    // Rang filter
+    if (rang && row[COL_RANG] !== rang) return false;
+
+    // Grade filter
+    if (grade && row[COL_GRADE] !== grade) return false;
+
+    if (division && row[COL_DIVISION] !== division) return false;
+
+    if (specialisation && row[COL_SPECIALISATION] !== specialisation) return false;
+
+    if (chakra && row[COL_CHAKRA] !== chakra) return false;
+
+    return true;
+  });
+}
+
+function applyDivisionSelectClass(select) {
+  select.classList.remove('division-dri', 'division-dpe', 'division-da', 'division-none');
+  if (select.value === 'DRI') select.classList.add('division-dri');
+  else if (select.value === 'DPE') select.classList.add('division-dpe');
+  else if (select.value === 'DA') select.classList.add('division-da');
+  else select.classList.add('division-none');
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RENDER TABLE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function renderTable() {
+  tbody.innerHTML = '';
+  tableData = tableData.map(function(row) {
+    row[COL_DIVISION] = toCanonicalDivision(row[COL_DIVISION]);
+    return row;
+  });
+  var sorted = getSortedData();
+  var filtered = getFilteredData(sorted);
+
+  filtered.forEach(function(rowData) {
+    var tr = buildRowEnhanced(rowData);
+    tbody.appendChild(tr);
+  });
+
+  updateStatus();
+}
+
+function buildRow(data) {
+  var tr = document.createElement('tr');
+  var isEmpty = data.every(function(d) { return d === ''; });
+  if (isEmpty) tr.classList.add('empty-row');
+
+  var canEdit = !!canManageRanks;
+
+  // Colonne suppression — uniquement pour UPDATE/ADMIN
+  if (canDeleteRegisterMembers && !registrySourceManaged) {
+    var tdDel = document.createElement('td');
+    tdDel.className = 'del-col';
+    var btnDel = document.createElement('button');
+    btnDel.className = 'btn-del-row';
+    btnDel.textContent = '×';
+    btnDel.title = 'Retirer ce ninja du registre';
+    btnDel.addEventListener('click', function() {
+      var idx = findRowIndex(data);
+      if (idx >= 0) {
+        tableData.splice(idx, 1);
+        populateFilterDropdowns();
+        renderTable();
+        scheduleAutoSave();
+      }
+    });
+    tdDel.appendChild(btnDel);
+    tr.appendChild(tdDel);
+  }
+
+  data.forEach(function(cellVal, ci) {
+    var td = document.createElement('td');
+
+// Colonne Rang Section -> select pour UPDATE/ADMIN
+    if (ci === COL_RANG && canEdit) {
+      var sel = document.createElement('select');
+      sel.className = 'rang-select';
+      RANG_OPTIONS.forEach(function(opt) {
+        var o = document.createElement('option');
+        o.value = opt; o.textContent = opt || '— Rang —';
+        if (opt === cellVal) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', function() {
+        var rowIndex = findRowIndex(data);
+        if (rowIndex >= 0) tableData[rowIndex][ci] = sel.value;
+        populateFilterDropdowns();
+        updateStatus();
+        scheduleAutoSave();
+      });
+      td.appendChild(sel);
+      tr.appendChild(td);
+      return;
+    }
+
+    var div = document.createElement('div');
+    div.className = 'cell-content';
+    div.contentEditable = canEdit ? 'true' : 'false';
+    div.setAttribute('data-placeholder', COLUMNS[ci]);
+    div.textContent = cellVal;
+
+    if (canEdit) {
+      div.addEventListener('input', function() {
+        var rowIndex = findRowIndex(data);
+        if (rowIndex >= 0) {
+          tableData[rowIndex][ci] = div.textContent.trim();
+        }
+        var allEmpty = Array.from(tr.querySelectorAll('.cell-content, .rang-select')).every(function(c) {
+          return (c.textContent || c.value || '').trim() === '';
+        });
+        tr.classList.toggle('empty-row', allEmpty);
+        updateStatus();
+        scheduleAutoSave();
+      });
+
+      div.addEventListener('blur', function() {
+        if (ci === COL_GRADE) populateFilterDropdowns();
+      });
+    }
+
+    td.appendChild(div);
+    tr.appendChild(td);
+  });
+  return tr;
+}
+
+function buildRowEnhanced(data) {
+  var tr = document.createElement('tr');
+  var isEmpty = data.every(function(d) { return d === ''; });
+  data[COL_DIVISION] = toCanonicalDivision(data[COL_DIVISION]);
+  if (isEmpty) tr.classList.add('empty-row');
+
+  var canEdit = !!canManageRanks;
+  var canEditDivision = canEdit;
+  var canEditGrade = canEdit && !registrySourceManaged;
+  var canEditRang = canEdit && !registrySourceManaged;
+  var canEditNotes = canEdit;
+
+  if (canDeleteRegisterMembers && !registrySourceManaged) {
+    var tdDel = document.createElement('td');
+    tdDel.className = 'del-col';
+    var btnDel = document.createElement('button');
+    btnDel.className = 'btn-del-row';
+    btnDel.textContent = '×';
+    btnDel.title = 'Retirer ce ninja du registre';
+    btnDel.addEventListener('click', function() {
+      var idx = findRowIndex(data);
+      if (idx >= 0) {
+        tableData.splice(idx, 1);
+        populateFilterDropdowns();
+        renderTable();
+        scheduleAutoSave();
+      }
+    });
+    tdDel.appendChild(btnDel);
+    tr.appendChild(tdDel);
+  }
+
+  data.forEach(function(cellVal, ci) {
+    var td = document.createElement('td');
+
+    if (
+      (ci === COL_GRADE && canEditGrade) ||
+      (ci === COL_DIVISION && canEditDivision) ||
+      (ci === COL_RANG && canEditRang)
+    ) {
+      var select = document.createElement('select');
+      select.className = 'rang-select' + (ci === COL_DIVISION ? ' division-select' : '');
+      var options = ci === COL_GRADE ? GRADE_OPTIONS : (ci === COL_DIVISION ? DIVISION_OPTIONS : RANG_OPTIONS);
+
+      options.forEach(function(opt) {
+        var option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt || '— Rang —';
+        if ((ci === COL_GRADE && gradeOptionMatches(opt, cellVal)) || (ci === COL_DIVISION && opt === toCanonicalDivision(cellVal)) || (ci !== COL_GRADE && ci !== COL_DIVISION && opt === cellVal)) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+
+      if (!select.value && ci === COL_GRADE && GRADE_OPTIONS.length) {
+        select.value = GRADE_OPTIONS[0];
+      }
+      if (!select.value && ci === COL_DIVISION) {
+        select.value = 'Aucune';
+      }
+      if (ci === COL_DIVISION) {
+        applyDivisionSelectClass(select);
+      }
+
+      select.addEventListener('change', function() {
+        var rowIndex = findRowIndex(data);
+        if (rowIndex >= 0) {
+          tableData[rowIndex][ci] = ci === COL_GRADE ? toCanonicalGrade(select.value) : (ci === COL_DIVISION ? toCanonicalDivision(select.value) : select.value);
+        }
+        if (ci === COL_DIVISION) applyDivisionSelectClass(select);
+        populateFilterDropdowns();
+        updateStatus();
+        scheduleAutoSave();
+      });
+
+      td.appendChild(select);
+      tr.appendChild(td);
+      return;
+    }
+
+    var div = document.createElement('div');
+    div.className = 'cell-content';
+      var contentEditable = canEdit && (!registrySourceManaged || ci === COL_NOTES);
+      div.contentEditable = contentEditable ? 'true' : 'false';
+    div.setAttribute('data-placeholder', COLUMNS[ci]);
+    div.textContent = cellVal;
+
+    if (canEdit) {
+      div.addEventListener('input', function() {
+        var rowIndex = findRowIndex(data);
+        if (rowIndex >= 0) {
+          tableData[rowIndex][ci] = div.textContent.trim();
+        }
+        var allEmpty = Array.from(tr.querySelectorAll('.cell-content, .rang-select, .division-select')).every(function(c) {
+          return (c.textContent || c.value || '').trim() === '';
+        });
+        tr.classList.toggle('empty-row', allEmpty);
+        updateStatus();
+        scheduleAutoSave();
+      });
+
+      div.addEventListener('blur', function() {
+        if (ci === COL_GRADE || ci === COL_DIVISION) populateFilterDropdowns();
+      });
+    }
+
+    td.appendChild(div);
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+
+function findRowIndex(rowRef) {
+  for (var i = 0; i < tableData.length; i++) {
+    if (tableData[i] === rowRef) return i;
+  }
+  return -1;
+}
+
+function updateStatus() {
+  var total = tableData.filter(function(r) {
+    return !r.every(function(c) { return c === ''; });
+  }).length;
+  var visible = getFilteredData(getSortedData()).filter(function(r) {
+    return !r.every(function(c) { return c === ''; });
+  }).length;
+  var canEdit = !!canManageRanks;
+  document.getElementById('status-bar').textContent =
+    visible + ' / ' + total + ' ninja' + (total > 1 ? 's' : '') + ' affiché' + (visible > 1 ? 's' : '') +
+    (canEdit ? ' · Cliquez sur une cellule pour modifier' : '');
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   ADD / REMOVE ROWS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function addRow() {
+  if (!canAddRegistryMembers || registrySourceManaged) return;
+  var emptyData = Array(COLUMNS.length).fill('');
+  tableData.push(emptyData);
+  renderTable();
+  // Focus the first cell of the new row
+  var rows = tbody.querySelectorAll('tr');
+  var lastRow = rows[rows.length - 1];
+  if (lastRow) {
+    var firstCell = lastRow.querySelector('.cell-content');
+    if (firstCell) firstCell.focus();
+  }
+  scheduleAutoSave();
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+AUTO-SAVE -> POST /save
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function scheduleAutoSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToFile, 900);
+}
+
+async function saveToFile() {
+  var json = {
+    version: 1,
+    lastUpdated: new Date().toISOString(),
+    membres: rowsToMembres(tableData)
+  };
+  var r = await fetch(API_SAVE, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(json)
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  var response = await r.json().catch(function() { return null; });
+  showSaveIndicator(response && response.message ? response.message : 'Sauvegardé ✓');
+}
+
+function showSaveIndicator(msg) {
+  var el = document.getElementById('save-indicator');
+  el.textContent = msg;
+  el.classList.add('saving');
+  setTimeout(function() { el.classList.remove('saving'); }, 2500);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SYNC HIÉRARCHIE — Force save immédiat
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+async function syncToHierarchy() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  try {
+    await saveToFile();
+    showToast('✦ Registre synchronisé — la Hiérarchie se mettra à jour à son prochain chargement.');
+  } catch(e) {
+    showToast('⚠ Erreur : impossible de joindre le serveur. Vérifie que Node.js tourne. (' + (e.message || '') + ')');
+    showSaveIndicator('⚠ Erreur sauvegarde');
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TOAST
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function showToast(msg, duration) {
+  duration = duration || 2800;
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, duration);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SAVE AS PNG
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function saveAsPNG() {
+  var overlay = document.getElementById('loading-overlay');
+  overlay.classList.add('active');
+
+  var frame = document.getElementById('register-frame');
+  var svgEl = document.querySelector('.logo-svg');
+
+  function doCapture(logoImg) {
+    if (logoImg) svgEl.parentNode.replaceChild(logoImg, svgEl);
+
+    html2canvas(frame, {
+      scale: 2.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+      onclone: function(doc) {
+        doc.querySelectorAll('.cell-content').forEach(function(el) {
+          el.contentEditable = 'false';
+        });
+        // Hide UI elements in export
+        var bg = doc.querySelector('.btn-group');
+        var sb = doc.getElementById('status-bar');
+        var si = doc.getElementById('save-indicator');
+        var fb = doc.getElementById('filter-bar');
+        if (bg) bg.style.display = 'none';
+        if (sb) sb.style.display = 'none';
+        if (si) si.style.display = 'none';
+        if (fb) fb.style.display = 'none';
+      }
+    }).then(function(canvas) {
+      if (logoImg) logoImg.parentNode.replaceChild(svgEl, logoImg);
+      overlay.classList.remove('active');
+
+      var link = document.createElement('a');
+      link.download = 'registre-police-konoha.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✦ Parchemin sauvegardé avec succès !');
+    }).catch(function(err) {
+      if (logoImg) logoImg.parentNode.replaceChild(svgEl, logoImg);
+      overlay.classList.remove('active');
+      showToast('Erreur lors de la génération du PNG.');
+      console.error(err);
+    });
+  }
+
+  if (svgEl) {
+    var svgStr = new XMLSerializer().serializeToString(svgEl);
+    var blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function() { URL.revokeObjectURL(url); doCapture(img); };
+    img.src = url;
+  } else {
+    doCapture(null);
+  }
+}
+
+function csvEscape(value) {
+  var text = String(value == null ? '' : value)
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+function getExportRows() {
+  return getFilteredData(getSortedData()).filter(function(row) {
+    return !row.every(function(cell) { return String(cell || '').trim() === ''; });
+  });
+}
+
+function exportRegisterCSV() {
+  if (!canExportRegister) return;
+
+  var rows = getExportRows();
+  if (!rows.length) {
+    showToast('⚠ Aucun ninja à exporter avec les filtres actuels.');
+    return;
+  }
+
+  var header = COLUMNS.map(csvEscape).join(';');
+  var body = rows.map(function(row) {
+    return row.map(function(cell, index) {
+      var value = index === COL_DIVISION ? toCanonicalDivision(cell) : String(cell || '');
+      return csvEscape(value);
+    }).join(';');
+  });
+
+  var csv = '\uFEFF' + [header].concat(body).join('\r\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  var stamp = new Date().toISOString().slice(0, 10);
+
+  link.href = url;
+  link.download = 'registre-police-konoha-' + stamp + '.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast('✦ Export CSV prêt pour Google Sheets.');
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BOOT
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+setInterval(pingPresence, 8000);
+init();
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   POPUP PROFIL — GESTION
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pendingAvatar = null;
+
+function toggleProfilePopup() {
+  var popup = document.getElementById('profile-popup');
+  if (popup.classList.contains('open')) {
+    closeProfilePopup(null, true);
+  } else {
+    openProfilePopup();
+  }
+}
+
+async function openProfilePopup() {
+  if (!currentUser || currentUser.permission === 'GUEST') return;
+  var popup = document.getElementById('profile-popup');
+  _pendingAvatar = null;
+  document.getElementById('profile-save-btn').disabled = true;
+  document.getElementById('profile-save-status').textContent = '';
+
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  ph.style.display = '';
+
+  try {
+    var r = await fetch('/auth/profile/avatar/' + encodeURIComponent(currentUser.pseudo), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (r.ok) {
+      var data = await r.json();
+      if (data.avatar) {
+        var img = document.createElement('img');
+        img.src = data.avatar;
+        ph.style.display = 'none';
+        preview.appendChild(img);
+      }
+    }
+  } catch(e) {}
+
+  if (window.ServiceWidget) {
+    window.ServiceWidget.refresh(currentUser);
+  }
+
+  popup.style.display = 'block';
+  requestAnimationFrame(function() { popup.classList.add('open'); });
+  setTimeout(function() {
+    document.addEventListener('click', _outsideProfileClick);
+  }, 50);
+}
+
+function _outsideProfileClick(e) {
+  var popup = document.getElementById('profile-popup');
+  var badge = document.getElementById('user-badge');
+  if (!popup.contains(e.target) && e.target !== badge) {
+    closeProfilePopup(null, true);
+  }
+}
+
+function closeProfilePopup(e, force) {
+  if (!force) return;
+  var popup = document.getElementById('profile-popup');
+  popup.classList.remove('open');
+  document.removeEventListener('click', _outsideProfileClick);
+  setTimeout(function() { popup.style.display = 'none'; }, 220);
+}
+
+function resizeImageToBase64(file, maxPx, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleAvatarSelect(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var b64 = await resizeImageToBase64(file, 256, 0.82);
+  _pendingAvatar = b64;
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  var img = document.createElement('img');
+  img.src = b64;
+  ph.style.display = 'none';
+  preview.appendChild(img);
+  document.getElementById('profile-save-btn').disabled = false;
+  document.getElementById('profile-save-status').textContent = '';
+  evt.target.value = '';
+}
+
+async function saveAvatar() {
+  if (!_pendingAvatar) return;
+  var btn = document.getElementById('profile-save-btn');
+  var status = document.getElementById('profile-save-status');
+  btn.disabled = true;
+  status.textContent = 'Envoi…';
+  try {
+    var r = await fetch('/auth/profile/avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ avatar: _pendingAvatar })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+    _pendingAvatar = null;
+    status.style.color = '#2c3e1a';
+    status.textContent = '❖ Sauvegardé !';
+    setTimeout(function() { status.textContent = ''; }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    status.style.color = '#8b1a1a';
+    status.textContent = '⚠ ' + e.message;
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeProfilePopup(null, true);
+});
+</script>
+</body>
+</html>

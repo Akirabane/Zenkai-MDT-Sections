@@ -1,0 +1,1040 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organigramme Officiel — Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/hierarchie-police.css">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+</head>
+<body>
+
+<!-- Barre utilisateur -->
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminBackoffice();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer;" title="Modifier mon profil">&#8230;</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<!-- Popup profil -->
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<!-- Fiche ninja popup -->
+<div class="ninja-card-overlay" id="ninja-card-overlay" onclick="closeNinjaCard(event)">
+  <div class="ninja-card-popup" id="ninja-card-popup">
+    <button class="ninja-card-close" onclick="closeNinjaCard(null, true)" title="Fermer">&#10005;</button>
+    <div class="ninja-card-seal">CONFIDENTIEL</div>
+
+    <!-- En-tête : photo + logo + nom + rang -->
+    <div class="ninja-card-header-row">
+      <div class="ninja-card-avatar-box" id="ncp-avatar-box">
+        <span class="ninja-card-avatar-placeholder" id="ncp-avatar-ph">&#128100;</span>
+      </div>
+      <div class="ninja-card-header-info">
+        <svg class="ninja-card-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+          <circle fill="#427b8f" cx="39" cy="39" r="12"/><circle fill="#427b8f" cx="161" cy="39" r="12"/>
+          <circle fill="#427b8f" cx="39" cy="161" r="12"/><circle fill="#427b8f" cx="161" cy="161" r="12"/>
+          <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+          <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+        </svg>
+        <div class="ninja-card-title" id="ncp-nom">—</div>
+        <div class="ninja-card-rang" id="ncp-rang">—</div>
+      </div>
+    </div>
+    <div class="ninja-card-divider"></div>
+
+    <div class="ninja-card-grid">
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Pseudo HRP</span>
+        <span class="ninja-card-value" id="ncp-pseudo">—</span>
+      </div>
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Grade Arm&eacute;e</span>
+        <span class="ninja-card-value" id="ncp-grade">—</span>
+      </div>
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Nature de Chakra</span>
+        <span class="ninja-card-value" id="ncp-chakra">—</span>
+      </div>
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Sp&eacute;cialisation</span>
+        <span class="ninja-card-value" id="ncp-spe">—</span>
+      </div>
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Division</span>
+        <span class="ninja-card-value" id="ncp-division">—</span>
+      </div>
+      <div class="ninja-card-field">
+        <span class="ninja-card-label">Date d&rsquo;Arriv&eacute;e</span>
+        <span class="ninja-card-value" id="ncp-date">—</span>
+      </div>
+      <div class="ninja-card-field full">
+        <span class="ninja-card-label">Notes &amp; Observations</span>
+        <div class="ninja-card-notes" id="ncp-notes">—</div>
+      </div>
+    </div>
+
+    <div class="ninja-card-footer">SECTION POLICE DE KONOHA &mdash; DOSSIER CONFIDENTIEL</div>
+    <div class="ninja-card-chakra-bg" id="ncp-chakra-bg"></div>
+  </div>
+</div>
+
+<!-- Panneau admin -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-panel">
+    <div class="admin-panel-inner">
+      <div class="admin-title">&#9881; Administration &mdash; Acc&egrave;s Shinobi</div>
+      <div class="admin-divider"></div>
+      <div id="admin-users-list"><div class="admin-empty">Chargement&hellip;</div></div>
+    </div>
+    <button class="admin-close-btn" onclick="closeAdminPanel()">Fermer le panneau</button>
+  </div>
+</div>
+
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+<div class="frame">
+  <span class="frame-corner tl">&#9670;</span>
+  <span class="frame-corner tr">&#9670;</span>
+  <span class="frame-corner bl">&#9670;</span>
+  <span class="frame-corner br">&#9670;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">CONFIDENTIEL</div>
+
+    <!-- HEADER -->
+    <div class="doc-header">
+      <svg class="uchiha-symbol" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+        <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+        <path fill="#e10000" d="M 100,63.93 C 80.09,63.93 63.93,79.70 63.93,99.13 C 63.93,102.06 64.33,104.90 65.08,107.99 C 73.31,99.81 85.90,94.71 100,94.71 C 114.10,94.71 126.69,99.81 134.92,107.99 C 135.67,104.90 136.07,102.06 136.07,99.13 C 136.07,79.70 119.91,63.93 100,63.93 Z"/>
+        <path fill="#ffffff" d="M 100,100.99 C 86.40,100.99 74.52,106.97 68.13,115.58 C 73.43,125.35 83.29,132.38 94.95,133.97 L 94.95,160.07 L 105.05,160.07 L 105.05,133.97 C 116.71,132.38 126.57,125.35 131.88,115.58 C 125.49,106.97 113.60,100.99 100,100.99 Z"/>
+      </svg>
+      <div class="doc-title">Organigramme Officiel &mdash; Police Militaire de Konoha</div>
+      <div class="doc-subtitle">Document Interne &middot; Usage Restreint</div>
+    </div>
+
+    <!-- MAIN HIERARCHY -->
+    <div class="main">
+      <div class="side-arrow">
+        <div class="arrow-head"></div>
+        <div class="arrow-line"></div>
+        <div class="arrow-label">MONT&Eacute;E HI&Eacute;RARCHIQUE</div>
+      </div>
+      <div class="hierarchy" id="hierarchy"></div>
+    </div>
+
+    <!-- DIVISIONS -->
+    <div class="divisions-section">
+      <div class="section-title-bar">
+        <div class="section-title-line"></div>
+        <div class="section-title-text">Divisions Sp&eacute;cialis&eacute;es</div>
+        <div class="section-title-line"></div>
+      </div>
+      <div class="divisions-note">Accessibles &agrave; partir du rang de Ch&ucirc;nin Patrouilleur &mdash; Affectation sur d&eacute;cision du Commandement</div>
+
+      <div class="divisions-grid">
+        <div class="division-card div-renseignement">
+          <div class="division-card-header">Division du Renseignement Int&eacute;rieur</div>
+          <div class="division-card-body">
+            <div class="div-nature">Cellule d'anticipation : elle observe, analyse, alerte, mais n'ex&eacute;cute pas.</div>
+            <ul class="div-list">
+              <li>Renseignement social et clanique</li>
+              <li>Pr&eacute;vention des crises internes</li>
+              <li>Appui au judiciaire</li>
+            </ul>
+            <div class="div-competences">Transmission d'informations aux enqu&ecirc;teurs, fourniture de profils psychologiques, reconstitution des r&eacute;seaux d'inform&eacute;s, t&eacute;moignages indirects. Elle nourrit la Division Judiciaire, sans jamais juger.</div>
+          </div>
+        </div>
+
+        <div class="division-card div-judiciaire">
+          <div class="division-card-header">Division de la Discipline et Enqu&ecirc;te</div>
+          <div class="division-card-body">
+            <div class="div-nature"><strong>Nature r&eacute;elle</strong><br><br>&Agrave; Konoha, cette division cumule trois fonctions :<br>Enqu&ecirc;te p&eacute;nale<br>Instruction des affaires<br>Jugement interne<br><br>Elle agit comme une justice militaire clanique, sous l'autorit&eacute; du Hokage.</div>
+            <ul class="div-list">
+              <li>Enqu&ecirc;te p&eacute;nale lourde</li>
+              <li>Instruction judiciaire</li>
+              <li>Fonction de jugement</li>
+            </ul>
+            <div class="div-competences"><strong>Comp&eacute;tences d&eacute;taill&eacute;es</strong><br>A. Enqu&ecirc;te p&eacute;nale lourde<br>B. Instruction judiciaire<br>C. Fonction de jugement</div>
+          </div>
+        </div>
+
+        <div class="division-card div-alpha">
+          <div class="division-card-header">Division Alpha</div>
+          <div class="division-card-body">
+            <div class="div-nature">Ni une patrouille, ni une unit&eacute; judiciaire classique. Alpha intervient quand arr&ecirc;ter met le village en danger.</div>
+            <ul class="div-list">
+              <li>Neutralisation l&eacute;tale cibl&eacute;e</li>
+              <li>Intervention sur risques extr&ecirc;mes</li>
+              <li>Actions en temps de guerre</li>
+            </ul>
+            <div class="div-competences">Interne, sous contr&ocirc;le direct du Commandant de la Police Militaire. La Division Alpha est le moment o&ugrave; la loi cesse de parler et frappe.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FONCTION JUDICIAIRE -->
+    <div class="judicial-section">
+      <div class="section-title-bar" style="margin-bottom:6px;">
+        <div class="section-title-line"></div>
+        <div class="section-title-text">Fonction Judiciaire Ninja</div>
+        <div class="section-title-line"></div>
+      </div>
+
+      <div class="judicial-grid">
+        <div class="judicial-rank jud-magistrat">
+          <div class="judicial-rank-name">
+            Magistrat J&ucirc;nin<br>Judiciaire
+            <span class="judicial-rank-grade">J&ocirc;nin</span>
+          </div>
+          <div class="judicial-rank-desc">
+            D&eacute;tient le Mandat du Jugement, confirmant le pouvoir d'instruction, d'arbitrage et de validation des sanctions majeures. Supervise l'ensemble de la cha&icirc;ne judiciaire ninja. Statue sur les affaires sensibles : crimes ninja majeurs, trahisons, abus de pouvoir. Peut saisir directement le Hokage et recommander l'emprisonnement de longue dur&eacute;e. Garant de l'&eacute;quilibre entre s&eacute;curit&eacute; du village et droit coutumier ninja.
+          </div>
+        </div>
+
+        <div class="judicial-rank jud-officier">
+          <div class="judicial-rank-name">
+            Officier J&ucirc;nin<br>Judiciaire
+            <span class="judicial-rank-grade">Tokubetsu J&ocirc;nin</span>
+          </div>
+          <div class="judicial-rank-desc">
+            Dirige les enqu&ecirc;tes judiciaires ninja : interrogatoires, filatures, perquisitions. Commande les unit&eacute;s judiciaires lors de convois, d'escortes, de saisies de preuves et d'op&eacute;rations coordonn&eacute;es. Peut ordonner la d&eacute;tention provisoire, les mesures disciplinaires interm&eacute;diaires, le scell&eacute; de techniques. R&eacute;dige les rapports judiciaires transmis au Magistrat J&ucirc;nin. &Eacute;tape obligatoire avant l'acc&egrave;s au rang Inspecteur.
+          </div>
+        </div>
+
+        <div class="judicial-rank jud-adjoint">
+          <div class="judicial-rank-name">
+            Adjoint Ch&ucirc;nin<br>Judiciaire
+            <span class="judicial-rank-grade">Ch&ucirc;nin</span>
+          </div>
+          <div class="judicial-rank-desc">
+            Enqu&ecirc;te de terrain et application des d&eacute;cisions. Assure les t&acirc;ches judiciaires dans la collecte de preuves, les auditions, la surveillance juridique. Ex&eacute;cute les mandats, escortes de d&eacute;tenus, gardes judiciaires. Peut mener des enqu&ecirc;tes mineures sous supervision. R&ocirc;le cl&eacute; de liaison entre le terrain, la police militaire et la hi&eacute;rarchie judiciaire. &Eacute;tape obligatoire avant l'acc&egrave;s au rang Ch&ucirc;nin Patrouilleur.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <div class="stamp-box">CLASSIFI&Eacute;</div>
+      <span class="info-text" id="info-text"></span>
+      <button class="btn-save" onclick="fetchData()" style="background:#1a2a4a;">&#8635; Actualiser</button>
+      <button class="btn-save" onclick="saveAsPNG()">&#11015; Sauvegarder en PNG</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- Sidebar présence -->
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">◈</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* â”€â”€ Burger menu â”€â”€ */
+function toggleBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.toggle('open');
+}
+function closeBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.remove('open');
+}
+function openAdminBackoffice() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+/* â”€â”€ Sidebar mobile â”€â”€ */
+function togglePresenceMobile() {
+  if (window.innerWidth <= 700) {
+    document.getElementById('presence-sidebar').classList.toggle('mobile-open');
+  } else {
+    togglePresenceSidebar();
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RANKS DATA — Progressive colors per grade
+   Top = most prestigious (crimson)
+   Bottom = entry-level (neutral tan)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+const ranksData = [
+  {
+    id:'cmd', label:'Commandant de la Police',
+    members:[],
+    section: '\u00c9TAT-MAJOR',
+    headerBg:'#5a0a0a', headerColor:'#f0c8c0',
+    bodyBg:'rgba(180,70,60,0.14)'
+  },
+  {
+    id:'lt', label:'Lieutenant-J\u00f4nin de la Police',
+    members:[],
+    headerBg:'#3a0a28', headerColor:'#e0b0c8',
+    bodyBg:'rgba(160,60,110,0.10)'
+  },
+  {
+    id:'toku', label:'Tokubetsu-Inspecteur',
+    members:[],
+    section: 'SUPERVISION',
+    headerBg:'#28184a', headerColor:'#c0b0e0',
+    bodyBg:'rgba(130,90,180,0.10)'
+  },
+  {
+    id:'insp', label:'Inspecteur',
+    members:[],
+    headerBg:'#182a4a', headerColor:'#a8c0e0',
+    bodyBg:'rgba(90,120,180,0.10)'
+  },
+  {
+    id:'chef', label:"Chef d'Unit\u00e9",
+    members:[],
+    section: 'ENCADREMENT',
+    headerBg:'#183a38', headerColor:'#a8d0c8',
+    bodyBg:'rgba(80,150,140,0.10)'
+  },
+  {
+    id:'chunin', label:'Ch\u00fbnin Patrouilleur',
+    members:[],
+    headerBg:'#2c3e1a', headerColor:'#c8e0a0',
+    bodyBg:'rgba(120,170,70,0.10)'
+  },
+  {
+    id:'ecl', label:'Ch\u00fbnin \u00c9claireur',
+    members:[],
+    headerBg:'#3a4020', headerColor:'#d0d0a0',
+    bodyBg:'rgba(150,150,70,0.08)'
+  },
+  {
+    id:'aux', label:'Auxiliaire de Police',
+    members:[],
+    section: 'R\u00c9SERVISTE DE POLICE',
+    headerBg:'#4a4030', headerColor:'#d8d0b8',
+    bodyBg:'rgba(170,150,100,0.08)'
+  },
+];
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RENDER
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function render() {
+  const hier = document.getElementById('hierarchy');
+  hier.innerHTML = '';
+
+  ranksData.forEach(function(rank, ri) {
+    // Section divider
+    if (rank.section) {
+      var divider = document.createElement('div');
+      divider.className = 'section-divider';
+      divider.innerHTML =
+        '<div class="section-divider-line"></div>' +
+        '<div class="section-divider-label">' + rank.section + '</div>' +
+        '<div class="section-divider-line"></div>';
+      hier.appendChild(divider);
+    }
+
+    var block = document.createElement('div');
+    block.className = 'rank-block';
+
+    var header = document.createElement('div');
+    header.className = 'rank-header';
+    header.textContent = rank.label.toUpperCase();
+    header.style.background = rank.headerBg;
+    header.style.color = rank.headerColor;
+
+    var body = document.createElement('div');
+    body.className = 'rank-body';
+    body.style.background = rank.bodyBg;
+
+    rank.members.forEach(function(name) {
+      body.appendChild(mkCard(name));
+    });
+    if (!rank.members.length) body.appendChild(mkVacant());
+
+    block.appendChild(header);
+    block.appendChild(body);
+    hier.appendChild(block);
+  });
+
+  updateInfo();
+}
+
+function mkCard(name) {
+  var card = document.createElement('div');
+  card.className = 'member-card';
+
+  var nameEl = document.createElement('div');
+  nameEl.className = 'member-name';
+  nameEl.textContent = name;
+
+// Clic -> fiche ninja
+  card.addEventListener('click', function() {
+    var membre = allMembres.find(function(m) {
+      return (m.nomRP || '').trim() === name;
+    });
+    openNinjaCard(membre || { nomRP: name });
+  });
+
+  card.appendChild(nameEl);
+  return card;
+}
+
+function mkVacant() {
+  var card = document.createElement('div');
+  card.className = 'member-card vacant';
+  var n = document.createElement('div');
+  n.className = 'member-name';
+  n.textContent = 'XXX';
+  card.appendChild(n);
+  return card;
+}
+
+/* Hiérarchie en lecture seule — pas de modal d'édition */
+
+var currentUser = null;
+var DATA_URL = '/api/v1/membres';
+var allMembres = []; // stockage complet pour les fiches popup
+
+function normalizeRankLabel(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’]/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+var RANK_CANONICAL = {
+  cmd: 'CMD Police',
+  lt: 'Lieutenant-Jônin',
+  toku: 'Tokubetsu-Inspecteur',
+  insp: 'Inspecteur',
+  chef: "Chef d'Unité",
+  chunin: 'Chûnin Patrouilleur',
+  ecl: 'Chûnin Éclaireur',
+  aux: 'Auxiliaire de Police'
+};
+
+var RANK_ALIASES = {
+  cmd: ['CMD Police', 'Commandant'],
+  lt: ['Lieutenant-Jônin', 'Lieutenant-Jonin'],
+  toku: ['Tokubetsu-Inspecteur'],
+  insp: ['Inspecteur', 'Inspectrice'],
+  chef: ["Chef d'Unité", "Chef d'Unite", "Chef d'unité", "Chef d'unite"],
+  chunin: ['Chûnin Patrouilleur', 'Chunin Patrouilleur', 'Chûnin Patrouilleur'],
+  ecl: ['Chûnin Éclaireur', 'Chunin Éclaireur', 'Chûnin Eclaireur', 'Chunin Eclaireur', 'Chûnin Éclaireur', 'Chûnin Eclaireur'],
+  aux: ['Auxiliaire de Police', 'Auxiliaire']
+};
+
+var RANK_MAP = {};
+Object.keys(RANK_ALIASES).forEach(function(id) {
+  RANK_ALIASES[id].forEach(function(label) {
+    RANK_MAP[normalizeRankLabel(label)] = id;
+  });
+});
+
+function applyRegistreToHierarchy(membres) {
+  allMembres = membres; // conserve les données complètes
+  ranksData.forEach(function(r) { r.members = []; });
+  membres.forEach(function(m) {
+    var rang = String(m.rang || m.rangSection || '').trim();
+    var nom  = (m.nomRP || '').trim();
+    if (!rang || !nom) return;
+    var id = RANK_MAP[normalizeRankLabel(rang)] || null;
+    if (!id) return;
+    var rank = ranksData.find(function(r) { return r.id === id; });
+    if (rank) rank.members.push(nom);
+  });
+  render();
+}
+
+async function fetchData() {
+  try {
+    var r = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var json = await r.json();
+    applyRegistreToHierarchy(json.membres || []);
+  } catch(e) {
+    console.error('Erreur chargement hiérarchie :', e);
+    render();
+  }
+}
+
+function updateInfo() {
+  var total = ranksData.reduce(function(s, r) { return s + r.members.length; }, 0);
+  document.getElementById('info-text').textContent =
+    total + ' ninja' + (total > 1 ? 's' : '') + ' enregistré' + (total > 1 ? 's' : '') + ' · Données issues du Registre Officiel';
+}
+
+function saveAsPNG() {
+  var btn = document.querySelector('.btn-save');
+  var origText = btn.textContent;
+  btn.textContent = '\u23f3 G\u00e9n\u00e9ration...';
+  btn.disabled = true;
+
+  html2canvas(document.querySelector('.frame'), {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    backgroundColor: null,
+    onclone: function(clonedDoc) {
+      // Masquer les boutons d'action dans l'export PNG
+      var clonedBtn = clonedDoc.querySelector('.btn-save');
+      if (clonedBtn) clonedBtn.style.display = 'none';
+    }
+  }).then(function(canvas) {
+    btn.textContent = origText;
+    btn.disabled = false;
+    var a = document.createElement('a');
+    a.download = 'police-konoha-organigramme.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }).catch(function() {
+    btn.textContent = origText;
+    btn.disabled = false;
+  });
+}
+
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() {
+  try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) { return null; }
+}
+
+async function checkAuth() {
+  if (!sessionStorage.getItem('policeToken') && sessionStorage.getItem('policeGuest') === 'true') {
+    return { pseudo: null, permission: 'GUEST', policeRole: false };
+  }
+  var token = getToken();
+  if (!token) { window.location.href = 'login.html?redirect=Hierarchie_police.html'; return null; }
+  try {
+    var r = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) { sessionStorage.clear(); window.location.href = 'login.html?redirect=Hierarchie_police.html'; return null; }
+    var user = await r.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch(e) { return getCachedUser(); }
+}
+
+function setupUserBar(user) {
+  if (user.permission === 'GUEST') {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = '◈ Visiteur';
+    badge.classList.add('guest');
+    return;
+  }
+  document.getElementById('user-badge').textContent = '◆ ' + user.pseudo;
+  if (user.permission === 'ADMIN') document.getElementById('btn-admin-panel').style.display = '';
+}
+
+async function doLogout() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    return;
+  }
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch(e) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+async function openAdminPanel() {
+  document.getElementById('admin-overlay').classList.add('active');
+  document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Chargement\u2026</div>';
+  try {
+    var [rU, rM] = await Promise.all([
+      fetch('/admin/users', { headers: { 'Authorization': 'Bearer ' + getToken() } }),
+      fetch('/api/v1/membres')
+    ]);
+    if (!rU.ok) throw new Error();
+    var membres = rM.ok ? ((await rM.json()).membres || []) : [];
+    renderAdminUsers(await rU.json(), membres);
+  } catch(e) {
+    document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Erreur de chargement.</div>';
+  }
+}
+
+function renderAdminUsers(users, membres) {
+  membres = membres || [];
+  var list = document.getElementById('admin-users-list');
+  if (!users.length) { list.innerHTML = '<div class="admin-empty">Aucun shinobi enregistr\u00e9.</div>'; return; }
+  list.innerHTML = '';
+  users.forEach(function(u) {
+    var row = document.createElement('div'); row.className = 'user-row';
+    var pseudo = document.createElement('span'); pseudo.className = 'user-row-pseudo'; pseudo.textContent = u.pseudo;
+    var badge  = document.createElement('span'); badge.className = 'perm-badge ' + u.permission; badge.textContent = u.permission;
+    row.appendChild(pseudo); row.appendChild(badge);
+    if (u.permission !== 'ADMIN') {
+      var toggleBtn = document.createElement('button');
+      if (u.permission === 'READ') {
+        toggleBtn.className = 'btn-toggle-perm to-update'; toggleBtn.textContent = '\u2192 Update';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'UPDATE'); }; })(u.pseudo);
+      } else {
+        toggleBtn.className = 'btn-toggle-perm to-read'; toggleBtn.textContent = '\u2192 Read';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'READ'); }; })(u.pseudo);
+      }
+      var policeBtn = document.createElement('button');
+      policeBtn.className = u.policeRole ? 'btn-police-on' : 'btn-police-off';
+      policeBtn.textContent = '\u2694 Police';
+      policeBtn.title = u.policeRole ? 'Retirer le rôle Police' : 'Accorder le rôle Police';
+      policeBtn.onclick = (function(p, r) { return function() { setPoliceRole(p, !r); }; })(u.pseudo, u.policeRole);
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn-del-user'; delBtn.textContent = '\u00d7'; delBtn.title = 'Supprimer ce compte';
+      delBtn.onclick = (function(p) { return function() { deleteUser(p); }; })(u.pseudo);
+      row.appendChild(toggleBtn); row.appendChild(policeBtn); row.appendChild(delBtn);
+
+      if (membres.length) {
+        var linkRow   = document.createElement('div');  linkRow.className = 'user-row-link';
+        var linkLabel = document.createElement('span'); linkLabel.className = 'user-row-link-label'; linkLabel.textContent = 'Personnage li\u00e9 :';
+        var sel = document.createElement('select');     sel.className = 'select-membre';
+        sel.title = 'Associer ce compte \u00e0 un personnage du registre';
+        var optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '\u2014 Non li\u00e9 \u2014';
+        sel.appendChild(optNone);
+        membres.forEach(function(m) {
+          var opt = document.createElement('option'); opt.value = m.pseudoHRP;
+          opt.textContent = m.pseudoHRP;
+          if (m.pseudoHRP === u.linkedMembre) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.onchange = (function(p) { return function() { linkMembre(p, this.value || null); }; })(u.pseudo);
+        linkRow.appendChild(linkLabel); linkRow.appendChild(sel);
+        row.appendChild(linkRow);
+      }
+    }
+    list.appendChild(row);
+  });
+}
+
+async function linkMembre(pseudo, pseudoHRP) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ pseudoHRP: pseudoHRP })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+  } catch(e) { alert('Liaison impossible : ' + e.message); openAdminPanel(); }
+}
+
+async function setPoliceRole(pseudo, policeRole) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/police', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ policeRole: policeRole })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour du r\u00f4le Police.'); }
+}
+
+async function setPermission(pseudo, permission) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/permission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ permission: permission })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour.'); }
+}
+
+async function deleteUser(pseudo) {
+  if (!confirm('Supprimer le compte de ' + pseudo + ' ')) return;
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la suppression.'); }
+}
+
+function closeAdminPanel() { document.getElementById('admin-overlay').classList.remove('active'); }
+
+async function loadNinjaAvatar(pseudoHRP) {
+  var box = document.getElementById('ncp-avatar-box');
+  var ph  = document.getElementById('ncp-avatar-ph');
+  // Retirer l'ancienne image si elle existe
+  var oldImg = box.querySelector('img');
+  if (oldImg) oldImg.remove();
+  ph.style.display = '';
+  if (!pseudoHRP) return;
+  try {
+    var r = await fetch('/auth/profile/avatar-by-hrp/' + encodeURIComponent(pseudoHRP), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) return;
+    var data = await r.json();
+    if (data.avatar) {
+      var img = document.createElement('img');
+      img.src = data.avatar;
+      img.alt = pseudoHRP;
+      ph.style.display = 'none';
+      box.appendChild(img);
+    }
+  } catch(e) {  }
+}
+
+var CHAKRA_SVG = {
+  katon: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="kg2" cx="50%" cy="48%" r="54%"><stop offset="0%" stop-color="#fff2a8"/><stop offset="38%" stop-color="#ffb12a"/><stop offset="72%" stop-color="#d53b16"/><stop offset="100%" stop-color="#5c0909"/></radialGradient></defs><circle cx="110" cy="110" r="82" fill="none" stroke="#d8a23a" stroke-width="4" opacity="0.28"/><path d="M110 28 C93 63 65 78 67 112 C69 142 89 163 110 191 C131 163 151 142 153 112 C155 78 127 63 110 28Z" fill="url(#kg2)" opacity="0.9"/><path d="M110 56 C101 79 86 90 88 112 C90 128 99 140 110 155 C121 140 130 128 132 112 C134 90 119 79 110 56Z" fill="#ffe27a" opacity="0.82"/><path d="M73 126 C86 112 96 101 110 92 C124 101 134 112 147 126" fill="none" stroke="#ffd98a" stroke-width="6" opacity="0.26" stroke-linecap="round"/><ellipse cx="110" cy="188" rx="44" ry="11" fill="#ff7a1a" opacity="0.22"/></svg>',
+  raiton: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f0fbff"/><stop offset="45%" stop-color="#70bbff"/><stop offset="100%" stop-color="#255fd0"/></linearGradient></defs><circle cx="110" cy="110" r="84" fill="none" stroke="#8bc2ff" stroke-width="3.5" opacity="0.26"/><polygon points="126,24 80,101 104,97 70,157 100,148 76,196 153,111 126,115 160,62 136,67" fill="url(#rg2)" opacity="0.95"/><polyline points="126,24 80,101 104,97 70,157 100,148 76,196 153,111 126,115 160,62 136,67" fill="none" stroke="#d5eeff" stroke-width="3" opacity="0.55"/><path d="M50 165 Q86 134 108 140" fill="none" stroke="#6ab2ff" stroke-width="3" opacity="0.22"/><path d="M120 88 Q146 68 176 74" fill="none" stroke="#6ab2ff" stroke-width="3" opacity="0.18"/></svg>',
+  futon: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#bff0d9" stop-opacity="0"/><stop offset="50%" stop-color="#a3f0d1"/><stop offset="100%" stop-color="#bff0d9" stop-opacity="0"/></linearGradient></defs><circle cx="110" cy="110" r="82" fill="none" stroke="#8dd8c3" stroke-width="3.5" opacity="0.2"/><path d="M36 121 Q76 92 119 111 Q154 127 184 108" fill="none" stroke="url(#fg2)" stroke-width="9" stroke-linecap="round"/><path d="M26 154 Q74 130 116 145 Q155 159 194 140" fill="none" stroke="url(#fg2)" stroke-width="7" stroke-linecap="round" opacity="0.8"/><path d="M46 84 Q88 58 131 77 Q163 91 183 75" fill="none" stroke="url(#fg2)" stroke-width="6" stroke-linecap="round" opacity="0.7"/><path d="M66 52 Q97 40 130 48 Q154 55 170 45" fill="none" stroke="#d8fff0" stroke-width="3" stroke-linecap="round" opacity="0.34"/></svg>',
+  suiton: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#97e1ff"/><stop offset="100%" stop-color="#175ca3"/></linearGradient></defs><circle cx="110" cy="110" r="84" fill="none" stroke="#6db6ea" stroke-width="3.5" opacity="0.22"/><path d="M110 36 C92 65 74 84 74 112 C74 137 89 156 110 184 C131 156 146 137 146 112 C146 84 128 65 110 36Z" fill="url(#sg2)" opacity="0.9"/><path d="M56 138 Q86 121 110 132 Q136 144 168 128" fill="none" stroke="#a6e3ff" stroke-width="6" opacity="0.36" stroke-linecap="round"/><path d="M48 164 Q84 149 110 160 Q136 172 176 156" fill="none" stroke="#6fbff1" stroke-width="5" opacity="0.28" stroke-linecap="round"/></svg>',
+  doton: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#b89b72"/><stop offset="100%" stop-color="#5b4128"/></linearGradient></defs><circle cx="110" cy="110" r="82" fill="none" stroke="#8f7250" stroke-width="4" opacity="0.24"/><polygon points="44,184 82,88 112,184" fill="url(#dg2)" opacity="0.82"/><polygon points="88,184 126,56 170,184" fill="#7b5b3c" opacity="0.88"/><polygon points="138,184 174,104 200,184" fill="#5f452b" opacity="0.72"/><path d="M64 178 L90 120 L98 178" fill="#d7be96" opacity="0.16"/><path d="M116 178 L141 92 L155 178" fill="#d7be96" opacity="0.12"/></svg>',
+  mokuton: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7cd06d"/><stop offset="100%" stop-color="#234f24"/></linearGradient></defs><circle cx="110" cy="110" r="82" fill="none" stroke="#79b069" stroke-width="3.5" opacity="0.22"/><path d="M110 188 L106 108 Q80 90 73 107 Q62 82 82 72 Q74 49 95 52 Q99 31 110 40 Q121 31 125 52 Q146 49 138 72 Q158 82 147 107 Q140 90 114 108 L110 188Z" fill="url(#mg2)" opacity="0.9"/><ellipse cx="110" cy="76" rx="42" ry="28" fill="#3e8840" opacity="0.38"/><ellipse cx="87" cy="91" rx="18" ry="11" fill="#8fe082" opacity="0.22"/><ellipse cx="133" cy="91" rx="18" ry="11" fill="#8fe082" opacity="0.22"/></svg>',
+  hyoton: '<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="hg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#92dbff" stop-opacity="0.14"/></radialGradient></defs><circle cx="110" cy="110" r="82" fill="none" stroke="#b8eaff" stroke-width="3.5" opacity="0.24"/><g stroke="#b6e8ff" stroke-width="4" stroke-linecap="round"><line x1="110" y1="38" x2="110" y2="106"/><line x1="72" y1="60" x2="148" y2="84"/><line x1="148" y1="60" x2="72" y2="84"/></g><polygon points="110,26 118,50 134,40 123,58 146,63 123,69 134,87 118,76 110,102 102,76 86,87 97,69 74,63 97,58 86,40 102,50" fill="url(#hg2)" opacity="0.92"/><polygon points="64,124 69,139 82,131 73,144 88,148 73,151 82,165 69,157 64,173 59,157 46,165 55,151 40,148 55,144 46,131 59,139" fill="#d7f4ff" opacity="0.54"/><polygon points="156,120 160,132 171,126 164,137 177,140 164,143 171,155 160,148 156,160 152,148 141,155 148,143 135,140 148,137 141,126 152,132" fill="#d7f4ff" opacity="0.45"/></svg>'
+};
+
+var CHAKRA_ALIASES = {
+  'feu': 'katon', 'fire': 'katon',
+  'foudre': 'raiton', 'lightning': 'raiton', 'eclair': 'raiton', '\u00e9clair': 'raiton',
+  'vent': 'futon', 'wind': 'futon',
+  'eau': 'suiton', 'water': 'suiton',
+  'terre': 'doton', 'earth': 'doton',
+  'bois': 'mokuton', 'wood': 'mokuton',
+  'glace': 'hyoton', 'ice': 'hyoton'
+};
+
+function resolveChakra(str) {
+  var key = str.trim().toLowerCase();
+  return CHAKRA_SVG[key] ? key : (CHAKRA_ALIASES[key] || null);
+}
+
+function applyChakraDecor(chakraStr) {
+  var bg = document.getElementById('ncp-chakra-bg');
+  bg.innerHTML = '';
+  if (!chakraStr || chakraStr === '\u2014') return;
+
+  var parts = chakraStr.split('/').map(function(s) { return s.trim(); }).filter(Boolean);
+  var natures = [];
+  parts.forEach(function(p) {
+    var key = resolveChakra(p);
+    if (key && CHAKRA_SVG[key]) natures.push(key);
+  });
+
+  if (natures.length === 0) return;
+
+  if (natures.length === 1) {
+    var div = document.createElement('div');
+    div.className = 'chakra-deco center';
+    div.innerHTML = CHAKRA_SVG[natures[0]];
+    bg.appendChild(div);
+  } else {
+    natures.slice(0, 2).forEach(function(key, i) {
+      var div = document.createElement('div');
+      div.className = 'chakra-deco ' + (i === 0 ? 'left' : 'right');
+      div.innerHTML = CHAKRA_SVG[key];
+      bg.appendChild(div);
+    });
+  }
+}
+
+function openNinjaCard(m) {
+  var f = function(v) { return (v && v.trim()) ? v.trim() : '\u2014'; };
+  document.getElementById('ncp-nom').textContent      = f(m.nomRP);
+  document.getElementById('ncp-rang').textContent     = f(m.rang);
+  document.getElementById('ncp-pseudo').textContent   = f(m.pseudoHRP);
+  document.getElementById('ncp-grade').textContent    = f(m.grade);
+  document.getElementById('ncp-chakra').textContent   = f(m.chakra);
+  document.getElementById('ncp-spe').textContent      = f(m.specialisation);
+  document.getElementById('ncp-division').textContent = f(m.division);
+  document.getElementById('ncp-date').textContent     = f(m.dateArrivee);
+  document.getElementById('ncp-notes').textContent    = f(m.notes);
+  loadNinjaAvatar(m.pseudoHRP || null);
+  applyChakraDecor(m.chakra || '');
+  document.getElementById('ninja-card-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeNinjaCard(e, force) {
+  if (force || !e || e.target === document.getElementById('ninja-card-overlay')) {
+    document.getElementById('ninja-card-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeNinjaCard(null, true); closeProfilePopup(null, true); }
+});
+
+var _pendingAvatar = null; // base64 en attente de sauvegarde
+
+function toggleProfilePopup() {
+  var popup = document.getElementById('profile-popup');
+  if (popup.classList.contains('open')) {
+    closeProfilePopup(null, true);
+  } else {
+    openProfilePopup();
+  }
+}
+
+async function openProfilePopup() {
+  if (!currentUser || currentUser.permission === 'GUEST') return;
+
+  var popup = document.getElementById('profile-popup');
+  _pendingAvatar = null;
+  document.getElementById('profile-save-btn').disabled = true;
+  document.getElementById('profile-save-status').textContent = '';
+
+  // Charger l'avatar actuel
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  ph.style.display = '';
+
+  try {
+    var r = await fetch('/auth/profile/avatar/' + encodeURIComponent(currentUser.pseudo), { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    if (r.ok) {
+      var data = await r.json();
+      if (data.avatar) {
+        var img = document.createElement('img');
+        img.src = data.avatar;
+        ph.style.display = 'none';
+        preview.appendChild(img);
+      }
+    }
+  } catch(e) {}
+
+  if (window.ServiceWidget) {
+    window.ServiceWidget.refresh(currentUser);
+  }
+
+  popup.style.display = 'block';
+  requestAnimationFrame(function() {
+    popup.classList.add('open');
+  });
+
+  // Fermer si on clique en dehors
+  setTimeout(function() {
+    document.addEventListener('click', _outsideProfileClick);
+  }, 50);
+}
+
+function _outsideProfileClick(e) {
+  var popup  = document.getElementById('profile-popup');
+  var badge  = document.getElementById('user-badge');
+  if (!popup.contains(e.target) && e.target !== badge) {
+    closeProfilePopup(null, true);
+  }
+}
+
+function closeProfilePopup(e, force) {
+  if (!force) return;
+  var popup = document.getElementById('profile-popup');
+  popup.classList.remove('open');
+  document.removeEventListener('click', _outsideProfileClick);
+  setTimeout(function() { popup.style.display = 'none'; }, 220);
+}
+
+function resizeImageToBase64(file, maxPx, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleAvatarSelect(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var b64 = await resizeImageToBase64(file, 256, 0.82);
+  _pendingAvatar = b64;
+
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  var img = document.createElement('img');
+  img.src = b64;
+  ph.style.display = 'none';
+  preview.appendChild(img);
+
+  document.getElementById('profile-save-btn').disabled = false;
+  document.getElementById('profile-save-status').textContent = '';
+  evt.target.value = '';
+}
+
+async function saveAvatar() {
+  if (!_pendingAvatar) return;
+  var btn = document.getElementById('profile-save-btn');
+  var status = document.getElementById('profile-save-status');
+  btn.disabled = true;
+  status.textContent = 'Envoi\u2026';
+  try {
+    var r = await fetch('/auth/profile/avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ avatar: _pendingAvatar })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+    _pendingAvatar = null;
+    status.style.color = '#2c3e1a';
+    status.textContent = '\u2756 Sauvegard\u00e9 !';
+    setTimeout(function() { status.textContent = ''; }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    status.style.color = '#8b1a1a';
+    status.textContent = '\u26a0 ' + e.message;
+  }
+}
+
+var _pFocused = document.hasFocus();
+document.addEventListener('visibilitychange', function() { pingPresence(); });
+window.addEventListener('focus', function() { _pFocused = true; pingPresence(); });
+window.addEventListener('blur',  function() { _pFocused = false; pingPresence(); });
+
+function _pStatus() {
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  if (document.hidden || !_pFocused) {
+    return 'away';
+  }
+
+  if (isMobile) {
+    return 'mobile';
+  }
+
+  return 'active';
+}
+var _guestId = null;
+function getGuestId() {
+  if (!_guestId) {
+    _guestId = sessionStorage.getItem('policeGuestId');
+    if (!_guestId) {
+      _guestId = 'g' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem('policeGuestId', _guestId);
+    }
+  }
+  return _guestId;
+}
+
+async function pingPresence() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    try {
+      var r = await fetch('/presence/guest-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestId: getGuestId() })
+      });
+      if (r.ok) renderPresence(await r.json());
+    } catch(e) {}
+    return;
+  }
+  var token = getToken();
+  if (!token) return;
+  try {
+    var r = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: _pStatus() })
+    });
+    if (r.ok) renderPresence(await r.json());
+  } catch(e) {}
+}
+
+function renderPresence(data) {
+  if (window.PresenceUI) {
+    window.PresenceUI.renderPresence('presence-list', data);
+    return;
+  }
+
+  var list = document.getElementById('presence-list');
+  if (list) {
+    list.innerHTML = '<div class="presence-empty">Aucun shinobi</div>';
+  }
+}
+
+function togglePresenceSidebar() {
+  document.getElementById('presence-sidebar').classList.toggle('collapsed');
+}
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  setupUserBar(currentUser);
+  await fetchData();
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+</script>
+</body>
+</html>
