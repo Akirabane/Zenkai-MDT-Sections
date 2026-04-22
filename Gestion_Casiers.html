@@ -1,0 +1,1670 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion Rapports/Incidents - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/casier-manager.css?v=20260418a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    var token = sessionStorage.getItem('policeToken');
+    if (!token) {
+      window.location.replace('login.html?redirect=Gestion_Casiers.html');
+    }
+  })();
+</script>
+</head>
+<body>
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour a l'accueil</span></a>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">Deconnexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">RAPPORTS</div>
+    <div class="doc-header">
+      <svg class="konoha-symbol" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+        <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+        <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+        <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+      </svg>
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Gestion Rapports / Incidents</h1>
+      <div class="sub-title">Consultation, edition et tri des rapports d'incident et de patrouille</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-meta">
+        <div class="toolbar-label">Archives terrain</div>
+        <div class="toolbar-value" id="records-count">Chargement...</div>
+      </div>
+      <button class="btn-refresh" onclick="loadRecords()">Actualiser</button>
+    </div>
+
+    <div class="filters-card">
+      <div class="filters-grid">
+        <div class="filter-group filter-group-wide">
+          <label class="form-label" for="filter-q">Recherche libre</label>
+          <input class="form-input" type="text" id="filter-q" placeholder="incident, patrouille, agent, suspect..." oninput="debouncedLoadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-type">Type</label>
+          <select class="form-select" id="filter-type" onchange="loadRecords()">
+            <option value="">Tous les rapports</option>
+            <option value="incident">Rapports d'incident</option>
+            <option value="patrol">Rapports de patrouille</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-author">Auteur</label>
+          <input class="form-input" type="text" id="filter-author" placeholder="Akirabane" oninput="debouncedLoadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-suspect">Suspect / cible</label>
+          <input class="form-input" type="text" id="filter-suspect" placeholder="Kazura Ken" oninput="debouncedLoadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-grade">Grade suspect</label>
+          <select class="form-select" id="filter-grade" onchange="loadRecords()">
+            <option value="">Tous les grades</option>
+            <option value="Apprentis Genin">Apprentis Genin</option>
+            <option value="Genin">Genin</option>
+            <option value="Genin confirmé">Genin confirmé</option>
+            <option value="Chunin">Chunin</option>
+            <option value="K&ocirc;nin">K&ocirc;nin</option>
+            <option value="Tokubetsu-J&ocirc;nin">Tokubetsu-J&ocirc;nin</option>
+            <option value="Jonin">Jonin</option>
+            <option value="Commandant-Jonin">Commandant-Jonin</option>
+            <option value="Sanin">Sanin</option>
+            <option value="Hokage">Hokage</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-delit">Délit</label>
+          <input class="form-input" type="text" id="filter-delit" placeholder="Vol, fuite..." oninput="debouncedLoadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-date-from">Depuis</label>
+          <input class="form-input" type="date" id="filter-date-from" onchange="loadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-date-to">Jusqu'au</label>
+          <input class="form-input" type="date" id="filter-date-to" onchange="loadRecords()">
+        </div>
+        <div class="filter-group">
+          <label class="form-label" for="filter-sort">Tri</label>
+          <select class="form-select" id="filter-sort" onchange="loadRecords()">
+            <option value="newest">Plus récents</option>
+            <option value="oldest">Plus anciens</option>
+            <option value="suspect">Par suspect</option>
+            <option value="author">Par auteur</option>
+            <option value="type">Par type</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-secondary" onclick="resetRecordFilters()">Réinitialiser</button>
+        <button class="btn-refresh" onclick="loadRecords()">Filtrer</button>
+      </div>
+    </div>
+
+      <div class="records-grid" id="records-grid">
+        <div class="state-card">Chargement des rapports...</div>
+      </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Modifier un rapport</div>
+        <div class="modal-subtitle" id="edit-record-meta">Rapport</div>
+      </div>
+      <button class="modal-close" onclick="closeEditModal()" aria-label="Fermer">&times;</button>
+    </div>
+
+    <div class="form-row" data-incident-only>
+      <div class="form-group">
+        <label class="form-label" for="edit-suspect-nom">Nom du suspect</label>
+        <input class="form-input" type="text" id="edit-suspect-nom">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-suspect-prenom">Prenom du suspect</label>
+        <input class="form-input" type="text" id="edit-suspect-prenom">
+      </div>
+    </div>
+
+    <div class="form-row" data-incident-only>
+      <div class="form-group">
+        <label class="form-label" for="edit-suspect-grade">Grade du suspect</label>
+        <select class="form-select" id="edit-suspect-grade">
+          <option value="">Selectionner un grade</option>
+          <option value="Apprentis Genin">Apprentis Genin</option>
+          <option value="Genin">Genin</option>
+            <option value="Genin confirmé">Genin confirmé</option>
+          <option value="Chunin">Chunin</option>
+          <option value="K&ocirc;nin">K&ocirc;nin</option>
+          <option value="Tokubetsu-J&ocirc;nin">Tokubetsu-J&ocirc;nin</option>
+          <option value="Jonin">Jonin</option>
+          <option value="Commandant-Jonin">Commandant-Jonin</option>
+          <option value="Sanin">Sanin</option>
+          <option value="Hokage">Hokage</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-date">Date de l'arrestation</label>
+        <input class="form-input" type="text" id="edit-date" placeholder="dd/mm/YYYY">
+      </div>
+    </div>
+
+    <div class="form-row" data-incident-only>
+      <div class="form-group full">
+        <label class="form-label" for="edit-photo">Photo du Ninja (optionnel)</label>
+        <div class="suspect-photo-field">
+          <div class="suspect-photo-preview" id="edit-suspect-photo-preview" tabindex="0" title="Cliquez ici puis collez une image avec Ctrl+V">
+            <span class="suspect-photo-placeholder">&#128100;</span>
+          </div>
+          <div class="suspect-photo-actions">
+            <label class="suspect-photo-upload" for="edit-photo">&#128247; Changer la photo</label>
+            <input type="file" accept="image/png,image/jpeg,image/webp" id="edit-photo" class="suspect-photo-input" onchange="handleEditSuspectPhotoSelect(event)">
+            <button type="button" class="suspect-photo-clear" id="edit-suspect-photo-clear" onclick="clearEditSuspectPhoto()" hidden>Retirer la photo</button>
+            <div class="suspect-photo-hint">Vous pouvez remplacer la photo, en ajouter une si le rapport n'en avait pas, ou coller une image avec Ctrl+V.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="edit-agent-nom">Nom de l'officier</label>
+        <input class="form-input" type="text" id="edit-agent-nom" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-agent-prenom">Prenom de l'officier</label>
+        <input class="form-input" type="text" id="edit-agent-prenom" readonly>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group full">
+        <label class="form-label" for="edit-agent-grade">Grade de l'officier</label>
+        <input class="form-input" type="text" id="edit-agent-grade">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group full">
+        <label class="form-label" for="edit-rapport">Rapport</label>
+        <textarea class="form-textarea" id="edit-rapport"></textarea>
+      </div>
+    </div>
+
+    <div class="form-row" data-incident-only>
+      <div class="form-group full">
+        <div class="delits-header delits-header-modal">
+          <label class="form-label" for="edit-delits-list">Delits commis</label>
+          <button type="button" class="btn-add-delit" onclick="addEditDelitRow()">+ Ajouter un delit</button>
+        </div>
+        <div class="edit-delits-list" id="edit-delits-list"></div>
+      </div>
+    </div>
+
+    <div class="form-row" data-incident-only>
+      <div class="form-group full">
+        <label class="form-label" for="edit-peine">Peine appliquee</label>
+        <input class="form-input" type="text" id="edit-peine">
+      </div>
+    </div>
+
+    <div class="form-row hidden" id="edit-patrol-grave-row">
+      <div class="form-group full">
+        <label class="grave-toggle">
+          <input type="checkbox" id="edit-grave" onchange="toggleEditPatrolFields()">
+          <span>Evenement grave</span>
+        </label>
+        <div class="grave-event-panel hidden" id="edit-grave-panel">
+          <label class="form-label" for="edit-grave-details">Detail de l'evenement grave</label>
+          <textarea class="form-textarea" id="edit-grave-details"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeEditModal()">Annuler</button>
+      <button class="btn-secondary" id="btn-save-republish" onclick="saveRecordEdits(true)">Enregistrer et Republier</button>
+      <button class="btn-primary" id="btn-save-edit" onclick="saveRecordEdits()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dossier-modal" onclick="if(event.target===this) closeDossierModal()">
+  <div class="modal-card dossier-modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Dossier complet</div>
+        <div class="modal-subtitle" id="dossier-modal-meta">Accuse</div>
+      </div>
+      <div class="modal-header-actions">
+        <button class="modal-back hidden" id="dossier-modal-back" onclick="goBackInDossierModal()" aria-label="Retour">&#8592; Retour</button>
+        <button class="modal-close" onclick="closeDossierModal()" aria-label="Fermer">&times;</button>
+      </div>
+    </div>
+
+    <div class="dossier-modal-content" id="dossier-modal-content"></div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary btn-danger" id="btn-delete-dossier" onclick="deleteCurrentDossier()" style="display:none">Supprimer tout le dossier</button>
+      <button class="btn-primary" onclick="closeDossierModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="records-overview-modal" onclick="if(event.target===this) closeRecordsOverviewModal()">
+  <div class="modal-card records-overview-modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="records-overview-title">Vue complete</div>
+        <div class="modal-subtitle" id="records-overview-subtitle">Navigation des dossiers</div>
+      </div>
+      <button class="modal-close" onclick="closeRecordsOverviewModal()" aria-label="Fermer">&times;</button>
+    </div>
+    <div class="records-overview-modal-body" id="records-overview-body"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeRecordsOverviewModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var currentUser = null;
+var currentRecordId = null;
+var currentDossierId = null;
+var currentPatrolGroupId = null;
+var currentPatrolFilterDate = '';
+var currentModalMode = 'incident-dossier';
+var currentEditReportType = 'incident';
+var currentEditSuspectPhoto = '';
+var records = [];
+var dossiers = [];
+var patrolRecords = [];
+var patrolGroups = [];
+var recordsOverviewMode = '';
+var loadDebounce = null;
+var editCodePenal = null;
+var editAllInfractions = [];
+var editDelitCounter = 0;
+var currentReportsAccess = { canView: false, canManage: false, canDeleteDossiers: false, canViewPatrolReports: false };
+
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() { try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch (error) { return null; } }
+
+async function checkAuth() {
+  var token = getToken();
+  if (!token) {
+    window.location.href = 'login.html?redirect=Gestion_Casiers.html';
+    return null;
+  }
+
+  try {
+    var response = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!response.ok) {
+      sessionStorage.clear();
+      window.location.href = 'login.html?redirect=Gestion_Casiers.html';
+      return null;
+    }
+    var user = await response.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch (error) {
+    return getCachedUser();
+  }
+}
+
+async function ensureCrudAccess() {
+  var response = await fetch('/auth/can-manage-casiers', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+  if (!response.ok) throw new Error('Permission impossible a verifier');
+  currentReportsAccess = await response.json();
+  if (!currentReportsAccess.canView) {
+    window.location.replace('index.html');
+    return false;
+  }
+  var patrolOption = document.querySelector('#filter-type option[value="patrol"]');
+  if (patrolOption) {
+    patrolOption.style.display = currentReportsAccess.canViewPatrolReports ? '' : 'none';
+  }
+  if (!currentReportsAccess.canViewPatrolReports && document.getElementById('filter-type').value === 'patrol') {
+    document.getElementById('filter-type').value = '';
+  }
+  return true;
+}
+
+function setupUserBar(user) {
+  document.getElementById('user-badge').textContent = '\u25c6 ' + user.pseudo;
+  if (user.permission === 'ADMIN') {
+    document.getElementById('btn-admin-panel').style.display = '';
+  }
+}
+
+function openAdminShortcut() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+
+function syncEditAgentIdentityInputs() {
+  var canEdit = currentUser && currentUser.permission === 'ADMIN';
+  ['edit-agent-nom', 'edit-agent-prenom'].forEach(function(id) {
+    var input = document.getElementById(id);
+    if (!input) return;
+    input.readOnly = !canEdit;
+  });
+}
+
+function canManageReportsUi() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canManageReports);
+}
+
+function canDeleteDossiersUi() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canDeleteDossiers);
+}
+
+function canViewPatrolReportsUi() {
+  return !!(currentReportsAccess && currentReportsAccess.canViewPatrolReports);
+}
+function toggleBurgerMenu() { document.getElementById('user-bar-inner').classList.toggle('open'); }
+function closeBurgerMenu() { document.getElementById('user-bar-inner').classList.remove('open'); }
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+function togglePresenceMobile() {
+  if (window.innerWidth <= 700) {
+    document.getElementById('presence-sidebar').classList.toggle('mobile-open');
+  }
+}
+
+function currentPresenceStatus() {
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (document.hidden || !document.hasFocus()) return 'away';
+  if (isMobile) return 'mobile';
+  return 'active';
+}
+
+async function pingPresence() {
+  if (!getToken()) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ status: currentPresenceStatus() })
+    });
+    if (response.ok) {
+      renderPresence(await response.json());
+    }
+  } catch (error) {}
+}
+
+function renderPresence(data) {
+  if (window.PresenceUI) window.PresenceUI.renderPresence('presence-list', data);
+}
+
+async function loadEditCodePenal() {
+  try {
+    var token = getToken();
+    var endpoints = [];
+
+    if (token) {
+      endpoints.push({
+        url: '/api/v1/codepenal?t=' + Date.now(),
+        options: { headers: { 'Authorization': 'Bearer ' + token } }
+      });
+    }
+
+    endpoints.push({
+      url: '/codepenal.json?t=' + Date.now(),
+      options: {}
+    });
+
+    var response = null;
+    for (var i = 0; i < endpoints.length; i++) {
+      response = await fetch(endpoints[i].url, endpoints[i].options);
+      if (response.ok) break;
+    }
+
+    if (!response || !response.ok) throw new Error('HTTP ' + (response ? response.status : ''));
+
+    editCodePenal = await response.json();
+    editAllInfractions = [];
+
+    (editCodePenal.sections || []).forEach(function(sec) {
+      (sec.rows || []).forEach(function(row) {
+        editAllInfractions.push({
+          code: row.code,
+          infraction: row.infraction,
+          peine: row.peine,
+          section: sec.id,
+          sectionTitle: sec.title
+        });
+      });
+    });
+  } catch (error) {
+    console.error('[Gestion rapports] Impossible de charger le Code Penal', error);
+    editCodePenal = { sections: [] };
+    editAllInfractions = [];
+  }
+}
+
+function buildEditDelitSelect(selectedValue) {
+  var select = document.createElement('select');
+  select.className = 'form-select edit-delit-select';
+
+  var defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = '— Sélectionner un délit —';
+  select.appendChild(defaultOption);
+
+  var currentSection = '';
+  editAllInfractions.forEach(function(inf) {
+    if (inf.sectionTitle !== currentSection) {
+      var optGroup = document.createElement('optgroup');
+      optGroup.label = inf.sectionTitle;
+      select.appendChild(optGroup);
+      currentSection = inf.sectionTitle;
+    }
+
+    var option = document.createElement('option');
+    option.value = inf.code + ' - ' + inf.infraction;
+    option.textContent = inf.code + ' — ' + inf.infraction;
+    option.dataset.peine = inf.peine || '';
+
+    var group = select.querySelector('optgroup:last-of-type');
+    if (group) group.appendChild(option);
+    else select.appendChild(option);
+  });
+
+  if (selectedValue) {
+    var normalized = String(selectedValue).trim().toLowerCase();
+    var matchingOption = Array.from(select.options).find(function(opt) {
+      return String(opt.value || '').trim().toLowerCase() === normalized ||
+        String(opt.textContent || '').trim().toLowerCase() === normalized;
+    });
+    if (matchingOption) {
+      select.value = matchingOption.value;
+    } else {
+      var fallback = document.createElement('option');
+      fallback.value = selectedValue;
+      fallback.textContent = selectedValue;
+      fallback.selected = true;
+      select.appendChild(fallback);
+    }
+  }
+
+  return select;
+}
+
+function addEditDelitRow(selectedValue) {
+  editDelitCounter += 1;
+
+  var row = document.createElement('div');
+  row.className = 'edit-delit-row';
+  row.dataset.rowId = String(editDelitCounter);
+
+  var select = buildEditDelitSelect(selectedValue || '');
+  var peineTag = document.createElement('span');
+  peineTag.className = 'delit-peine-tag';
+  peineTag.textContent = '—';
+
+  select.addEventListener('change', function() {
+    var selected = select.options[select.selectedIndex];
+    peineTag.textContent = selected && selected.dataset && selected.dataset.peine
+      ? selected.dataset.peine
+      : '—';
+  });
+  select.dispatchEvent(new Event('change'));
+
+  var removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'btn-del-delit';
+  removeButton.textContent = '×';
+  removeButton.title = 'Retirer ce delit';
+  removeButton.onclick = function() {
+    row.remove();
+    ensureAtLeastOneEditDelitRow();
+  };
+
+  row.appendChild(select);
+  row.appendChild(peineTag);
+  row.appendChild(removeButton);
+
+  document.getElementById('edit-delits-list').appendChild(row);
+}
+
+function ensureAtLeastOneEditDelitRow() {
+  var list = document.getElementById('edit-delits-list');
+  if (!list) return;
+  if (!list.children.length) {
+    addEditDelitRow('');
+  }
+}
+
+function resetEditDelitRows(values) {
+  var list = document.getElementById('edit-delits-list');
+  if (!list) return;
+
+  list.innerHTML = '';
+  editDelitCounter = 0;
+
+  var items = Array.isArray(values) ? values.filter(Boolean) : [];
+  if (!items.length) {
+    addEditDelitRow('');
+    return;
+  }
+
+  items.forEach(function(value) {
+    addEditDelitRow(value);
+  });
+}
+
+function collectEditDelits() {
+  return Array.from(document.querySelectorAll('#edit-delits-list .edit-delit-select'))
+    .map(function(select) { return String(select.value || '').trim(); })
+    .filter(Boolean);
+}
+
+async function doLogout() {
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch (error) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatDateTime(isoString) {
+  if (!isoString) return 'Date inconnue';
+  var date = new Date(isoString);
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+    date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function normalizeReportType(value) {
+  return String(value || '').trim().toLowerCase() === 'patrol' ? 'patrol' : 'incident';
+}
+
+function reportTypeLabel(type) {
+  return normalizeReportType(type) === 'patrol' ? 'Rapport de patrouille' : 'Rapport d\'incident';
+}
+
+function parseUiDate(value) {
+  var raw = String(value || '').trim();
+  if (!raw) return null;
+  var fr = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (fr) {
+    var date = new Date(Number(fr[3]), Number(fr[2]) - 1, Number(fr[1]));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  var fallback = new Date(raw);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
+
+function formatDateInputValue(value) {
+  var date = parseUiDate(value);
+  if (!date) return '';
+  var year = date.getFullYear();
+  var month = String(date.getMonth() + 1).padStart(2, '0');
+  var day = String(date.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
+}
+
+function buildPatrolGroupId(record) {
+  return [record.agentPrenom || '', record.agentNom || '', record.author || '']
+    .map(function(part) { return String(part).trim().toLowerCase(); })
+    .join('|');
+}
+
+function buildPatrolGroups(recordsList) {
+  var groups = new Map();
+  (recordsList || []).forEach(function(record) {
+    var groupId = buildPatrolGroupId(record);
+    if (!groups.has(groupId)) {
+      groups.set(groupId, {
+        groupId: groupId,
+        agentNom: record.agentNom || '',
+        agentPrenom: record.agentPrenom || '',
+        agentGrade: record.agentGrade || '',
+        author: record.author || '',
+        reports: []
+      });
+    }
+    groups.get(groupId).reports.push(record);
+  });
+
+  return Array.from(groups.values())
+    .map(function(group) {
+      group.reports.sort(function(a, b) {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+      group.latest = group.reports[0] || null;
+      group.agentGrade = (group.latest && group.latest.agentGrade) || group.agentGrade;
+      group.reportCount = group.reports.length;
+      return group;
+    })
+    .sort(function(a, b) {
+      return new Date((b.latest && b.latest.timestamp) || 0).getTime() - new Date((a.latest && a.latest.timestamp) || 0).getTime();
+    });
+}
+
+function toggleEditTypeSections(type) {
+  var reportType = normalizeReportType(type);
+  currentEditReportType = reportType;
+  document.querySelectorAll('[data-incident-only]').forEach(function(node) {
+    node.classList.toggle('hidden', reportType !== 'incident');
+  });
+  document.getElementById('edit-patrol-grave-row').classList.toggle('hidden', reportType !== 'patrol');
+  document.getElementById('btn-save-republish').style.display = reportType === 'incident' ? '' : 'none';
+  toggleEditPatrolFields();
+}
+
+function toggleEditPatrolFields() {
+  var checked = document.getElementById('edit-grave').checked;
+  document.getElementById('edit-grave-panel').classList.toggle('hidden', !checked || currentEditReportType !== 'patrol');
+  if (!checked) {
+    document.getElementById('edit-grave-details').value = '';
+  }
+}
+
+function buildRecordCard(record) {
+  var canManage = canManageReportsUi();
+  var reportType = normalizeReportType(record.reportType);
+  var delits = (record.delits || []).map(function(delit) {
+    return '<span class="delit-chip">' + escapeHtml(delit) + '</span>';
+  }).join('');
+  var suspect = reportType === 'patrol'
+    ? ([record.agentPrenom, record.agentNom].filter(Boolean).join(' ').trim() || 'Agent inconnu')
+    : ([record.suspectPrenom, record.suspectNom].filter(Boolean).join(' ').trim() || 'Suspect inconnu');
+  var agent = [record.agentPrenom, record.agentNom].filter(Boolean).join(' ').trim() || 'Agent inconnu';
+  var rapport = (record.rapport || '').trim();
+  var excerpt = rapport.length > 220 ? rapport.slice(0, 220) + '...' : rapport;
+  var subtitle = reportType === 'patrol'
+    ? ((record.graveEvent ? 'Evenement grave' : 'Patrouille simple') + ' - ' + escapeHtml(record.agentGrade || 'Grade non precise'))
+    : escapeHtml(record.suspectGrade || 'Grade non precise');
+  var specificBlock = reportType === 'patrol'
+    ? '<div class="record-block"><div class="record-label">Evenement grave</div><div class="record-value">' + (record.graveEvent ? escapeHtml(record.graveEventDetails || 'Oui') : '<span class="record-empty">Aucun evenement grave</span>') + '</div></div>'
+    : '<div class="record-block"><div class="record-label">Peine</div><div class="record-value">' + escapeHtml(record.peine || 'Non precisee') + '</div></div>' +
+      '<div class="record-block"><div class="record-label">Delits</div><div class="record-delits">' + (delits || '<span class="record-empty">Aucun delit renseigne</span>') + '</div></div>';
+  var actionsHtml = canManage
+    ? '<div class="record-actions">' +
+        '<button class="btn-card btn-edit" onclick="openEditModal(\'' + escapeHtml(record.id) + '\')">Modifier</button>' +
+        '<button class="btn-card btn-delete" onclick="deleteRecord(\'' + escapeHtml(record.id) + '\')">Supprimer</button>' +
+      '</div>'
+    : '';
+
+  return [
+    '<article class="record-card">',
+      '<div class="record-meta-top">',
+        '<span class="record-id">#' + escapeHtml(record.id) + '</span>',
+        '<span class="record-date">' + escapeHtml(formatDateTime(record.timestamp)) + '</span>',
+      '</div>',
+      '<div class="record-type-badge type-' + reportType + '">' + escapeHtml(reportTypeLabel(reportType)) + '</div>',
+      '<h2 class="record-title">' + escapeHtml(suspect) + '</h2>',
+      '<div class="record-subtitle">' + subtitle + '</div>',
+      '<div class="record-block"><div class="record-label">Agent redacteur</div><div class="record-value">' + escapeHtml(agent) + ' - ' + escapeHtml(record.agentGrade || 'Grade non precise') + '</div></div>',
+      '<div class="record-block"><div class="record-label">Date des faits</div><div class="record-value">' + escapeHtml(record.date || 'Non precisee') + '</div></div>',
+      specificBlock,
+      '<div class="record-block"><div class="record-label">Rapport</div><div class="record-report">' + (excerpt ? escapeHtml(excerpt) : '<span class="record-empty">Aucun rapport renseigne</span>') + '</div></div>',
+      '<div class="record-footer">',
+        '<span class="record-author">Cree par ' + escapeHtml(record.author || 'inconnu') + '</span>',
+        actionsHtml,
+      '</div>',
+    '</article>'
+  ].join('');
+}
+
+function formatTotalsLabel(totals) {
+  var labels = getDisciplineLabels();
+  var parts = [];
+  if ((totals && totals.avertissements) > 0) parts.push(totals.avertissements + ' ' + labels.avertissement.toLowerCase() + '(s)');
+  if ((totals && totals.signalements) > 0) parts.push(totals.signalements + ' ' + labels.signalement.toLowerCase() + '(s)');
+  if ((totals && totals.jugement) > 0) parts.push(totals.jugement + ' ' + labels.jugement.toLowerCase() + '(s)');
+  if ((totals && totals.celluleMinutes) > 0) parts.push(totals.celluleMinutes + ' min cellule');
+  if ((totals && totals.tig) > 0) parts.push(totals.tig + ' TIG');
+  if ((totals && totals.amendeRyo) > 0) parts.push(totals.amendeRyo + ' ryo');
+  return parts.length ? parts.join(' • ') : 'Aucune sanction cumulée';
+}
+
+function getDisciplineLabels() {
+  var lexique = (editCodePenal && editCodePenal.lexique) || {};
+  return {
+    avertissement: ((lexique.avertissement && lexique.avertissement.label) || 'Avertissement').trim(),
+    signalement: ((lexique.signalement && lexique.signalement.label) || 'Signalement').trim(),
+    jugement: ((lexique.jugement && lexique.jugement.label) || 'Jugement').trim(),
+    thresholdSignalement: Number((lexique.avertissement && lexique.avertissement.thresholdForSignalement) || 2),
+    thresholdJugement: Number((lexique.signalement && lexique.signalement.thresholdForJugement) || 1),
+    propagate: !lexique.rules || lexique.rules.propagateEscalationToDossiers !== false
+  };
+}
+
+function buildDisciplineSummaryLine(totals) {
+  var labels = getDisciplineLabels();
+  var avertissements = Number((totals && totals.avertissements) || 0);
+  var signalements = Number((totals && totals.signalements) || 0);
+  var jugements = Number((totals && totals.jugement) || 0);
+  if (!avertissements && !signalements && !jugements) return 'Aucun cumul disciplinaire actif';
+  return avertissements + ' ' + labels.avertissement.toLowerCase() + '(s) • ' + signalements + ' ' + labels.signalement.toLowerCase() + '(s) • ' + jugements + ' ' + labels.jugement.toLowerCase() + '(s)';
+}
+
+function buildDisciplineRulesLine() {
+  var labels = getDisciplineLabels();
+  if (!labels.propagate) return 'Propagation automatique des seuils désactivée';
+  return labels.thresholdSignalement + ' ' + labels.avertissement.toLowerCase() + '(s) = 1 ' + labels.signalement.toLowerCase() + ' • ' + labels.thresholdJugement + ' ' + labels.signalement.toLowerCase() + '(s) = 1 ' + labels.jugement.toLowerCase();
+}
+
+function buildInvestigationSummaryLine(dossier) {
+  var links = Array.isArray(dossier && dossier.investigationLinks) ? dossier.investigationLinks : [];
+  if (!links.length) return 'Aucune enquête liée';
+  var refs = links.map(function(item) { return String(item && item.id || '').trim(); }).filter(Boolean);
+  if (!refs.length) return 'Aucune enquête liée';
+  if (refs.length === 1) return 'Lié à ' + refs[0];
+  if (refs.length === 2) return 'Lié à ' + refs[0] + ' et ' + refs[1];
+  return 'Lié à ' + refs[0] + ', ' + refs[1] + ' +' + (refs.length - 2) + ' autre(s)';
+}
+
+function buildDossierLinkFlags(dossier, complaintCount) {
+  var flags = [];
+  if (Number(complaintCount || 0) > 0) {
+    flags.push('<span class="dossier-link-flag flag-complaint">' + escapeHtml(complaintCount + ' plainte(s) liée(s)') + '</span>');
+  }
+  if (Number(dossier && dossier.investigationCount || 0) > 0) {
+    flags.push('<span class="dossier-link-flag flag-investigation">' + escapeHtml(buildInvestigationSummaryLine(dossier)) + '</span>');
+  }
+  if (!flags.length) {
+    flags.push('<span class="dossier-link-flag flag-none">Aucune liaison métier</span>');
+  }
+  return '<div class="dossier-link-flags">' + flags.join('') + '</div>';
+}
+
+function buildDossierCard(dossier) {
+  var photoSrc = dossier.suspectPhoto || 'assets/casier-placeholder.png';
+  var suspect = [dossier.suspectPrenom, dossier.suspectNom].filter(Boolean).join(' ').trim() || 'Suspect inconnu';
+  var latest = (dossier.history || [])[0] || (dossier.reports || [])[0] || null;
+  var complaintCount = Number(dossier.complaintCount || 0);
+  var lastLabel = latest && latest.type === 'complaint' ? 'Derniere plainte' : 'Dernier incident';
+  var dossierReference = dossier.reference || dossier.dossierId || '-';
+
+  return [
+    '<article class="dossier-card" onclick="openDossierModal(\'' + escapeHtml(dossier.dossierId) + '\')">',
+      '<div class="dossier-header">',
+        '<div class="dossier-photo"><img src="' + escapeHtml(photoSrc) + '" alt="' + escapeHtml(suspect) + '"></div>',
+        '<div class="dossier-summary">',
+          '<div class="record-type-badge type-incident">Dossier</div>',
+          '<h2 class="record-title">' + escapeHtml(suspect) + '</h2>',
+          '<div class="record-subtitle">' + escapeHtml(dossier.suspectGrade || 'Grade non precise') + '</div>',
+          buildDossierLinkFlags(dossier, complaintCount),
+          '<div class="dossier-summary-line dossier-summary-soft">Reference : ' + escapeHtml(dossierReference) + '</div>',
+          '<div class="dossier-summary-line">' + escapeHtml((dossier.reportCount || 0) + ' rapport(s) d incident') + '</div>',
+          '<div class="dossier-summary-line">' + escapeHtml(complaintCount + ' plainte(s) rattachee(s)') + '</div>',
+          '<div class="dossier-summary-line">' + escapeHtml(formatTotalsLabel(dossier.totals || {})) + '</div>',
+          '<div class="dossier-summary-line">' + escapeHtml(buildDisciplineSummaryLine(dossier.totals || {})) + '</div>',
+          '<div class="dossier-summary-line dossier-summary-soft">' + escapeHtml(buildInvestigationSummaryLine(dossier)) + '</div>',
+          '<div class="dossier-summary-line dossier-summary-soft">' + escapeHtml(lastLabel + ' : ' + (latest ? formatDateTime(latest.timestamp) : 'Aucun')) + '</div>',
+        '</div>',
+      '</div>',
+      '<div class="dossier-card-footer">',
+        '<span class="dossier-open-hint">Ouvrir le dossier complet</span>',
+      '</div>',
+    '</article>'
+  ].join('');
+}
+
+function buildPatrolGroupCard(group) {
+  var agent = [group.agentPrenom, group.agentNom].filter(Boolean).join(' ').trim() || 'Agent inconnu';
+  var latest = group.latest;
+  var latestReference = latest && (latest.reference || latest.id) ? (latest.reference || latest.id) : '-';
+  return [
+    '<article class="dossier-card patrol-card" onclick="openPatrolGroupModal(\'' + escapeHtml(group.groupId) + '\')">',
+      '<div class="dossier-header patrol-header">',
+        '<div class="dossier-photo patrol-emblem"><span class="patrol-emblem-icon">&#128737;</span></div>',
+        '<div class="dossier-summary">',
+          '<div class="record-type-badge type-patrol">Patrouilles</div>',
+          '<h2 class="record-title">' + escapeHtml(agent) + '</h2>',
+          '<div class="record-subtitle">' + escapeHtml(group.agentGrade || 'Grade non precise') + '</div>',
+          '<div class="dossier-summary-line dossier-summary-soft">Derniere reference : ' + escapeHtml(latestReference) + '</div>',
+          '<div class="dossier-summary-line">' + escapeHtml(group.reportCount + ' rapport(s) de patrouille') + '</div>',
+          '<div class="dossier-summary-line dossier-summary-soft">Derniere ronde : ' + escapeHtml(latest ? formatDateTime(latest.timestamp) : 'Aucune') + '</div>',
+        '</div>',
+      '</div>',
+      '<div class="dossier-card-footer">',
+        '<span class="dossier-open-hint">Ouvrir la fiche de patrouille</span>',
+      '</div>',
+    '</article>'
+  ].join('');
+}
+
+function buildRecordsSectionTitle(title, count, mode) {
+  var button = count > 5
+    ? '<button type="button" class="btn-card btn-overview-more" onclick="openRecordsOverviewModal(\'' + escapeHtml(mode) + '\')">Voir plus</button>'
+    : '';
+  return [
+    '<div class="records-section-head">',
+      '<div class="records-section-title">' + escapeHtml(title) + '</div>',
+      '<div class="records-section-tools">',
+        '<span class="records-section-count">' + escapeHtml(String(count) + ' fiche(s)') + '</span>',
+        button,
+      '</div>',
+    '</div>'
+  ].join('');
+}
+
+function openRecordsOverviewModal(mode) {
+  recordsOverviewMode = String(mode || '').trim();
+  var title = 'Vue complete';
+  var subtitle = '';
+  var html = '';
+
+  if (recordsOverviewMode === 'dossiers') {
+    title = 'Dossiers par accuse';
+    subtitle = String(dossiers.length || 0) + ' dossier(s) disponible(s)';
+    html = '<div class="dossiers-grid dossiers-grid-modal">' + dossiers.map(buildDossierCard).join('') + '</div>';
+  } else if (recordsOverviewMode === 'patrol-groups') {
+    title = 'Rapports de patrouille par agent';
+    subtitle = String(patrolGroups.length || 0) + ' fiche(s) agent disponible(s)';
+    html = '<div class="dossiers-grid patrol-groups-grid dossiers-grid-modal">' + patrolGroups.map(buildPatrolGroupCard).join('') + '</div>';
+  }
+
+  if (!html) {
+    html = '<div class="state-card">Aucune donnee supplementaire.</div>';
+  }
+
+  document.getElementById('records-overview-title').textContent = title;
+  document.getElementById('records-overview-subtitle').textContent = subtitle;
+  document.getElementById('records-overview-body').innerHTML = html;
+  document.getElementById('records-overview-modal').classList.add('open');
+}
+
+function closeRecordsOverviewModal() {
+  recordsOverviewMode = '';
+  document.getElementById('records-overview-modal').classList.remove('open');
+}
+
+function dismissRecordsOverviewIfOpen() {
+  var overviewModal = document.getElementById('records-overview-modal');
+  if (overviewModal && overviewModal.classList.contains('open')) {
+    closeRecordsOverviewModal();
+  }
+}
+
+function canDeleteCurrentDossier() {
+  return canDeleteDossiersUi();
+}
+
+function findDossier(dossierId) {
+  return dossiers.find(function(item) { return item.dossierId === dossierId; }) || null;
+}
+
+function buildDossierModalHtml(dossier) {
+  var canManage = canManageReportsUi();
+  var suspect = [dossier.suspectPrenom, dossier.suspectNom].filter(Boolean).join(' ').trim() || 'Suspect inconnu';
+  var photoSrc = dossier.suspectPhoto || 'assets/casier-placeholder.png';
+  var historyHtml = (dossier.history || []).map(function(entry) {
+    if (entry.type === 'complaint') {
+      var score = Number(entry.linkedDossierMatchScore || 0);
+      var scoreText = score ? ' • correspondance ' + Math.round(score * 100) + '%' : '';
+      return [
+        '<article class="dossier-history-item dossier-history-item-complaint">',
+          '<div class="dossier-history-top">',
+            '<div class="dossier-history-date">' + escapeHtml(formatDateTime(entry.timestamp)) + '</div>',
+            '<div class="record-type-badge type-complaint">Plainte</div>',
+          '</div>',
+          '<div class="dossier-history-meta">Objet : ' + escapeHtml(entry.objet || 'Plainte') + '</div>',
+          '<div class="dossier-history-delits">Deposee par ' + escapeHtml([entry.officerPrenom, entry.officerNom].filter(Boolean).join(' ').trim() || 'Policier inconnu') + ' - ' + escapeHtml(entry.officerGradeSection || 'Grade non precise') + scoreText + '</div>',
+          '<div class="dossier-history-peine">Date des faits : ' + escapeHtml(entry.date || 'Non precisee') + ' • Grade vise : ' + escapeHtml(entry.plaintiffGrade || 'Non precise') + '</div>',
+          '<div class="record-report dossier-history-report">' + escapeHtml(entry.body || 'Aucune plainte') + '</div>',
+        '</article>'
+      ].join('');
+    }
+
+    var delits = (entry.delits || []).length ? escapeHtml(entry.delits.join(', ')) : 'Aucun delit';
+    var actionsHtml = canManage
+        ? '<div class="dossier-history-actions">' +
+            '<button class="btn-card btn-edit" onclick="event.stopPropagation(); openEditModalFromDossier(\'' + escapeHtml(entry.id) + '\')">Modifier</button>' +
+            '<button class="btn-card btn-delete" onclick="event.stopPropagation(); deleteRecord(\'' + escapeHtml(entry.id) + '\')">Supprimer</button>' +
+          '</div>'
+        : '';
+    return [
+      '<article class="dossier-history-item">',
+        '<div class="dossier-history-top">',
+          '<div class="dossier-history-date">' + escapeHtml(formatDateTime(entry.timestamp)) + '</div>',
+          actionsHtml,
+        '</div>',
+        '<div class="dossier-history-meta">Par ' + escapeHtml([entry.agentPrenom, entry.agentNom].filter(Boolean).join(' ').trim() || entry.author || 'Agent inconnu') + '</div>',
+        '<div class="dossier-history-delits">' + delits + '</div>',
+        '<div class="dossier-history-peine">' + escapeHtml(entry.peine || 'Peine non precisee') + '</div>',
+        '<div class="record-report dossier-history-report">' + escapeHtml(entry.rapport || 'Aucun rapport') + '</div>',
+      '</article>'
+    ].join('');
+  }).join('');
+
+  return [
+    '<div class="dossier-modal-summary">',
+      '<div class="dossier-photo dossier-photo-large"><img src="' + escapeHtml(photoSrc) + '" alt="' + escapeHtml(suspect) + '"></div>',
+      '<div class="dossier-summary">',
+        '<div class="record-type-badge type-incident">Dossier complet</div>',
+        '<h2 class="record-title">' + escapeHtml(suspect) + '</h2>',
+        '<div class="record-subtitle">' + escapeHtml(dossier.suspectGrade || 'Grade non precise') + '</div>',
+        '<div class="dossier-summary-line">' + escapeHtml((dossier.reportCount || 0) + ' rapport(s) d incident') + '</div>',
+        '<div class="dossier-summary-line">' + escapeHtml((dossier.complaintCount || 0) + ' plainte(s) rattachee(s)') + '</div>',
+        '<div class="dossier-summary-line">' + escapeHtml(formatTotalsLabel(dossier.totals || {})) + '</div>',
+        '<div class="dossier-summary-line">' + escapeHtml(buildDisciplineSummaryLine(dossier.totals || {})) + '</div>',
+        '<div class="dossier-summary-line dossier-summary-soft">' + escapeHtml(buildInvestigationSummaryLine(dossier)) + '</div>',
+      '</div>',
+    '</div>',
+    '<div class="dossier-history-wrap dossier-history-wrap-modal">',
+      '<div class="dossier-history-title">Historique complet du dossier</div>',
+      '<div class="dossier-history-list dossier-history-list-modal">' + historyHtml + '</div>',
+    '</div>'
+  ].join('');
+}
+
+function findPatrolGroup(groupId) {
+  return patrolGroups.find(function(group) { return group.groupId === groupId; }) || null;
+}
+
+function filterPatrolReportsByDate(group, dateValue) {
+  var targetDate = String(dateValue || '').trim();
+  if (!targetDate) return (group && group.reports) ? group.reports.slice() : [];
+  return ((group && group.reports) ? group.reports : []).filter(function(record) {
+    return formatDateInputValue(record.date || record.timestamp) === targetDate;
+  });
+}
+
+function buildPatrolGroupModalHtml(group, dateValue) {
+  var agent = [group.agentPrenom, group.agentNom].filter(Boolean).join(' ').trim() || 'Agent inconnu';
+  var reports = filterPatrolReportsByDate(group, dateValue);
+  var reportsHtml = reports.length
+    ? reports.map(function(record) {
+        return [
+          '<button type="button" class="dossier-history-item patrol-report-item" onclick="openPatrolReportDetail(\'' + escapeHtml(group.groupId) + '\', \'' + escapeHtml(record.id) + '\')">',
+            '<div class="dossier-history-top">',
+              '<div class="dossier-history-date">' + escapeHtml(formatDateTime(record.timestamp)) + '</div>',
+              '<div class="patrol-report-chevron">&#8250;</div>',
+            '</div>',
+            '<div class="dossier-history-meta">Date de ronde : ' + escapeHtml(record.date || 'Non precisee') + '</div>',
+            '<div class="record-report dossier-history-report patrol-history-report">' + escapeHtml((record.rapport || '').trim() || 'Aucun rapport') + '</div>',
+            (record.graveEvent ? '<div class="patrol-grave-badge">Evenement grave signale</div>' : ''),
+          '</button>'
+        ].join('');
+      }).join('')
+    : '<div class="state-card patrol-empty-state">Aucun rapport sur cette date.</div>';
+
+  return [
+    '<div class="dossier-modal-summary patrol-modal-summary">',
+      '<div class="dossier-photo dossier-photo-large patrol-emblem patrol-emblem-large"><span class="patrol-emblem-icon">&#128737;</span></div>',
+      '<div class="dossier-summary">',
+        '<div class="record-type-badge type-patrol">Fiche agent</div>',
+        '<h2 class="record-title">' + escapeHtml(agent) + '</h2>',
+        '<div class="record-subtitle">' + escapeHtml(group.agentGrade || 'Grade non precise') + '</div>',
+        '<div class="dossier-summary-line">' + escapeHtml(group.reportCount + ' rapport(s) de patrouille') + '</div>',
+        '<div class="dossier-summary-line dossier-summary-soft">Filtrer par date de ronde</div>',
+        '<div class="patrol-filter-row">',
+          '<input type="date" class="form-input patrol-date-filter" value="' + escapeHtml(dateValue || '') + '" onchange="applyPatrolDateFilter(this.value)">',
+          '<button type="button" class="btn-secondary patrol-clear-filter" onclick="applyPatrolDateFilter(\'\')">Tout voir</button>',
+        '</div>',
+      '</div>',
+    '</div>',
+    '<div class="dossier-history-wrap dossier-history-wrap-modal">',
+      '<div class="dossier-history-title">Rapports de patrouille</div>',
+      '<div class="dossier-history-list dossier-history-list-modal">' + reportsHtml + '</div>',
+    '</div>'
+  ].join('');
+}
+
+function buildPatrolReportDetailHtml(group, record) {
+  var actionHtml = canManageReportsUi()
+    ? '<div class="patrol-detail-actions">' +
+        '<button type="button" class="btn-card btn-edit" onclick="openEditModalFromDossier(\'' + escapeHtml(record.id) + '\')">Modifier</button>' +
+        '<button type="button" class="btn-card btn-delete" onclick="deleteRecord(\'' + escapeHtml(record.id) + '\')">Supprimer</button>' +
+      '</div>'
+    : '';
+  var agent = [group.agentPrenom, group.agentNom].filter(Boolean).join(' ').trim() || 'Agent inconnu';
+  return [
+    '<div class="dossier-modal-summary patrol-modal-summary">',
+      '<div class="dossier-photo dossier-photo-large patrol-emblem patrol-emblem-large"><span class="patrol-emblem-icon">&#128737;</span></div>',
+      '<div class="dossier-summary">',
+        '<div class="record-type-badge type-patrol">Rapport de patrouille</div>',
+        '<h2 class="record-title">' + escapeHtml(agent) + '</h2>',
+        '<div class="record-subtitle">' + escapeHtml(group.agentGrade || 'Grade non precise') + '</div>',
+        '<div class="dossier-summary-line dossier-summary-soft">Reference : ' + escapeHtml(record.reference || record.id || '-') + '</div>',
+        '<div class="dossier-summary-line">Ronde du ' + escapeHtml(record.date || 'Non precisee') + '</div>',
+        '<div class="dossier-summary-line dossier-summary-soft">Archivee le ' + escapeHtml(formatDateTime(record.timestamp)) + '</div>',
+      '</div>',
+    '</div>',
+    '<div class="patrol-detail-sheet">',
+      '<div class="record-block"><div class="record-label">Agent redacteur</div><div class="record-value">' + escapeHtml(agent) + ' - ' + escapeHtml(record.agentGrade || 'Grade non precise') + '</div></div>',
+      '<div class="record-block"><div class="record-label">Date de la patrouille</div><div class="record-value">' + escapeHtml(record.date || 'Non precisee') + '</div></div>',
+      '<div class="record-block"><div class="record-label">Evenement grave</div><div class="record-value">' + (record.graveEvent ? escapeHtml(record.graveEventDetails || 'Oui') : '<span class="record-empty">Aucun evenement grave</span>') + '</div></div>',
+      '<div class="record-block"><div class="record-label">Rapport</div><div class="record-report">' + escapeHtml((record.rapport || '').trim() || 'Aucun rapport') + '</div></div>',
+      actionHtml,
+    '</div>'
+  ].join('');
+}
+
+function openDossierModal(dossierId) {
+  var dossier = findDossier(dossierId);
+  if (!dossier) return;
+  dismissRecordsOverviewIfOpen();
+  currentModalMode = 'incident-dossier';
+  currentDossierId = dossierId;
+  currentPatrolGroupId = null;
+  currentPatrolFilterDate = '';
+  document.querySelector('#dossier-modal .modal-title').textContent = 'Dossier complet';
+  document.getElementById('dossier-modal-meta').textContent = ((dossier.reference || dossierId) + ' • ' + ([dossier.suspectPrenom, dossier.suspectNom].filter(Boolean).join(' ').trim() || dossierId)).trim();
+  document.getElementById('dossier-modal-content').innerHTML = buildDossierModalHtml(dossier);
+  document.getElementById('dossier-modal-back').classList.add('hidden');
+  document.getElementById('btn-delete-dossier').style.display = canDeleteCurrentDossier() ? '' : 'none';
+  document.getElementById('dossier-modal').classList.add('open');
+}
+
+function closeDossierModal() {
+  currentModalMode = 'incident-dossier';
+  currentDossierId = null;
+  currentPatrolGroupId = null;
+  currentPatrolFilterDate = '';
+  document.getElementById('dossier-modal-back').classList.add('hidden');
+  document.getElementById('dossier-modal').classList.remove('open');
+}
+
+function openPatrolGroupModal(groupId, dateValue) {
+  var group = findPatrolGroup(groupId);
+  if (!group) return;
+  dismissRecordsOverviewIfOpen();
+  currentModalMode = 'patrol-group';
+  currentPatrolGroupId = groupId;
+  currentPatrolFilterDate = String(dateValue || currentPatrolFilterDate || '').trim();
+  currentDossierId = null;
+  document.querySelector('#dossier-modal .modal-title').textContent = 'Fiche de patrouille';
+  document.getElementById('dossier-modal-meta').textContent = [group.agentPrenom, group.agentNom].filter(Boolean).join(' ').trim() || groupId;
+  document.getElementById('dossier-modal-content').innerHTML = buildPatrolGroupModalHtml(group, currentPatrolFilterDate);
+  document.getElementById('dossier-modal-back').classList.add('hidden');
+  document.getElementById('btn-delete-dossier').style.display = 'none';
+  document.getElementById('dossier-modal').classList.add('open');
+}
+
+function applyPatrolDateFilter(value) {
+  currentPatrolFilterDate = String(value || '').trim();
+  if (currentPatrolGroupId) {
+    openPatrolGroupModal(currentPatrolGroupId, currentPatrolFilterDate);
+  }
+}
+
+function openPatrolReportDetail(groupId, recordId) {
+  var group = findPatrolGroup(groupId);
+  if (!group) return;
+  var record = (group.reports || []).find(function(item) { return item.id === recordId; });
+  if (!record) return;
+  currentModalMode = 'patrol-report';
+  currentPatrolGroupId = groupId;
+  document.querySelector('#dossier-modal .modal-title').textContent = 'Rapport de patrouille';
+  document.getElementById('dossier-modal-meta').textContent = 'Rapport ' + (record.reference || record.id);
+  document.getElementById('dossier-modal-content').innerHTML = buildPatrolReportDetailHtml(group, record);
+  document.getElementById('dossier-modal-back').classList.remove('hidden');
+  document.getElementById('btn-delete-dossier').style.display = 'none';
+  document.getElementById('dossier-modal').classList.add('open');
+}
+
+function goBackInDossierModal() {
+  if (currentModalMode === 'patrol-report' && currentPatrolGroupId) {
+    openPatrolGroupModal(currentPatrolGroupId, currentPatrolFilterDate);
+    return;
+  }
+  closeDossierModal();
+}
+
+async function deleteCurrentDossier() {
+  if (!canDeleteDossiersUi()) return;
+  if (!currentDossierId) return;
+  var dossier = findDossier(currentDossierId);
+  var suspect = dossier ? ([dossier.suspectPrenom, dossier.suspectNom].filter(Boolean).join(' ').trim() || currentDossierId) : currentDossierId;
+  if (!window.confirm('Supprimer completement le dossier de ' + suspect + ' et tout son historique d incidents ')) return;
+
+  try {
+    var response = await fetch('/api/v1/casier/dossiers/' + encodeURIComponent(currentDossierId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Suppression complete impossible');
+    closeDossierModal();
+    await loadRecords();
+    showToast('Dossier complet supprime.');
+  } catch (error) {
+    showToast(error.message || 'Impossible de supprimer ce dossier complet.', true);
+  }
+}
+
+function renderRecords() {
+  var grid = document.getElementById('records-grid');
+  var totalReports = records.length;
+  document.getElementById('records-count').textContent = dossiers.length + ' dossier' + (dossiers.length > 1 ? 's' : '') + ' • ' + totalReports + ' rapport' + (totalReports > 1 ? 's' : '');
+  if (!dossiers.length && (!canViewPatrolReportsUi() || !patrolRecords.length)) {
+    grid.innerHTML = '<div class="state-card">Aucun rapport enregistre pour le moment.</div>';
+    return;
+  }
+  var html = [];
+  if (dossiers.length) {
+    html.push(buildRecordsSectionTitle('Dossiers par accusé', dossiers.length, 'dossiers'));
+    html.push('<div class="dossiers-grid dossiers-grid-preview">' + dossiers.slice(0, 5).map(buildDossierCard).join('') + '</div>');
+  }
+  patrolGroups = buildPatrolGroups(patrolRecords);
+  if (canViewPatrolReportsUi() && patrolGroups.length) {
+    html.push(buildRecordsSectionTitle('Rapports de patrouilles par agent', patrolGroups.length, 'patrol-groups'));
+    html.push('<div class="dossiers-grid patrol-groups-grid dossiers-grid-preview">' + patrolGroups.slice(0, 5).map(buildPatrolGroupCard).join('') + '</div>');
+  }
+  grid.innerHTML = html.join('');
+  normalizeRecordsCountText();
+}
+
+function buildRecordsQuery() {
+  var params = new URLSearchParams();
+  var q = document.getElementById('filter-q').value.trim();
+  var type = document.getElementById('filter-type').value;
+  var author = document.getElementById('filter-author').value.trim();
+  var suspect = document.getElementById('filter-suspect').value.trim();
+  var grade = document.getElementById('filter-grade').value;
+  var delit = document.getElementById('filter-delit').value.trim();
+  var dateFrom = document.getElementById('filter-date-from').value;
+  var dateTo = document.getElementById('filter-date-to').value;
+  var sort = document.getElementById('filter-sort').value;
+
+  if (q) params.set('q', q);
+  if (type) params.set('type', type);
+  if (author) params.set('author', author);
+  if (suspect) params.set('suspect', suspect);
+  if (grade) params.set('grade', grade);
+  if (delit) params.set('delit', delit);
+  if (dateFrom) params.set('dateFrom', dateFrom);
+  if (dateTo) params.set('dateTo', dateTo);
+  if (sort) params.set('sort', sort);
+  return params.toString();
+}
+
+function debouncedLoadRecords() {
+  clearTimeout(loadDebounce);
+  loadDebounce = setTimeout(loadRecords, 240);
+}
+
+function resetRecordFilters() {
+  ['filter-q', 'filter-author', 'filter-suspect', 'filter-delit', 'filter-date-from', 'filter-date-to'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('filter-type').value = '';
+  document.getElementById('filter-grade').value = '';
+  document.getElementById('filter-sort').value = 'newest';
+  loadRecords();
+}
+
+function normalizeRecordsCountText() {
+  var counter = document.getElementById('records-count');
+  if (!counter) return;
+  counter.textContent = counter.textContent
+    .replace(/\bcasiers\b/gi, 'dossiers')
+    .replace(/\bcasier\b/gi, 'dossier');
+}
+
+function buildCanonicalGradeOptions(select, placeholder) {
+  if (!select) return;
+  var currentValue = String(select.value || '').trim().toLowerCase();
+  var grades = [
+    'Apprenti Génin',
+    'Génin',
+    'Génin Confirmé',
+    'Chûnin',
+    'Kônin',
+    'Tokubetsu-Jônin',
+    'Jônin',
+    'Commandant-Jônin',
+    'Sanin',
+    'Hokage'
+  ];
+
+  select.innerHTML = '';
+  var firstOption = document.createElement('option');
+  firstOption.value = '';
+  firstOption.textContent = placeholder;
+  select.appendChild(firstOption);
+
+  grades.forEach(function(grade) {
+    var option = document.createElement('option');
+    option.value = grade;
+    option.textContent = grade;
+    option.selected = grade.toLowerCase() === currentValue;
+    select.appendChild(option);
+  });
+}
+
+function buildCanonicalGradeOptionsSafe(select, placeholder) {
+  if (!select) return;
+  var currentValue = String(select.value || '').trim().toLowerCase();
+  var grades = [
+    'Apprenti G\u00e9nin',
+    'G\u00e9nin',
+    'G\u00e9nin Confirm\u00e9',
+    'Ch\u00fbnin',
+    'K\u00f4nin',
+    'Tokubetsu-J\u00f4nin',
+    'J\u00f4nin',
+    'Commandant-J\u00f4nin',
+    'Sanin',
+    'Hokage'
+  ];
+
+  select.innerHTML = '';
+  var firstOption = document.createElement('option');
+  firstOption.value = '';
+  firstOption.textContent = placeholder;
+  select.appendChild(firstOption);
+
+  grades.forEach(function(grade) {
+    var option = document.createElement('option');
+    option.value = grade;
+    option.textContent = grade;
+    option.selected = grade.toLowerCase() === currentValue;
+    select.appendChild(option);
+  });
+}
+
+function normalizeGestionCopy() {
+  buildCanonicalGradeOptionsSafe(document.getElementById('filter-grade'), 'Tous les grades');
+  buildCanonicalGradeOptionsSafe(document.getElementById('edit-suspect-grade'), 'Selectionner un grade');
+
+  var filterDelitLabel = document.querySelector('label[for="filter-delit"]');
+  if (filterDelitLabel) filterDelitLabel.innerHTML = 'D&eacute;lit';
+
+  var resetButton = document.querySelector('.filter-actions .btn-secondary');
+  if (resetButton) resetButton.innerHTML = 'R&eacute;initialiser';
+
+  var sortOptions = document.querySelectorAll('#filter-sort option');
+  if (sortOptions[0]) sortOptions[0].innerHTML = 'Plus r&eacute;cents';
+
+  normalizeRecordsCountText();
+}
+
+async function loadRecords() {
+  var grid = document.getElementById('records-grid');
+    grid.innerHTML = '<div class="state-card">Chargement des rapports...</div>';
+  try {
+    var query = buildRecordsQuery();
+    var response = await fetch('/api/v1/casier/dossiers' + (query ? '?' + query : ''), { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    if (response.status === 401) {
+      sessionStorage.clear();
+      window.location.replace('login.html?redirect=Gestion_Casiers.html');
+      return;
+    }
+    if (response.status === 403) {
+      window.location.replace('index.html');
+      return;
+    }
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    var payload = await response.json();
+      dossiers = payload.dossiers || [];
+      patrolRecords = payload.patrols || [];
+      records = patrolRecords.slice();
+      dossiers.forEach(function(dossier) {
+        (dossier.reports || []).forEach(function(record) { records.push(record); });
+      });
+      renderRecords();
+    } catch (error) {
+      grid.innerHTML = '<div class="state-card state-error">Impossible de charger les rapports.</div>';
+    }
+}
+
+function findRecord(recordId) {
+  return records.find(function(record) { return record.id === recordId; }) || null;
+}
+
+function resizeImageToBase64(file, maxSize, quality, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateEditSuspectPhotoPreview(src) {
+  var preview = document.getElementById('edit-suspect-photo-preview');
+  var clearButton = document.getElementById('edit-suspect-photo-clear');
+  var input = document.getElementById('edit-photo');
+  if (!preview || !clearButton || !input) return;
+
+  if (src) {
+    preview.innerHTML = '<img src="' + src + '" alt="Photo du suspect">';
+    clearButton.hidden = false;
+  } else {
+    preview.innerHTML = '<span class="suspect-photo-placeholder">&#128100;</span>';
+    clearButton.hidden = true;
+    input.value = '';
+  }
+}
+
+function setEditSuspectPhotoFromFile(file) {
+  if (!file || !/^image\//i.test(file.type || '')) return false;
+  resizeImageToBase64(file, 512, 0.84, function(b64) {
+    currentEditSuspectPhoto = b64;
+    updateEditSuspectPhotoPreview(b64);
+  });
+  return true;
+}
+
+function handleEditSuspectPhotoSelect(ev) {
+  var file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  setEditSuspectPhotoFromFile(file);
+}
+
+function clearEditSuspectPhoto() {
+  currentEditSuspectPhoto = '';
+  updateEditSuspectPhotoPreview('');
+}
+
+function handleEditSuspectPhotoPaste(ev) {
+  var data = ev && ev.clipboardData;
+  if (!data || !data.items) return false;
+
+  for (var i = 0; i < data.items.length; i++) {
+    var item = data.items[i];
+    if (!item || !/^image\//i.test(item.type || '')) continue;
+    var file = item.getAsFile();
+    if (!file) continue;
+    ev.preventDefault();
+    setEditSuspectPhotoFromFile(file);
+    return true;
+  }
+
+  return false;
+}
+
+function fillEditForm(record) {
+  var reportType = normalizeReportType(record.reportType);
+  toggleEditTypeSections(reportType);
+  document.getElementById('edit-suspect-nom').value = record.suspectNom || '';
+  document.getElementById('edit-suspect-prenom').value = record.suspectPrenom || '';
+  document.getElementById('edit-suspect-grade').value = record.suspectGrade || '';
+  document.getElementById('edit-date').value = record.date || '';
+  document.getElementById('edit-agent-nom').value = record.agentNom || '';
+  document.getElementById('edit-agent-prenom').value = record.agentPrenom || '';
+  document.getElementById('edit-agent-grade').value = record.agentGrade || '';
+  document.getElementById('edit-rapport').value = record.rapport || '';
+  resetEditDelitRows(record.delits || []);
+  document.getElementById('edit-peine').value = record.peine || '';
+  document.getElementById('edit-grave').checked = !!record.graveEvent;
+  document.getElementById('edit-grave-details').value = record.graveEventDetails || '';
+  document.getElementById('edit-record-meta').textContent = reportTypeLabel(reportType) + ' - #' + record.id + ' - ' + formatDateTime(record.timestamp);
+  currentEditSuspectPhoto = record.suspectPhoto || '';
+  updateEditSuspectPhotoPreview(currentEditSuspectPhoto);
+  toggleEditPatrolFields();
+}
+
+function openEditModal(recordId) {
+  if (!canManageReportsUi()) return;
+  var record = findRecord(recordId);
+  if (!record) return;
+  currentRecordId = recordId;
+  fillEditForm(record);
+  syncEditAgentIdentityInputs();
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function openEditModalFromDossier(recordId) {
+  closeDossierModal();
+  window.requestAnimationFrame(function() {
+    openEditModal(recordId);
+  });
+}
+
+function closeEditModal() {
+  currentRecordId = null;
+  currentEditReportType = 'incident';
+  currentEditSuspectPhoto = '';
+  updateEditSuspectPhotoPreview('');
+  resetEditDelitRows([]);
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+function getEditPayload() {
+  return {
+    reportType: currentEditReportType,
+    suspectNom: document.getElementById('edit-suspect-nom').value.trim(),
+    suspectPrenom: document.getElementById('edit-suspect-prenom').value.trim(),
+    suspectGrade: document.getElementById('edit-suspect-grade').value.trim(),
+    agentNom: document.getElementById('edit-agent-nom').value.trim(),
+    agentPrenom: document.getElementById('edit-agent-prenom').value.trim(),
+    agentGrade: document.getElementById('edit-agent-grade').value.trim(),
+    date: document.getElementById('edit-date').value.trim(),
+    rapport: document.getElementById('edit-rapport').value.trim(),
+    delits: collectEditDelits(),
+    peine: document.getElementById('edit-peine').value.trim(),
+    suspectPhoto: currentEditSuspectPhoto,
+    graveEvent: document.getElementById('edit-grave').checked,
+    graveEventDetails: document.getElementById('edit-grave-details').value.trim()
+  };
+}
+
+async function publishRecord(recordId, updateNotice) {
+  var response = await fetch('/api/v1/casier/publish/' + encodeURIComponent(recordId), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify({ updateNotice: !!updateNotice })
+  });
+  var payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || 'Publication impossible');
+  if (payload && payload.sanctionAlert && payload.sanctionAlert.alert) {
+    showToast(payload.sanctionAlert.alert);
+  }
+  return payload;
+}
+
+async function saveRecordEdits(shouldRepublish) {
+  if (!canManageReportsUi()) return;
+  if (!currentRecordId) return;
+  var button = document.getElementById('btn-save-edit');
+  var republishButton = document.getElementById('btn-save-republish');
+  button.disabled = true;
+  republishButton.disabled = true;
+  button.textContent = shouldRepublish ? 'Enregistrement...' : 'Enregistrement...';
+  republishButton.textContent = shouldRepublish ? 'Publication...' : 'Enregistrer et Republier';
+  try {
+    var response = await fetch('/api/v1/casier/records/' + encodeURIComponent(currentRecordId), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify(getEditPayload())
+    });
+    var payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Mise a jour impossible');
+      if (shouldRepublish && normalizeReportType(payload.record && payload.record.reportType) === 'incident') {
+        await publishRecord(currentRecordId, true);
+      }
+      closeEditModal();
+      await loadRecords();
+      showToast(shouldRepublish ? 'Rapport mis a jour et republie.' : 'Rapport mis a jour.');
+    } catch (error) {
+      showToast(error.message || 'Impossible de modifier ce rapport.', true);
+    } finally {
+    button.disabled = false;
+    republishButton.disabled = false;
+    button.textContent = 'Enregistrer';
+    republishButton.textContent = 'Enregistrer et Republier';
+  }
+}
+
+async function deleteRecord(recordId) {
+  if (!canManageReportsUi()) return;
+  var record = findRecord(recordId);
+  if (!record) return;
+  var target = normalizeReportType(record.reportType) === 'patrol'
+    ? ([record.agentPrenom, record.agentNom].filter(Boolean).join(' ').trim() || recordId)
+    : ([record.suspectPrenom, record.suspectNom].filter(Boolean).join(' ').trim() || recordId);
+  if (!window.confirm('Supprimer definitivement le rapport de ' + target + ' ')) return;
+  try {
+    var response = await fetch('/api/v1/casier/records/' + encodeURIComponent(recordId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Suppression impossible');
+    await loadRecords();
+    if (currentModalMode === 'patrol-report' || currentModalMode === 'patrol-group') {
+      if (currentPatrolGroupId && findPatrolGroup(currentPatrolGroupId)) {
+        openPatrolGroupModal(currentPatrolGroupId, currentPatrolFilterDate);
+      } else {
+        closeDossierModal();
+      }
+    } else if (currentDossierId && findDossier(currentDossierId)) {
+      openDossierModal(currentDossierId);
+    } else if (document.getElementById('dossier-modal').classList.contains('open')) {
+      closeDossierModal();
+    }
+    showToast('Rapport supprime.');
+  } catch (error) {
+    showToast(error.message || 'Impossible de supprimer ce rapport.', true);
+  }
+}
+
+function showToast(message, isError) {
+  var toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(function() { toast.className = 'toast'; }, 2600);
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeEditModal();
+    closeDossierModal();
+    closeRecordsOverviewModal();
+  }
+});
+document.getElementById('edit-suspect-photo-preview').addEventListener('paste', handleEditSuspectPhotoPaste);
+document.addEventListener('paste', function(ev) {
+  if (!currentRecordId) return;
+  var active = document.activeElement;
+  if (active && active.id === 'edit-suspect-photo-preview') {
+    return;
+  }
+  handleEditSuspectPhotoPaste(ev);
+});
+
+(async function boot() {
+  normalizeGestionCopy();
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  setupUserBar(currentUser);
+  syncEditAgentIdentityInputs();
+  if (!await ensureCrudAccess()) return;
+  await loadEditCodePenal();
+  resetEditDelitRows([]);
+  await loadRecords();
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+</script>
+</body>
+</html>

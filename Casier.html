@@ -1,0 +1,946 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapport d'incident - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/casier.css?v=20260408a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    var hasToken = sessionStorage.getItem('policeToken');
+    if (!hasToken) {
+      window.location.replace('login.html?redirect=Casier.html');
+      return;
+    }
+    /* Verification rapide cote client : le boot fera la vraie verif serveur */
+  })();
+</script>
+</head>
+<body>
+
+<!-- Bouton retour -->
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+<!-- Barre utilisateur -->
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer;" title="Modifier mon profil">&#8230;</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<!-- Popup profil -->
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<!-- Contenu principal -->
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">KONOHA</div>
+
+    <!-- En-tête -->
+    <div class="doc-header">
+      <svg class="konoha-symbol" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+        <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+        <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+        <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+      </svg>
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Rapport d'incident</h1>
+      <div class="sub-title">Incident officiel &mdash; Formulaire du commandement</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="casier-form" id="casier-form">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-nom">Nom du Suspect</label>
+          <input class="form-input" type="text" id="f-nom" placeholder="Uchiha">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-prenom">Pr&eacute;nom du Suspect</label>
+          <input class="form-input" type="text" id="f-prenom" placeholder="Sasuke">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-grade">Grade du Suspect</label>
+          <select class="form-select" id="f-grade">
+            <option value="">S&eacute;lectionner un grade</option>
+            <option value="Apprenti G&eacute;nin">Apprenti G&eacute;nin</option>
+            <option value="G&eacute;nin">G&eacute;nin</option>
+            <option value="G&eacute;nin Confirm&eacute;">G&eacute;nin Confirm&eacute;</option>
+            <option value="Ch&ucirc;nin">Ch&ucirc;nin</option>
+            <option value="K&ocirc;nin">K&ocirc;nin</option>
+            <option value="Tokubetsu-J&ocirc;nin">Tokubetsu-J&ocirc;nin</option>
+            <option value="J&ocirc;nin">J&ocirc;nin</option>
+            <option value="Commandant-J&ocirc;nin">Commandant-J&ocirc;nin</option>
+            <option value="Sanin">Sanin</option>
+            <option value="Hokage">Hokage</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-date">Date de l&rsquo;Incident</label>
+          <input class="form-input" type="text" id="f-date" placeholder="dd/mm/YYYY">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label" for="f-photo">Photo du Ninja (optionnel)</label>
+          <div class="suspect-photo-field">
+            <div class="suspect-photo-preview" id="suspect-photo-preview" tabindex="0" title="Cliquez ici puis collez une image avec Ctrl+V">
+              <span class="suspect-photo-placeholder" id="suspect-photo-placeholder">&#128100;</span>
+            </div>
+            <div class="suspect-photo-actions">
+              <label class="suspect-photo-upload" for="f-photo">&#128247; Ajouter une photo</label>
+              <input type="file" accept="image/png,image/jpeg,image/webp" id="f-photo" class="suspect-photo-input" onchange="handleSuspectPhotoSelect(event)">
+              <button type="button" class="suspect-photo-clear" id="suspect-photo-clear" onclick="clearSuspectPhoto()" hidden>Retirer la photo</button>
+              <div class="suspect-photo-hint">Format libre. Vous pouvez aussi cliquer dans le cadre puis coller une image avec Ctrl+V. Si aucune image n&rsquo;est fournie, un portrait anonyme sera utilis&eacute; lors de la publication.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-agent-nom">Nom de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-nom" placeholder="Nom de l&rsquo;officier" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-agent-prenom">Pr&eacute;nom de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-prenom" placeholder="Pr&eacute;nom de l&rsquo;officier" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-agent-grade">Grade de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-grade" placeholder="Grade de l&rsquo;officier" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label" for="f-rapport">Rapport d&rsquo;Incident</label>
+          <textarea class="form-textarea" id="f-rapport" placeholder="D&eacute;crivez clairement l&rsquo;incident, les faits observ&eacute;s et l&rsquo;intervention men&eacute;e."></textarea>
+        </div>
+      </div>
+
+      <!-- Délits (select dynamiques) -->
+      <div class="delits-section" id="delits-section">
+        <div class="delits-header">
+          <span class="delits-label">D&eacute;lits Commis</span>
+          <button class="btn-add-delit" onclick="addDelitRow()">+ Ajouter un d&eacute;lit</button>
+        </div>
+        <div id="delits-list">
+          <!-- Les lignes de select seront ajoutées ici -->
+        </div>
+      </div>
+
+      <!-- Peine appliquée (zone texte libre pour préciser TIG, amendes, etc.) -->
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label" for="f-peine">Peine Appliqu&eacute;e (optionnel &mdash; surcharge)</label>
+          <input class="form-input" type="text" id="f-peine" placeholder="Ex : TIG + 30 000r  (si diff&eacute;rent de la peine recommand&eacute;e)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Résultat -->
+    <div class="result-section">
+      <div class="result-divider"></div>
+      <button class="btn-generate" onclick="generateReport()">&#9878; G&eacute;n&eacute;rer le Rapport d&rsquo;Incident</button>
+      <div class="output-box" id="output-box"></div>
+      <div class="output-actions" id="output-actions">
+        <button class="btn-copy" id="btn-publish" onclick="publishCurrentCasier()">&#128225; Publier le Rapport</button>
+        <button class="btn-reset-form" onclick="resetForm()">&#8635; Nouveau Rapport</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUTH & UTILITAIRES
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() {
+  try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) { return null; }
+}
+
+async function checkAuth() {
+  if (!sessionStorage.getItem('policeToken')) {
+    window.location.href = 'login.html?redirect=Casier.html';
+    return null;
+  }
+  var token = getToken();
+  if (!token) { window.location.href = 'login.html?redirect=Casier.html'; return null; }
+  try {
+    var r = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) { sessionStorage.clear(); window.location.href = 'login.html?redirect=Casier.html'; return null; }
+    var user = await r.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch(e) { return getCachedUser(); }
+}
+
+function setupUserBar(user) {
+  if (user.permission === 'GUEST') {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = '\u25c8 Visiteur';
+    badge.classList.add('guest');
+    return;
+  }
+  document.getElementById('user-badge').textContent = '\u25c6 ' + user.pseudo;
+  if (user.permission === 'ADMIN') {
+    document.getElementById('btn-admin-panel').style.display = '';
+  }
+}
+
+function openAdminShortcut() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+
+function syncAgentIdentityInputs() {
+  var canEdit = currentUser && currentUser.permission === 'ADMIN';
+  ['f-agent-nom', 'f-agent-prenom', 'f-agent-grade'].forEach(function(id) {
+    var input = document.getElementById(id);
+    if (!input) return;
+    input.readOnly = !canEdit;
+  });
+}
+
+function canCreateIncidentReports() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canCreateIncidentReport);
+}
+
+function canViewIncidentReportPage() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canViewIncidentReportPage);
+}
+
+function setIncidentReadOnlyMode(enabled) {
+  document.querySelectorAll('#casier-form input, #casier-form select, #casier-form textarea, #casier-form button').forEach(function(node) {
+    if (node.id === 'f-agent-nom' || node.id === 'f-agent-prenom' || node.id === 'f-agent-grade') return;
+    node.disabled = !!enabled;
+  });
+
+  var publishButton = document.getElementById('btn-publish');
+  if (publishButton) publishButton.style.display = enabled ? 'none' : '';
+
+  var existing = document.getElementById('incident-readonly-note');
+  if (existing) existing.remove();
+
+  if (enabled) {
+    var note = document.createElement('div');
+    note.id = 'incident-readonly-note';
+    note.style.cssText = 'margin:0 0 18px;padding:12px 16px;border:1px solid rgba(138,96,16,0.35);background:rgba(255,248,220,0.72);color:#5a3a10;font-family:Georgia,serif;font-style:italic;';
+    note.textContent = 'Acces Justice : consultation uniquement sur ce rapport.';
+    var form = document.getElementById('casier-form');
+    if (form && form.parentNode) form.parentNode.insertBefore(note, form);
+  }
+}
+
+async function doLogout() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    return;
+  }
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch(e) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+function toggleBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.toggle('open');
+}
+function closeBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.remove('open');
+}
+function togglePresenceMobile() {
+  if (window.innerWidth <= 700) {
+    document.getElementById('presence-sidebar').classList.toggle('mobile-open');
+  }
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CODE PÉNAL — chargement dynamique
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _cpData = null;
+var _allInfractions = []; // tableau plat de toutes les infractions
+
+async function loadCodePenal() {
+  try {
+    var token = getToken();
+    var endpoints = [];
+
+    if (token) {
+      endpoints.push({
+        url: '/api/v1/codepenal?t=' + Date.now(),
+        options: { headers: { 'Authorization': 'Bearer ' + token } }
+      });
+    }
+
+    endpoints.push({
+      url: '/codepenal.json?t=' + Date.now(),
+      options: {}
+    });
+
+    var r = null;
+    for (var i = 0; i < endpoints.length; i++) {
+      r = await fetch(endpoints[i].url, endpoints[i].options);
+      if (r.ok) break;
+    }
+
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _cpData = await r.json();
+    _allInfractions = [];
+    (_cpData.sections || []).forEach(function(sec) {
+      (sec.rows || []).forEach(function(row) {
+        _allInfractions.push({
+          code: row.code,
+          infraction: row.infraction,
+          peine: row.peine,
+          section: sec.id,
+          sectionTitle: sec.title
+        });
+      });
+    });
+    document.getElementById('delits-list').innerHTML = '';
+    _delitCounter = 0;
+    /* Ajouter une première ligne de délit par défaut */
+    addDelitRow();
+  } catch(e) {
+    console.error('[Casier] Impossible de charger le Code Pénal', e);
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DÉLITS — lignes dynamiques de select
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _delitCounter = 0;
+var currentGeneratedArrestId = null;
+var currentSuspectPhoto = '';
+
+function addDelitRow() {
+  _delitCounter++;
+  var id = 'delit-' + _delitCounter;
+  var div = document.createElement('div');
+  div.className = 'delit-row';
+  div.id = id;
+
+  /* Select */
+  var sel = document.createElement('select');
+  sel.className = 'form-select';
+
+  var optDefault = document.createElement('option');
+  optDefault.value = '';
+  optDefault.textContent = '\u2014 S\u00e9lectionner un d\u00e9lit \u2014';
+  sel.appendChild(optDefault);
+
+  /* Grouper par section */
+  var currentSec = '';
+  _allInfractions.forEach(function(inf) {
+    if (inf.sectionTitle !== currentSec) {
+      var optGroup = document.createElement('optgroup');
+      optGroup.label = inf.sectionTitle;
+      sel.appendChild(optGroup);
+      currentSec = inf.sectionTitle;
+    }
+    var opt = document.createElement('option');
+    opt.value = inf.code;
+    opt.textContent = inf.code + ' \u2014 ' + inf.infraction;
+    opt.dataset.peine = inf.peine;
+    var lastGroup = sel.querySelector('optgroup:last-of-type');
+    if (lastGroup) lastGroup.appendChild(opt);
+    else sel.appendChild(opt);
+  });
+
+  /* Tag peine */
+  var peineTag = document.createElement('span');
+  peineTag.className = 'delit-peine-tag';
+  peineTag.textContent = '\u2014';
+
+  sel.addEventListener('change', function() {
+    var chosen = sel.options[sel.selectedIndex];
+    peineTag.textContent = chosen && chosen.dataset && chosen.dataset.peine
+      ? chosen.dataset.peine
+      : '\u2014';
+  });
+
+  /* Bouton supprimer */
+  var btnDel = document.createElement('button');
+  btnDel.className = 'btn-del-delit';
+  btnDel.textContent = '\u00d7';
+  btnDel.title = 'Retirer ce d\u00e9lit';
+  btnDel.onclick = function() {
+    div.remove();
+  };
+
+  div.appendChild(sel);
+  div.appendChild(peineTag);
+  div.appendChild(btnDel);
+
+  document.getElementById('delits-list').appendChild(div);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GÉNÉRATION DU RAPPORT DISCORD
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function formatReportOutput(record) {
+  var lines = [];
+  var delits = Array.isArray(record.delits) ? record.delits : [];
+
+  lines.push('> **==============================**');
+  lines.push("> **RAPPORT D'INCIDENT**");
+  lines.push('> **==============================**');
+  lines.push('> ');
+  lines.push('> **Suspect :** ' + (((record.suspectNom || '') + ' ' + (record.suspectPrenom || '')).trim() || 'Non renseigne'));
+  if (record.suspectGrade) lines.push('> **Grade :** ' + record.suspectGrade);
+  lines.push('> **Photo :** ' + (record.suspectPhoto ? 'Fournie' : 'Portrait anonyme'));
+  if (record.date) lines.push('> **Date :** ' + record.date);
+  lines.push('> ');
+  lines.push('> **Agent :** ' + (((record.agentPrenom || '') + ' ' + (record.agentNom || '')).trim() || 'Non renseigne'));
+  if (record.agentGrade) lines.push('> **Grade Agent :** ' + record.agentGrade);
+  lines.push('> ');
+  lines.push("> ***__Rapport d'incident :__***");
+  lines.push('> *' + (record.rapport || 'Aucun rapport redige.') + '*');
+  lines.push('> ');
+  lines.push('> ***__Peine Appliquee :__***');
+
+  if (delits.length > 0) {
+    delits.forEach(function(delit) {
+      var peineStr = record.peine ? ' (' + record.peine + ')' : '';
+      lines.push('> ***' + delit + peineStr + '*');
+    });
+  } else if (record.peine) {
+    lines.push('> *' + record.peine + '*');
+  } else {
+    lines.push('> *Aucun delit selectionne.*');
+  }
+
+  lines.push('> ');
+  lines.push('> **==============================**');
+  return lines.join('\n');
+}
+
+function setPublishButtonState(label, disabled, published) {
+  var btn = document.getElementById('btn-publish');
+  btn.disabled = !!disabled;
+  btn.textContent = label;
+  btn.classList.toggle('copied', !!published);
+}
+
+function updateSuspectPhotoPreview(src) {
+  var preview = document.getElementById('suspect-photo-preview');
+  var clearButton = document.getElementById('suspect-photo-clear');
+  var input = document.getElementById('f-photo');
+  if (!preview || !clearButton || !input) return;
+
+  if (src) {
+    preview.innerHTML = '<img src="' + src + '" alt="Photo du suspect">';
+    clearButton.hidden = false;
+  } else {
+    preview.innerHTML = '<span class="suspect-photo-placeholder" id="suspect-photo-placeholder">&#128100;</span>';
+    clearButton.hidden = true;
+    input.value = '';
+  }
+}
+
+function handleSuspectPhotoSelect(ev) {
+  var file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  setSuspectPhotoFromFile(file);
+}
+
+function clearSuspectPhoto() {
+  currentSuspectPhoto = '';
+  updateSuspectPhotoPreview('');
+}
+
+function setSuspectPhotoFromFile(file) {
+  if (!file || !/^image\//i.test(file.type || '')) return false;
+  resizeImageToBase64(file, 512, 0.84, function(b64) {
+    currentSuspectPhoto = b64;
+    updateSuspectPhotoPreview(b64);
+  });
+  return true;
+}
+
+function handleSuspectPhotoPaste(ev) {
+  var data = ev && ev.clipboardData;
+  if (!data || !data.items) return false;
+
+  for (var i = 0; i < data.items.length; i++) {
+    var item = data.items[i];
+    if (!item || !/^image\//i.test(item.type || '')) continue;
+    var file = item.getAsFile ? item.getAsFile() : null;
+    if (!file) continue;
+    ev.preventDefault();
+    setSuspectPhotoFromFile(file);
+    return true;
+  }
+
+  return false;
+}
+
+async function generateReport() {
+  if (!canCreateIncidentReports()) {
+    alert('Acces lecture seule : la Justice de Konoha ne peut pas generer de rapport d incident.');
+    return;
+  }
+  var nom       = (document.getElementById('f-nom').value || '').trim();
+  var prenom    = (document.getElementById('f-prenom').value || '').trim();
+  var grade     = (document.getElementById('f-grade').value || '').trim();
+  var date      = (document.getElementById('f-date').value || '').trim();
+  var agentNom  = (document.getElementById('f-agent-nom').value || '').trim();
+  var agentPre  = (document.getElementById('f-agent-prenom').value || '').trim();
+  var agentGrd  = (document.getElementById('f-agent-grade').value || '').trim();
+  var suspectPhoto = currentSuspectPhoto;
+  var rapport   = (document.getElementById('f-rapport').value || '').trim();
+  var peineOver = (document.getElementById('f-peine').value || '').trim();
+
+  if (!nom || !prenom) {
+    alert('Veuillez renseigner au moins le Nom et le Prenom du suspect.');
+    return;
+  }
+
+  var delits = [];
+  document.querySelectorAll('#delits-list .delit-row select').forEach(function(sel) {
+    if (!sel.value) return;
+    var chosen = sel.options[sel.selectedIndex];
+    delits.push({
+      code: sel.value,
+      infraction: chosen.textContent.replace(sel.value + ' - ', '').replace(sel.value + ' — ', ''),
+      peine: chosen.dataset.peine || ''
+    });
+  });
+
+  var delitsCodeList = delits.map(function(d) { return d.code + ' - ' + d.infraction; });
+  var saveResult = await saveReportToServer(nom, prenom, grade, suspectPhoto, agentPre, agentNom, agentGrd, date, rapport, delitsCodeList, peineOver);
+  if (!saveResult || !saveResult.success || !saveResult.record) {
+    alert('Impossible de sauvegarder le casier pour le moment.');
+    return;
+  }
+
+  currentGeneratedArrestId = saveResult.arrestId;
+
+  var box = document.getElementById('output-box');
+  box.textContent = formatReportOutput(saveResult.record);
+  box.classList.add('visible');
+  document.getElementById('output-actions').classList.add('visible');
+  setPublishButtonState('Publier le Rapport', false, false);
+}
+
+async function publishCurrentCasier() {
+  if (!canCreateIncidentReports()) {
+    alert('Acces lecture seule : publication reservee aux policiers.');
+    return;
+  }
+  if (!currentGeneratedArrestId) {
+    alert("Genere d'abord un rapport avant de le publier.");
+    return;
+  }
+
+  setPublishButtonState('Publication en cours...', true, false);
+
+  try {
+    var response = await fetch('/api/v1/casier/publish/' + encodeURIComponent(currentGeneratedArrestId), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error((payload && payload.error) || 'Publication impossible');
+    }
+
+    setPublishButtonState('Rapport publie', false, true);
+    if (payload && payload.sanctionAlert && payload.sanctionAlert.alert) {
+      alert(payload.sanctionAlert.alert);
+    }
+  } catch (error) {
+    alert(error.message || 'Publication Discord impossible.');
+    setPublishButtonState('Publier le Rapport', false, false);
+  }
+}
+
+function resetForm() {
+  currentGeneratedArrestId = null;
+  currentSuspectPhoto = '';
+  ['f-nom','f-prenom','f-grade','f-date','f-agent-grade','f-rapport','f-peine'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  updateSuspectPhotoPreview('');
+  document.getElementById('delits-list').innerHTML = '';
+  addDelitRow();
+  document.getElementById('output-box').classList.remove('visible');
+  document.getElementById('output-box').textContent = '';
+  document.getElementById('output-actions').classList.remove('visible');
+  setPublishButtonState('Publier le Rapport', false, false);
+  prefillAgentInfo();
+}
+
+async function saveReportToServer(suspectNom, suspectPrenom, suspectGrade, suspectPhoto, agentPrenom, agentNom, agentGrade, date, rapport, delits, peine) {
+  try {
+    var token = sessionStorage.getItem('policeToken');
+    if (!token) return null;
+
+      var payload = {
+        reportType: 'incident',
+        suspectNom: suspectNom,
+        suspectPrenom: suspectPrenom,
+        suspectGrade: suspectGrade,
+      suspectPhoto: suspectPhoto || '',
+      agentNom: agentNom,
+      agentPrenom: agentPrenom,
+      agentGrade: agentGrade,
+      date: date,
+      rapport: rapport,
+      delits: delits,
+      peine: peine
+    };
+
+    var res = await fetch('/api/v1/casier/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      console.error('[Casier] Erreur sauvegarde:', res.status);
+      return null;
+    }
+
+    console.log('[Casier] Rapport sauvegarde avec succes');
+    return await res.json();
+  } catch(e) {
+    console.error('[Casier] Erreur:', e.message);
+    return null;
+  }
+}
+
+async function prefillAgentInfo() {
+  /* Date du jour */
+  var now = new Date();
+  var dd = String(now.getDate()).padStart(2, '0');
+  var mm = String(now.getMonth() + 1).padStart(2, '0');
+  var yyyy = now.getFullYear();
+  document.getElementById('f-date').value = dd + '/' + mm + '/' + yyyy;
+
+  /* Infos agent depuis le registre */
+  if (!currentUser || !currentUser.pseudo || currentUser.permission === 'GUEST') return;
+  var pseudoHRP = currentUser.linkedMembre || currentUser.pseudo;
+  try {
+    var mr = await fetch('/api/v1/membres/' + encodeURIComponent(pseudoHRP));
+    if (mr.ok) {
+      var membre = await mr.json();
+      if (membre.nomRP) {
+        var parts = membre.nomRP.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          document.getElementById('f-agent-prenom').value = parts[0];
+          document.getElementById('f-agent-nom').value = parts.slice(1).join(' ');
+        } else {
+          document.getElementById('f-agent-nom').value = membre.nomRP;
+        }
+      }
+      if (membre.grade) {
+        document.getElementById('f-agent-grade').value = membre.grade;
+      } else if (membre.rang) {
+        document.getElementById('f-agent-grade').value = membre.rang;
+      }
+    } else {
+      document.getElementById('f-agent-nom').value = currentUser.pseudo;
+    }
+  } catch(e) {
+    document.getElementById('f-agent-nom').value = currentUser.pseudo;
+  }
+
+  syncAgentIdentityInputs();
+}
+
+/* Auto-format date */
+document.getElementById('f-date').addEventListener('input', function(e) {
+  var v = this.value.replace(/[^\d]/g, '');
+  if (v.length > 8) v = v.slice(0, 8);
+  var parts = [];
+  if (v.length > 0) parts.push(v.slice(0, 2));
+  if (v.length > 2) parts.push(v.slice(2, 4));
+  if (v.length > 4) parts.push(v.slice(4, 8));
+  this.value = parts.join('/');
+});
+
+document.getElementById('suspect-photo-preview').addEventListener('paste', handleSuspectPhotoPaste);
+document.addEventListener('paste', function(ev) {
+  var active = document.activeElement;
+  if (active && active.id === 'suspect-photo-preview') {
+    return;
+  }
+  handleSuspectPhotoPaste(ev);
+});
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   POPUP PROFIL
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pendingAvatar = null;
+
+function toggleProfilePopup() {
+  var popup = document.getElementById('profile-popup');
+  if (popup.classList.contains('open')) {
+    closeProfilePopup(null, true);
+  } else {
+    openProfilePopup();
+  }
+}
+
+async function openProfilePopup() {
+  if (!currentUser || currentUser.permission === 'GUEST') return;
+  var popup = document.getElementById('profile-popup');
+  popup.classList.add('open');
+
+  try {
+    var r = await fetch('/auth/profile/avatar/' + encodeURIComponent(currentUser.pseudo), { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    if (r.ok) {
+      var data = await r.json();
+      if (data.avatar) {
+        var prev = document.getElementById('profile-avatar-preview');
+        prev.innerHTML = '<img src="' + data.avatar + '">';
+      }
+    }
+  } catch(e) {}
+
+  if (window.ServiceWidget) {
+    window.ServiceWidget.refresh(currentUser);
+  }
+
+  setTimeout(function() {
+    document.addEventListener('click', _outsideProfileClick);
+  }, 50);
+}
+
+function closeProfilePopup(ev, force) {
+  document.getElementById('profile-popup').classList.remove('open');
+  document.removeEventListener('click', _outsideProfileClick);
+}
+
+function _outsideProfileClick(e) {
+  if (!e.target.closest('#profile-popup') && !e.target.closest('#user-badge')) {
+    closeProfilePopup(null, true);
+  }
+}
+
+function resizeImageToBase64(file, maxSize, quality, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else       { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      var c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleAvatarSelect(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  resizeImageToBase64(file, 256, 0.82, function(b64) {
+    _pendingAvatar = b64;
+    document.getElementById('profile-avatar-preview').innerHTML = '<img src="' + b64 + '">';
+    document.getElementById('profile-save-btn').disabled = false;
+  });
+}
+
+async function saveAvatar() {
+  if (!_pendingAvatar) return;
+  var btn = document.getElementById('profile-save-btn');
+  var status = document.getElementById('profile-save-status');
+  btn.disabled = true;
+  status.textContent = 'Envoi\u2026';
+  status.style.color = '';
+  try {
+    var r = await fetch('/auth/profile/avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ avatar: _pendingAvatar })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+    _pendingAvatar = null;
+    status.style.color = '#2c3e1a';
+    status.textContent = '\u2756 Sauvegard\u00e9 !';
+    setTimeout(function() { status.textContent = ''; }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    status.style.color = '#8b1a1a';
+    status.textContent = '\u26a0 ' + e.message;
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeProfilePopup(null, true);
+});
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRÉSENCE — ping & focus
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pFocused = document.hasFocus();
+document.addEventListener('visibilitychange', function() { pingPresence(); });
+window.addEventListener('focus', function() { _pFocused = true; pingPresence(); });
+window.addEventListener('blur',  function() { _pFocused = false; pingPresence(); });
+
+function _pStatus() {
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (document.hidden || !_pFocused) return 'away';
+  if (isMobile) return 'mobile';
+  return 'active';
+}
+
+var _guestId = null;
+function getGuestId() {
+  if (_guestId) return _guestId;
+  _guestId = sessionStorage.getItem('policeGuestId');
+  if (!_guestId) { _guestId = 'g' + Math.random().toString(36).slice(2, 10); sessionStorage.setItem('policeGuestId', _guestId); }
+  return _guestId;
+}
+
+async function pingPresence() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    try {
+      await fetch('/presence/guest-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestId: getGuestId() })
+      });
+    } catch(e) {}
+    return;
+  }
+  var token = getToken();
+  if (!token) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: _pStatus() })
+    });
+    if (response.ok) {
+      renderPresence(await response.json());
+    }
+  } catch(e) {}
+}
+
+function renderPresence(data) {
+  if (window.PresenceUI) window.PresenceUI.renderPresence('presence-list', data);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BOOT
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var currentUser = null;
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  /* Accès réservé aux policiers */
+  if (!canViewIncidentReportPage()) {
+    window.location.replace('index.html');
+    return;
+  }
+  setupUserBar(currentUser);
+  syncAgentIdentityInputs();
+  setIncidentReadOnlyMode(!canCreateIncidentReports());
+  await loadCodePenal();
+
+  /* Pré-remplir date + infos agent RP */
+  await prefillAgentInfo();
+
+  /* Présence */
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+</script>
+</body>
+</html>

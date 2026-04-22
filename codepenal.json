@@ -1,0 +1,125 @@
+{
+  "sections": [
+    {
+      "id": "c",
+      "cssClass": "section-c",
+      "title": "C \u2013 Infractions Civiles",
+      "rows": [
+        { "code": "C1.1",  "infraction": "Trouble \u00e0 l\u2019ordre public",             "description": "Cris, chahut, bagarre verbale",                                                       "peine": "Avert + 5 000r + TIG" },
+        { "code": "C1.2",  "infraction": "Diffamation publique",                   "description": "Accusation sans preuve",                                                            "peine": "Avert + 5 000r" },
+        { "code": "C1.3",  "infraction": "Harc\u00e8lement verbal",                     "description": "Provocations r\u00e9p\u00e9t\u00e9es",                                                            "peine": "Avert + 10 000r" },
+        { "code": "C1.4",  "infraction": "Port ill\u00e9gal d\u2019arme",                  "description": "Arme sans autorisation hors Artefact",                                              "peine": "Avert + 15 000r + Confiscation" },
+        { "code": "C1.5",  "infraction": "Refus d\u2019obtemp\u00e9rer",                   "description": "Ignorer un ordre officiel",                                                          "peine": "Avert + Cellule 15min + 25 000r" },
+        { "code": "C1.6",  "infraction": "Intrusion dans un lieu priv\u00e9",           "description": "Dojo, quartier de clan, maison ou zone militaire",                                 "peine": "Cellule 30min + 50 000r" },
+        { "code": "C1.7",  "infraction": "Vandalisme",                             "description": "D\u00e9g\u00e2ts \u00e0 un monument, b\u00e2timent",                                                      "peine": "Jugement (Amendes selon les d\u00e9gradations)" },
+        { "code": "C1.8",  "infraction": "Vente ill\u00e9gale",                          "description": "Objets ou artefacts non enregistr\u00e9s",                                              "peine": "Avert + 10 000r + confiscation des objets" },
+        { "code": "C1.9",  "infraction": "Vol",                                    "description": "Objets civils, ninja ou artefacts",                                                 "peine": "D\u00e9tention + Jugement" },
+        { "code": "C1.10", "infraction": "Fausse alerte",                          "description": "Cr\u00e9er une panique sans motif",                                                      "peine": "Signalement + Cellule 20min + 25 000r" },
+        { "code": "C1.11", "infraction": "Usurpation d\u2019identit\u00e9 civile",          "description": "Faux nom, faux uniforme",                                                            "peine": "Avert + Cellule 15 min + TIG" },
+        { "code": "C1.12", "infraction": "Commerce avec un ennemi",                "description": "Vente ou \u00e9change avec \u00e9tranger hostile",                                              "peine": "Jugement" },
+        { "code": "C1.13", "infraction": "Obstruction \u00e0 une enqu\u00eate",             "description": "Refus de t\u00e9moigner, destruction de preuve",                                       "peine": "Jugement" },
+        { "code": "C1.14", "infraction": "Provocation \u00e0 la haine clanique",        "description": "Discours visant un clan pr\u00e9cis",                                                   "peine": "Cellule 15min + Jugement" }
+      ]
+    },
+    {
+      "id": "n",
+      "cssClass": "section-n",
+      "title": "N \u2013 Infractions Ninja / Militaire",
+      "rows": [
+        { "code": "N2.1",  "infraction": "Abandon de mission",                                 "description": "Fuite ou refus sans motif",                                                           "peine": "Signalement + Cellule 15min + 35 000r" },
+        { "code": "N2.2",  "infraction": "Insubordination",                                   "description": "Refus d\u2019ob\u00e9ir en mission",                                                       "peine": "Cellule 30min + Jugement" },
+        { "code": "N2.3",  "infraction": "Utilisation non autoris\u00e9e d\u2019art ninja",         "description": "Art ninja en zone civile ou interdit",                                               "peine": "Avert + Cellule 15min + 25 000r + TIG" },
+        { "code": "N2.4",  "infraction": "Entra\u00eenement interdit",                          "description": "Entra\u00eenement g\u00eanant ou hors du cadre Ninja",                                       "peine": "Avertissement + 5 000r" },
+        { "code": "N2.5",  "infraction": "Non-transmission de rapport",                       "description": "Mission non rapport\u00e9e",                                                             "peine": "Avertissement + 12 500r + TIG" },
+        { "code": "N2.6",  "infraction": "Simulation de rang",                                "description": "Se faire passer pour plus grad\u00e9",                                                  "peine": "D\u00e9tention + Jugement" },
+        { "code": "N2.7",  "infraction": "Acc\u00e8s non autoris\u00e9 \u00e0 une zone",              "description": "Archives, prison, salle de r\u00e9union",                                              "peine": "Cellule 15min + Jugement" },
+        { "code": "N2.8",  "infraction": "Vol de techniques",                                 "description": "Copie d\u2019un art ninja sans autorisation",                                           "peine": "Jugement" },
+        { "code": "N2.9",  "infraction": "Usage ill\u00e9gal d\u2019invocation",                  "description": "Invocation non d\u00e9clar\u00e9e",                                                         "peine": "Avert + 25 000r" },
+        { "code": "N2.10", "infraction": "D\u00e9t\u00e9rioration d\u2019\u00e9quipement",              "description": "Alt\u00e9ration de rouleaux, outils",                                                  "peine": "Remplacement + 10 000r" },
+        { "code": "N2.11", "infraction": "Mise en danger d\u2019un civil",                    "description": "Collision, technique imprudente",                                                     "peine": "Cellule 20min + 35 000r" },
+        { "code": "N2.12", "infraction": "Propagation de rumeurs dangereuses",               "description": "Hyst\u00e9rie collective, perte de moral",                                              "peine": "D\u00e9tention + Jugement" },
+        { "code": "N2.13", "infraction": "Dissimulation d\u2019information strat\u00e9gique",    "description": "Omission volontaire d\u2019un \u00e9l\u00e9ment critique",                                    "peine": "Jugement" },
+        { "code": "N2.14", "infraction": "Loyaut\u00e9 ambigu\u00eb",                             "description": "Contacts r\u00e9p\u00e9t\u00e9s avec forces hostiles",                                          "peine": "D\u00e9tention + Jugement" },
+        { "code": "N2.15", "infraction": "Saut de Chakra dans le Village",                   "description": "Saut Charg\u00e9 ou Saut Double dans le village pour se d\u00e9placer plus rapidement",   "peine": "TIG + 15 000r" },
+        { "code": "N2.16", "infraction": "Courses de Chakra dans le village",                "description": "Le fait d\u2019utilis\u00e9 son chakra pour courir plus vite dans le village",          "peine": "TIG + 15 000r" },
+        { "code": "N2.17", "infraction": "Marche sur les murs et Toits du village",          "description": "Le fait d\u2019utilis\u00e9 son Chakra pour monter sur les infrastructures du village", "peine": "TIG + 15 000r" }
+      ]
+    },
+    {
+      "id": "g",
+      "cssClass": "section-g",
+      "title": "G \u2013 Crimes (Casier Judiciaire)",
+      "rows": [
+        { "code": "G3.1",  "infraction": "Meurtre",                                        "description": "Hors mission, sans justification",                                          "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.2",  "infraction": "Haute trahison",                                 "description": "Vente d\u2019infos, trahison ouverte",                                       "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.3",  "infraction": "D\u00e9sertion",                                    "description": "Fuite du village sans autorisation",                                       "peine": "Traque + Ex\u00e9cution" },
+        { "code": "G3.4",  "infraction": "Affiliation \u00e0 groupe ennemi",                 "description": "Groupe ennemi, groupe rebelle ou terroriste",                              "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.5",  "infraction": "Sceau interdit",                                 "description": "Utilisation d\u2019un artefact scell\u00e9",                                    "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.6",  "infraction": "Invocation maudite",                             "description": "Kuchiyose dangereux ou maudit",                                            "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.7",  "infraction": "Piratage de documents",                          "description": "Lecture ou vol d\u2019archives secr\u00e8tes",                                 "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.8",  "infraction": "Art Ninja Interdit",                             "description": "Sacrifice, invocation maudite etc\u2026",                                   "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.9",  "infraction": "Tentative de coup d\u2019\u00c9tat",               "description": "Organisation de r\u00e9bellion",                                              "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.10", "infraction": "Corruption d\u2019un officiel",                   "description": "Tentative d\u2019achat d\u2019un ninja/juge",                                  "peine": "D\u00e9tention + Jugement" },
+        { "code": "G3.11", "infraction": "Infiltration d\u2019une unit\u00e9 sp\u00e9ciale",    "description": "Fausse int\u00e9gration \u00e0 une unit\u00e9 d\u2019\u00e9lite",                       "peine": "Ex\u00e9cution" },
+        { "code": "G3.12", "infraction": "Utilisation d\u2019un Biju sans autorisation",   "description": "Utilisation d\u2019un Biju contre le village",                              "peine": "D\u00e9tention + Jugement" }
+      ]
+    },
+    {
+      "id": "k",
+      "cssClass": "section-k",
+      "title": "K \u2013 Infractions Claniques",
+      "rows": [
+        { "code": "K5.1", "infraction": "R\u00e9tention de membre recherch\u00e9",                    "description": "Refus de livrer un membre criminel",                                       "peine": "Sanction collective clanique par HC" },
+        { "code": "K5.2", "infraction": "Transmission interdite de Kekkei Genkai",           "description": "Transfert non autoris\u00e9 d\u2019un pouvoir clanique",                       "peine": "Jugement" },
+        { "code": "K5.3", "infraction": "Milice priv\u00e9e violente",                          "description": "Groupe de combat ill\u00e9gal dans un clan",                                 "peine": "Dissolution + Jugement" },
+        { "code": "K5.4", "infraction": "Art Ninja interdit en clan",                        "description": "Invocation secr\u00e8te, c\u00e9r\u00e9monie sanglante",                           "peine": "TIG clanique" },
+        { "code": "K5.5", "infraction": "S\u00e9paration clanique non d\u00e9clar\u00e9e",            "description": "Clan se mettant en retrait total du village",                              "peine": "Radiation du Village" },
+        { "code": "K5.6", "infraction": "Usage d\u2019artefact ancestral de mani\u00e8re nocif", "description": "Arme de clan activ\u00e9e nocif envers Konoha",                              "peine": "Confiscation + TIG clanique" }
+      ]
+    },
+    {
+      "id": "r",
+      "cssClass": "section-r",
+      "title": "R \u2013 Infractions Sp\u00e9ciales / De Crise",
+      "rows": [
+        { "code": "R6.1", "infraction": "R\u00e9bellion publique \u00e0 grande \u00e9chelle",           "description": "Discours contre l\u2019ordre, incitation \u00e0 l\u2019insurrection",        "peine": "Loi martiale + Purge" },
+        { "code": "R6.2", "infraction": "Refus de mobilisation",                              "description": "Refus de participer \u00e0 la d\u00e9fense de Konoha",                        "peine": "Radiation" },
+        { "code": "R6.3", "infraction": "D\u00e9tournement de mission",                         "description": "D\u00e9tourner une mission contre Konoha",                                  "peine": "D\u00e9tention + Jugement" },
+        { "code": "R6.4", "infraction": "Empoisonnement / sabotage",                         "description": "Cible militaire, ninja, ou village",                                       "peine": "D\u00e9tention + Jugement" },
+        { "code": "R6.5", "infraction": "Pacte avec un Biju sans autorisation",              "description": "Contrat ill\u00e9gal avec entit\u00e9 surnaturelle",                           "peine": "D\u00e9bat Ninja HC" },
+        { "code": "R6.6", "infraction": "D\u00e9lit dimensionnel",                              "description": "Usage de portails, invocations ou jutsus distorsifs non d\u00e9clar\u00e9s",  "peine": "Scellement du Chakra" }
+      ]
+    }
+  ],
+  "lexique": {
+    "detention": {
+      "label": "D\u00e9tention :",
+      "description": "Temps de cellule jusqu\u2019au Jugement"
+    },
+    "cellule": {
+      "label": "Cellule :",
+      "description": "Temps de cellule par rapport \u00e0 la peine appliqu\u00e9e"
+    },
+    "avertissement": {
+      "label": "Avertissement :",
+      "description": "\u00d72 Avert (Avertissement) = Signalement",
+      "thresholdForSignalement": 2
+    },
+    "signalement": {
+      "label": "Signalement :",
+      "description": "Exclusion du prochain examen ou avis de r\u00e9trogradation",
+      "thresholdForJugement": 1
+    },
+    "jugement": {
+      "label": "Jugement :",
+      "description": "Instruction judiciaire interne ou passage devant l\u2019autorit\u00e9 comp\u00e9tente"
+    },
+    "tig": {
+      "label": "Travaux d\u2019Int\u00e9r\u00eat G\u00e9n\u00e9raux (TIG) :",
+      "description": "Travaux de r\u00e9paration, nettoyage, r\u00e9novation, casernement, entretien de l\u2019espace vert et du village..."
+    },
+    "rules": {
+      "propagateEscalationToDossiers": true
+    }
+  }
+}
