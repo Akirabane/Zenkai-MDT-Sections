@@ -1,0 +1,2737 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Penal - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/codepenal.css?v=20260423a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<style>
+/* ── Studio CP — Colonnes ── */
+.studio-col-impact-legend{display:flex;gap:0;margin:0 0 3px 0;padding-left:220px}
+.studio-col-imp-legend-item{font-size:9px;color:var(--gold-dark,#8a6a1a);text-align:center;width:46px;letter-spacing:.3px;text-transform:uppercase;opacity:.7}
+.studio-columns-list{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.studio-col-row{display:flex;align-items:center;gap:6px;padding:5px 7px;background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.15);border-radius:4px;flex-wrap:nowrap}
+.studio-col-row.studio-col-system{background:rgba(184,146,42,.06);border-color:rgba(184,146,42,.2)}
+.studio-col-key-badge{font-family:monospace;font-size:10px;background:rgba(0,0,0,.3);padding:2px 5px;border-radius:3px;color:#c9a040;white-space:nowrap;min-width:70px;max-width:100px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.studio-col-label-readonly{font-size:12px;color:var(--text-dark,#2a1a08);min-width:100px;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.studio-col-label-input{width:110px!important;font-size:12px;padding:3px 5px;flex-shrink:0}
+.studio-col-type-badge{font-size:10px;background:rgba(80,120,180,.2);color:#80a8d8;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.studio-col-type-select{font-size:11px;padding:3px 4px;width:auto!important;min-width:65px;flex-shrink:0}
+.studio-col-impacts{display:flex;gap:2px;flex-wrap:nowrap;flex-shrink:0}
+.studio-col-impact-toggle{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;padding:2px 3px;border-radius:3px;border:1px solid transparent;width:44px;flex-shrink:0}
+.studio-col-impact-toggle input{display:none}
+.studio-col-impact-toggle span{font-size:9px;color:rgba(255,255,255,.3);text-align:center;line-height:1.2}
+.studio-col-impact-toggle.on{background:rgba(80,180,100,.15);border-color:rgba(80,180,100,.3)}
+.studio-col-impact-toggle.on span{color:#80e090}
+.studio-col-impact-toggle:not([disabled]):hover{background:rgba(184,146,42,.12)}
+.studio-col-del-btn{background:none;border:1px solid rgba(200,80,60,.35);color:#e06050;border-radius:3px;padding:2px 7px;cursor:pointer;font-size:13px;flex-shrink:0}
+.studio-col-del-btn:hover{background:rgba(200,80,60,.2)}
+.studio-col-del-placeholder{width:26px;flex-shrink:0}
+.studio-deleted-cols{margin-top:6px}
+.studio-deleted-cols-summary{cursor:pointer;font-size:11px;color:rgba(255,255,255,.4);padding:4px 0;user-select:none}
+.studio-deleted-list{padding:6px 0;display:flex;flex-direction:column;gap:4px}
+.studio-deleted-item{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5)}
+.studio-deleted-date{font-size:10px;color:rgba(255,255,255,.3)}
+.studio-btn-mini{font-size:10px;padding:2px 6px;border:1px solid rgba(184,146,42,.3);background:rgba(184,146,42,.1);color:#c9a040;border-radius:3px;cursor:pointer}
+.studio-btn-mini:hover{background:rgba(184,146,42,.25)}
+.studio-btn-danger-mini{border-color:rgba(200,80,60,.35)!important;background:none!important;color:#e06050!important}
+.studio-btn-danger-mini:hover{background:rgba(200,80,60,.2)!important}
+.studio-sec-cols-block{margin-bottom:4px}
+.studio-sec-cols-summary{cursor:pointer;font-size:12px;color:var(--text-dark,#ccc);padding:5px 0;user-select:none;list-style:none}
+.studio-sec-cols-body{padding:5px 0 5px 10px}
+.studio-sec-col-item{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:12px}
+/* Preview */
+.studio-preview-header{padding:6px 0 10px}
+.studio-preview-status{font-size:13px;font-weight:bold;padding:8px 12px;border-radius:4px;text-align:center}
+.studio-preview-status.ok{background:rgba(60,180,80,.15);color:#60d070;border:1px solid rgba(60,180,80,.3)}
+.studio-preview-status.err{background:rgba(200,60,50,.15);color:#e06050;border:1px solid rgba(200,60,50,.3)}
+.studio-preview-error{font-size:12px;color:#e07060;padding:4px 8px;background:rgba(200,60,50,.08);border-radius:3px;margin:2px 0}
+.studio-preview-warning{font-size:12px;color:#d0a030;padding:4px 8px;background:rgba(200,160,0,.08);border-radius:3px;margin:2px 0}
+.studio-preview-added{font-size:12px;color:#60d070;padding:2px 8px}
+.studio-preview-removed{font-size:12px;color:#e07060;padding:2px 8px}
+.studio-preview-renamed{font-size:12px;color:#80b8f0;padding:2px 8px}
+.studio-preview-impact{font-size:12px;color:#c9a040;padding:2px 8px}
+.studio-preview-suggestion{font-size:11px;color:rgba(255,255,255,.45);font-style:italic;margin-top:2px;padding-left:8px}
+.studio-preview-note{font-size:11px;color:rgba(255,255,255,.4);font-style:italic;padding:8px 0 0;border-top:1px solid rgba(255,255,255,.08);margin-top:8px}
+/* History */
+.studio-history-list{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.studio-history-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(184,146,42,.15);border-radius:4px}
+.studio-history-meta{display:flex;flex-direction:column;gap:2px}
+.studio-history-date{font-size:11px;color:var(--text-dark,#ccc)}
+.studio-history-by{font-size:10px;color:rgba(255,255,255,.45)}
+.studio-history-rows{font-size:10px;color:rgba(255,255,255,.3)}
+.studio-history-backup-badge{font-size:10px;color:#c9a040;background:rgba(184,146,42,.12);padding:2px 6px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- Bouton retour -->
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+<!-- Barre utilisateur -->
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-edit-cp" id="btn-edit-cp" onclick="toggleEditMode();closeBurgerMenu()" style="display:none">&#9998; Modifier</button>
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminBackoffice();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer;" title="Modifier mon profil">&#8230;</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<!-- Popup profil -->
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<!-- Panneau Admin -->
+<div class="admin-overlay" id="admin-overlay" onclick="if(event.target===this)closeAdminPanel()">
+  <div class="admin-panel">
+    <div class="admin-panel-inner">
+      <div class="admin-title">&#9881; Panneau d&rsquo;Administration</div>
+      <div class="admin-divider"></div>
+      <div id="admin-users-list"><div class="admin-empty">Chargement&hellip;</div></div>
+    </div>
+    <button class="admin-close-btn" onclick="closeAdminPanel()">Fermer</button>
+  </div>
+</div>
+
+<!-- Sidebar presence -->
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<!-- Sidebar filtre Code Penal -->
+<div class="cp-sidebar" id="cp-sidebar">
+  <button class="cp-sidebar-tab" onclick="toggleCpSidebar()" title="Filtrer le Code Penal" aria-label="Filtrer">
+    <span class="cp-sidebar-tab-icon">Filtre</span>
+  </button>
+  <div class="cp-sidebar-header">
+    <div class="cp-sidebar-title">&#9878; Filtres &amp; Recherche</div>
+    <div class="cp-search-wrap">
+      <input type="text" class="cp-search-input" id="cp-search-input" placeholder="Rechercher une infraction..." oninput="onCpSearch(this.value)">
+      <button class="cp-search-clear" id="cp-search-clear" onclick="clearCpSearch()" title="Effacer">&#215;</button>
+    </div>
+  </div>
+  <div class="cp-sidebar-body">
+    <div class="cp-filter-group">
+      <span class="cp-filter-label">Affiner</span>
+      <input type="text" class="cp-search-input cp-mini-input" id="cp-code-input" placeholder="Code exact ou partiel" oninput="onCpCodeSearch(this.value)">
+      <input type="text" class="cp-search-input cp-mini-input" id="cp-peine-input" placeholder="Peine, TIG, cellule..." oninput="onCpPeineSearch(this.value)">
+    </div>
+    <div class="cp-filter-group">
+      <span class="cp-filter-label">Sections</span>
+      <div id="cp-sections-list"></div>
+    </div>
+    <div class="cp-filter-group">
+      <span class="cp-filter-label">Trier par</span>
+      <select class="cp-sort-select" id="cp-sort-select" onchange="onCpSort(this.value)">
+        <option value="default">Ordre original</option>
+        <option value="code-asc">Code A &rarr; Z</option>
+        <option value="code-desc">Code Z &rarr; A</option>
+        <option value="infraction-asc">Infraction A &rarr; Z</option>
+        <option value="infraction-desc">Infraction Z &rarr; A</option>
+      </select>
+    </div>
+    <div class="cp-filter-group">
+      <span class="cp-filter-label">Portee</span>
+      <select class="cp-sort-select" id="cp-scope-select" onchange="onCpScope(this.value)">
+        <option value="all">Tout le texte</option>
+        <option value="infraction">Infraction uniquement</option>
+        <option value="description">Description uniquement</option>
+        <option value="peine">Peine recommandee</option>
+      </select>
+    </div>
+    <div class="cp-result-count" id="cp-result-count"></div>
+    <button class="cp-reset-btn" onclick="resetCpFilter()">&#8635; R&eacute;initialiser</button>
+  </div>
+</div>
+
+<!-- Contenu principal -->
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">KONOHA</div>
+
+    <!-- En-tête -->
+    <div class="doc-header">
+      <svg class="konoha-symbol" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+        <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+        <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+        <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+      </svg>
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Code P&eacute;nal</h1>
+      <div class="sub-title">Infractions par Nature &mdash; Recueil Officiel</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <!-- Sceau -->
+    <div class="seal-bar">
+      <div class="seal-line"></div>
+      <div class="seal">Confidentiel</div>
+      <div class="seal-line right"></div>
+    </div>
+
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         LEXIQUE
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- Préambule du document -->
+    <div class="doc-preamble-wrap" id="doc-preamble-wrap" style="display:none">
+      <div class="doc-preamble-text" id="doc-preamble-text"></div>
+    </div>
+
+    <div class="lexique-box">
+      <div class="lexique-title">Lexique Infraction</div>
+      <div class="lexique-entries">
+        <div class="lexique-entry">
+          <span class="lexique-term" data-lexique-field="detention.label">D&eacute;tention :</span>
+          <span class="lexique-def" data-lexique-field="detention.description">Temps de cellule jusqu&rsquo;au Jugement</span>
+        </div>
+        <div class="lexique-entry">
+          <span class="lexique-term" data-lexique-field="cellule.label">Cellule :</span>
+          <span class="lexique-def" data-lexique-field="cellule.description">Temps de cellule par rapport &agrave; la peine appliqu&eacute;e</span>
+        </div>
+        <div class="lexique-entry">
+          <span class="lexique-term" data-lexique-field="avertissement.label">Avertissement :</span>
+          <span class="lexique-def" data-lexique-field="avertissement.description">&times;2 Avert (Avertissement) = Signalement</span>
+          <div class="lexique-threshold-row">
+            <span class="lexique-threshold-label">Seuil cumul&eacute;</span>
+            <input type="number" class="lexique-threshold-input" id="lexique-threshold-signalement" min="1" max="20" value="2" disabled>
+            <span class="lexique-threshold-suffix">avertissement(s) = 1 signalement</span>
+          </div>
+        </div>
+        <div class="lexique-entry">
+          <span class="lexique-term" data-lexique-field="signalement.label">Signalement :</span>
+          <span class="lexique-def" data-lexique-field="signalement.description">Exclusion du prochain examen ou avis de r&eacute;trogradation</span>
+          <div class="lexique-threshold-row">
+            <span class="lexique-threshold-label">Seuil cumul&eacute;</span>
+            <input type="number" class="lexique-threshold-input" id="lexique-threshold-jugement" min="1" max="20" value="1" disabled>
+            <span class="lexique-threshold-suffix">signalement(s) = 1 jugement</span>
+          </div>
+        </div>
+        <div class="lexique-entry">
+          <span class="lexique-term" data-lexique-field="jugement.label">Jugement :</span>
+          <span class="lexique-def" data-lexique-field="jugement.description">Instruction judiciaire interne ou passage devant l&rsquo;autorit&eacute; comp&eacute;tente</span>
+        </div>
+        <div class="lexique-entry lexique-full">
+          <span class="lexique-term" data-lexique-field="tig.label">Travaux d&rsquo;Int&eacute;r&ecirc;t G&eacute;n&eacute;raux (TIG) :</span>
+          <span class="lexique-def" data-lexique-field="tig.description">Travaux de r&eacute;paration, nettoyage, r&eacute;novation, casernement, entretien de l&rsquo;espace vert et du village&hellip;</span>
+        </div>
+      </div>
+      <div class="lexique-rules-panel">
+        <label class="lexique-rules-toggle" for="lexique-propagate-rules">
+          <input type="checkbox" id="lexique-propagate-rules" checked disabled>
+          <span>R&eacute;percuter automatiquement les seuils du lexique sur les casiers, dossiers et alertes MDT</span>
+        </label>
+        <div class="lexique-rules-help">Quand cette option est active, les cumuls disciplinaires g&eacute;n&egrave;rent automatiquement les niveaux sup&eacute;rieurs selon les seuils configur&eacute;s.</div>
+      </div>
+    </div>
+
+    <div class="section-toolbar" id="section-toolbar">
+      <button type="button" class="btn-add-section" id="btn-add-section" onclick="addSection()">+ Ajouter une cat&eacute;gorie</button>
+    </div>
+    <div id="cp-sections-container"></div>
+
+    <!-- Pied de page -->
+    <div style="text-align:center; margin-top:20px; position:relative; z-index:2;">
+      <div class="header-divider"></div>
+      <p class="cp-footer-text" style="font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px; color:var(--gold-dark); margin-top:10px; text-transform:uppercase;">
+        Document officiel de la Police Militaire &mdash; Usage interne
+      </p>
+      <p class="cp-footer-text" style="font-family:'Crimson Text',serif; font-size:12px; color:var(--text-med); font-style:italic; margin-top:4px;">
+        Par d&eacute;cret du Commandement &mdash; Village de Konoha
+      </p>
+    </div>
+
+  </div><!-- /frame-inner -->
+</div><!-- /frame -->
+
+<!-- Barre d'édition flottante -->
+<div class="edit-bar" id="edit-bar">
+  <span class="edit-status" id="edit-status">Mode &eacute;dition</span>
+  <button class="btn-studio-toggle" id="btn-studio-toggle" onclick="toggleStudio()" title="Ouvrir/fermer le Studio">&#9670; Studio</button>
+  <button class="btn-save-cp" onclick="saveCodePenal()">&#10003; Sauvegarder</button>
+  <button class="btn-cancel-cp" onclick="cancelEditMode()">&#10007; Annuler</button>
+</div>
+
+<!-- Studio éditeur (Google Docs style) -->
+<div class="cp-studio" id="cp-studio">
+  <div class="cp-studio-header">
+    <div class="cp-studio-title-bar">
+      <div class="cp-studio-logo">&#9670; Studio CP</div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="studio-undo-btn" onclick="doUndo()" title="Annuler (Ctrl+Z)">&#8617;</button>
+        <button class="studio-undo-btn" onclick="doRedo()" title="R&eacute;tablir (Ctrl+Y)">&#8618;</button>
+        <button class="studio-close-btn" onclick="closeStudio()" title="Fermer le studio">&#10005;</button>
+      </div>
+    </div>
+    <div class="cp-studio-tabs" id="studio-tabs-bar"></div>
+  </div>
+  <div class="cp-studio-body" id="studio-body">
+    <div class="studio-empty">Entrez en mode &eacute;dition pour acc&eacute;der au Studio.</div>
+  </div>
+  <div class="cp-studio-footer">
+    <button class="btn-save-cp" onclick="saveCodePenal()" style="flex:1">&#10003; Sauvegarder</button>
+    <button class="btn-cancel-cp" onclick="cancelEditMode()" style="flex:1">&#10007; Annuler</button>
+  </div>
+</div>
+
+<script>
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BURGER MENU
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function toggleBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.toggle('open');
+}
+function closeBurgerMenu() {
+  document.getElementById('user-bar-inner').classList.remove('open');
+}
+function openAdminBackoffice() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRÉSENCE MOBILE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function togglePresenceMobile() {
+  var sb = document.getElementById('presence-sidebar');
+  if (window.innerWidth <= 700) {
+    sb.classList.toggle('mobile-open');
+  } else {
+    sb.classList.toggle('collapsed');
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUTH
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() {
+  try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) { return null; }
+}
+
+async function checkAuth() {
+  if (!sessionStorage.getItem('policeToken') && sessionStorage.getItem('policeGuest') === 'true') {
+    return { pseudo: null, permission: 'GUEST', policeRole: false };
+  }
+  var token = getToken();
+  if (!token) { window.location.href = 'login.html?redirect=CodePenal.html'; return null; }
+  try {
+    var r = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) { sessionStorage.clear(); window.location.href = 'login.html?redirect=CodePenal.html'; return null; }
+    var user = await r.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch(e) { return getCachedUser(); }
+}
+
+function setupUserBar(user) {
+  var editButton = document.getElementById('btn-edit-cp');
+  if (editButton) editButton.style.display = 'none';
+  if (user.permission === 'GUEST') {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = '\u25c8 Visiteur';
+    badge.classList.add('guest');
+    return;
+  }
+  document.getElementById('user-badge').textContent = '\u25c6 ' + user.pseudo;
+  if (user.permission === 'ADMIN') document.getElementById('btn-admin-panel').style.display = '';
+}
+
+async function doLogout() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    sessionStorage.clear();
+    window.location.href = 'login.html';
+    return;
+  }
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch(e) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PANNEAU ADMIN
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+async function openAdminPanel() {
+  document.getElementById('admin-overlay').classList.add('active');
+  document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Chargement\u2026</div>';
+  try {
+    var [rU, rM] = await Promise.all([
+      fetch('/admin/users', { headers: { 'Authorization': 'Bearer ' + getToken() } }),
+      fetch('/api/v1/membres')
+    ]);
+    if (!rU.ok) throw new Error();
+    var membres = rM.ok ? ((await rM.json()).membres || []) : [];
+    renderAdminUsers(await rU.json(), membres);
+  } catch(e) {
+    document.getElementById('admin-users-list').innerHTML = '<div class="admin-empty">Erreur de chargement.</div>';
+  }
+}
+
+function renderAdminUsers(users, membres) {
+  membres = membres || [];
+  var list = document.getElementById('admin-users-list');
+  if (!users.length) { list.innerHTML = '<div class="admin-empty">Aucun shinobi enregistr\u00e9.</div>'; return; }
+  list.innerHTML = '';
+  users.forEach(function(u) {
+    var row = document.createElement('div'); row.className = 'user-row';
+    var pseudo = document.createElement('span'); pseudo.className = 'user-row-pseudo'; pseudo.textContent = u.pseudo;
+    var badge  = document.createElement('span'); badge.className = 'perm-badge ' + u.permission; badge.textContent = u.permission;
+    row.appendChild(pseudo); row.appendChild(badge);
+    if (u.permission !== 'ADMIN') {
+      var toggleBtn = document.createElement('button');
+      if (u.permission === 'READ') {
+        toggleBtn.className = 'btn-toggle-perm to-update'; toggleBtn.textContent = '\u2192 Update';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'UPDATE'); }; })(u.pseudo);
+      } else {
+        toggleBtn.className = 'btn-toggle-perm to-read'; toggleBtn.textContent = '\u2192 Read';
+        toggleBtn.onclick = (function(p) { return function() { setPermission(p, 'READ'); }; })(u.pseudo);
+      }
+      var policeBtn = document.createElement('button');
+      policeBtn.className = u.policeRole ? 'btn-police-on' : 'btn-police-off';
+      policeBtn.textContent = '\u2694 Police';
+      policeBtn.title = u.policeRole ? 'Retirer le rôle Police' : 'Accorder le rôle Police';
+      policeBtn.onclick = (function(p, r) { return function() { setPoliceRole(p, !r); }; })(u.pseudo, u.policeRole);
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn-del-user'; delBtn.textContent = '\u00d7'; delBtn.title = 'Supprimer ce compte';
+      delBtn.onclick = (function(p) { return function() { deleteUser(p); }; })(u.pseudo);
+      row.appendChild(toggleBtn); row.appendChild(policeBtn); row.appendChild(delBtn);
+
+      /* â”€â”€ Sélecteur de personnage RP â”€â”€ */
+      if (membres.length) {
+        var linkRow   = document.createElement('div');  linkRow.className = 'user-row-link';
+        var linkLabel = document.createElement('span'); linkLabel.className = 'user-row-link-label'; linkLabel.textContent = 'Personnage li\u00e9 :';
+        var sel = document.createElement('select');     sel.className = 'select-membre';
+        sel.title = 'Associer ce compte \u00e0 un personnage du registre';
+        var optNone = document.createElement('option'); optNone.value = ''; optNone.textContent = '\u2014 Non li\u00e9 \u2014';
+        sel.appendChild(optNone);
+        membres.forEach(function(m) {
+          var opt = document.createElement('option'); opt.value = m.pseudoHRP;
+          opt.textContent = m.pseudoHRP;
+          if (m.pseudoHRP === u.linkedMembre) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.onchange = (function(p) { return function() { linkMembre(p, this.value || null); }; })(u.pseudo);
+        linkRow.appendChild(linkLabel); linkRow.appendChild(sel);
+        row.appendChild(linkRow);
+      }
+    }
+    list.appendChild(row);
+  });
+}
+
+async function linkMembre(pseudo, pseudoHRP) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ pseudoHRP: pseudoHRP })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+  } catch(e) { alert('Liaison impossible : ' + e.message); openAdminPanel(); }
+}
+
+async function setPoliceRole(pseudo, policeRole) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/police', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ policeRole: policeRole })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour du r\u00f4le Police.'); }
+}
+
+async function setPermission(pseudo, permission) {
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo) + '/permission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ permission: permission })
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la mise \u00e0 jour.'); }
+}
+
+async function deleteUser(pseudo) {
+  if (!confirm('Supprimer le compte de ' + pseudo + ' ')) return;
+  try {
+    var r = await fetch('/admin/users/' + encodeURIComponent(pseudo), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error();
+    openAdminPanel();
+  } catch(e) { alert('Erreur lors de la suppression.'); }
+}
+
+function closeAdminPanel() { document.getElementById('admin-overlay').classList.remove('active'); }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRÉSENCE EN LIGNE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pFocused = document.hasFocus();
+document.addEventListener('visibilitychange', function() { pingPresence(); });
+window.addEventListener('focus', function() { _pFocused = true; pingPresence(); });
+window.addEventListener('blur',  function() { _pFocused = false; pingPresence(); });
+
+function _pStatus() {
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (document.hidden || !_pFocused) return 'away';
+  if (isMobile) return 'mobile';
+  return 'active';
+}
+
+var _guestId = null;
+function getGuestId() {
+  if (!_guestId) {
+    _guestId = sessionStorage.getItem('policeGuestId');
+    if (!_guestId) {
+      _guestId = 'g' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem('policeGuestId', _guestId);
+    }
+  }
+  return _guestId;
+}
+
+async function pingPresence() {
+  if (sessionStorage.getItem('policeGuest') === 'true') {
+    try {
+      var r = await fetch('/presence/guest-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestId: getGuestId() })
+      });
+      if (r.ok) renderPresence(await r.json());
+    } catch(e) {}
+    return;
+  }
+  var token = getToken();
+  if (!token) return;
+  try {
+    var r = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: _pStatus() })
+    });
+    if (r.ok) renderPresence(await r.json());
+  } catch(e) {}
+}
+
+function renderPresence(data) {
+  var list = document.getElementById('presence-list');
+    var users      = Array.isArray(data) ? data : (data.users || []);
+  var guestCount = data.guestCount || 0;
+
+  if (!users.length && !guestCount) {
+    list.innerHTML = '<div class="presence-empty">Aucun shinobi</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  users.forEach(function(u) {
+    var row = document.createElement('div');
+    row.className = 'presence-user';
+
+    var dotCls = u.policeRole
+      ? 'presence-dot police-' + u.status
+      : 'presence-dot ' + u.status;
+
+    var dot = document.createElement('span');
+    dot.className = dotCls;
+
+    var name = document.createElement('span');
+    name.className = 'presence-name';
+    name.textContent = u.pseudo;
+
+    var statusLabel = 'Absent';
+    if (u.status === 'active') statusLabel = 'En ligne';
+    else if (u.status === 'mobile') statusLabel = 'Sur mobile';
+
+    name.title = u.pseudo + ' — ' + statusLabel + (u.policeRole ? ' [Police]' : '');
+
+    row.appendChild(dot);
+
+    if (u.policeRole) {
+      var ico = document.createElement('span');
+      ico.className = 'presence-police-icon';
+      ico.textContent = '\u2694';
+      row.appendChild(ico);
+    }
+
+    row.appendChild(name);
+    list.appendChild(row);
+  });
+
+  if (guestCount > 0) {
+    var gRow = document.createElement('div');
+    gRow.className = 'presence-guest-row';
+
+    var gDot = document.createElement('span');
+    gDot.className = 'presence-guest-dot';
+/* Couleur dynamique : gris #555 -> blanc #fff, lineaire sur 1-10 visiteurs */
+    var t = Math.min(guestCount, 10) / 10;
+    var ch = Math.round(0x55 + (0xff - 0x55) * t);
+    var gc = 'rgb(' + ch + ',' + ch + ',' + ch + ')';
+    gDot.style.background = gc;
+    gDot.style.boxShadow = '0 0 ' + Math.round(4 + t * 8) + 'px ' + gc;
+
+    var gNam = document.createElement('span');
+    gNam.className = 'presence-name';
+    gNam.textContent = 'Ninja visiteur \u00d7' + guestCount;
+    gNam.style.fontStyle = 'italic';
+
+    gRow.appendChild(gDot);
+    gRow.appendChild(gNam);
+    list.appendChild(gRow);
+  }
+}
+
+renderPresence = function(data) {
+  if (window.PresenceUI) window.PresenceUI.renderPresence('presence-list', data);
+};
+
+setInterval(pingPresence, 5000);
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CODE PÉNAL — chargement & rendu
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _cpData     = null;
+var _cpOriginal = null;
+var _cpEditing  = false;
+var _cpCanEdit  = false;
+var _cpCanSeeNotes = false;
+var _cpDraggedRow = null;
+var _cpDraggedSectionId = null;
+var _cpDropTargetRow = null;
+var _cpDropInsertBefore = true;
+var _cpPointerDragBound = false;
+
+/* Studio state */
+var _cpStudioTab = 'sections';
+var _cpSelectedRow = null;
+var _cpSelectedSecId = null;
+
+var CP_SECTIONS = [
+  { id: 'c' }, { id: 'n' }, { id: 'g' }, { id: 'k' }, { id: 'r' }
+];
+
+function hasRenderableCodePenalSections(payload) {
+  return !!(payload &&
+    Array.isArray(payload.sections) &&
+    payload.sections.some(function(sec) {
+      return sec &&
+        String(sec.title || sec.id || '').trim() &&
+        Array.isArray(sec.rows) &&
+        sec.rows.length > 0;
+    }));
+}
+
+async function loadLegacyCodePenalFallback() {
+  var fallbackEndpoints = [
+    '/api/v1/public/codepenal?t=' + Date.now(),
+    '/codepenal.json?v=20260414a&t=' + Date.now()
+  ];
+  for (var i = 0; i < fallbackEndpoints.length; i++) {
+    try {
+      var fallbackResponse = await fetch(fallbackEndpoints[i], { cache: 'no-store' });
+      if (fallbackResponse.ok) {
+        return fallbackResponse.json();
+      }
+    } catch (error) {}
+  }
+  return null;
+}
+
+async function loadCodePenal() {
+  try {
+    var token = getToken();
+    var endpoints = [];
+
+    if (token) {
+      endpoints.push({
+        url: '/api/v1/codepenal?t=' + Date.now(),
+        options: { headers: { 'Authorization': 'Bearer ' + token } }
+      });
+    }
+
+    endpoints.push({
+      url: '/api/v1/public/codepenal?t=' + Date.now(),
+      options: {}
+    });
+
+    endpoints.push({
+      url: '/codepenal.json?t=' + Date.now(),
+      options: {}
+    });
+
+    var r = null;
+    for (var i = 0; i < endpoints.length; i++) {
+      r = await fetch(endpoints[i].url, endpoints[i].options);
+      if (r.ok) break;
+    }
+
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _cpData     = await r.json();
+    if (!hasRenderableCodePenalSections(_cpData)) {
+      var legacyCodePenal = await loadLegacyCodePenalFallback();
+      if (hasRenderableCodePenalSections(legacyCodePenal)) {
+        _cpData = {
+          ...(legacyCodePenal || {}),
+          ...(_cpData || {}),
+          sections: legacyCodePenal.sections
+        };
+      }
+    }
+    if (!hasRenderableCodePenalSections(_cpData)) {
+      throw new Error('Aucune section du code penal n a pu etre chargee');
+    }
+    _cpOriginal = JSON.parse(JSON.stringify(_cpData));
+    renderAllSections();
+  } catch(e) {
+    console.error('[CodePenal] Chargement échoué', e);
+  }
+}
+
+function getSectionMeta(secId) {
+  return (_cpData.sections || []).find(function(sec) { return sec.id === secId; }) || null;
+}
+
+function ensureSectionFilters() {
+  var active = {};
+  (_cpData.sections || []).forEach(function(sec) {
+    active[sec.id] = Object.prototype.hasOwnProperty.call(_cpFilter.sections, sec.id)
+      ? _cpFilter.sections[sec.id]
+      : true;
+  });
+  _cpFilter.sections = active;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildSectionId(seed) {
+  var base = String(seed || 'section')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 18) || 'section';
+  var candidate = base;
+  var index = 2;
+  while (getSectionMeta(candidate)) {
+    candidate = base + '-' + index;
+    index += 1;
+  }
+  return candidate;
+}
+
+function buildSectionMarkup(sec, index) {
+  var title = escapeHtml(sec.title || sec.id);
+  var shortTitle = escapeHtml(sec.shortTitle || sec.title || sec.id);
+  var color = escapeHtml(sec.color || '#9a7a2a');
+  var codePrefix = escapeHtml(sec.codePrefix || ('X' + (index + 1)));
+  var icon = escapeHtml(sec.icon || '');
+  var preamble = escapeHtml(sec.preamble || '');
+  var moveUpDisabled = index === 0 ? ' disabled' : '';
+  var moveDownDisabled = index === ((_cpData.sections || []).length - 1) ? ' disabled' : '';
+
+  return [
+    '<div class="section-block section-dynamic" id="sb-', sec.id, '" style="--section-color:', color, ';">',
+      '<div class="section-title">',
+        icon ? '<span class="section-icon-display" id="section-icon-' + sec.id + '">' + icon + '</span>' : '<span class="section-icon-display" id="section-icon-' + sec.id + '"></span>',
+        '<span class="section-color-dot" id="section-dot-', sec.id, '"></span>',
+        '<span id="section-title-', sec.id, '">', title, '</span>',
+        '<div class="section-title-actions">',
+          '<button type="button" class="section-move-btn" onclick="moveSection(\'', sec.id, '\', -1)"', moveUpDisabled, '>↑</button>',
+          '<button type="button" class="section-move-btn" onclick="moveSection(\'', sec.id, '\', 1)"', moveDownDisabled, '>↓</button>',
+          '<button type="button" class="section-delete-btn" onclick="deleteSection(\'', sec.id, '\')">Supprimer</button>',
+        '</div>',
+      '</div>',
+      '<div class="section-editor-row">',
+        '<label>Nom de categorie <input type="text" id="section-input-title-', sec.id, '" value="', title, '" disabled></label>',
+        '<label>Nom court <input type="text" id="section-input-short-title-', sec.id, '" value="', shortTitle, '" disabled></label>',
+        '<label>Prefixe code <input type="text" id="section-input-prefix-', sec.id, '" value="', codePrefix, '" maxlength="8" disabled></label>',
+        '<label>Couleur <input type="color" id="section-input-color-', sec.id, '" value="', color, '" disabled></label>',
+      '</div>',
+      preamble ? '<div class="section-preamble" id="section-preamble-' + sec.id + '">' + preamble + '</div>' : '<div class="section-preamble" id="section-preamble-' + sec.id + '" style="display:none"></div>',
+      '<table class="section-table-dynamic">',
+        '<thead><tr><th>Code</th><th>Infraction</th><th>Description</th><th>Peine recommand&eacute;e</th><th class="th-del"></th></tr></thead>',
+        '<tbody id="tbody-', sec.id, '"></tbody>',
+      '</table>',
+      '<button class="btn-add-row" onclick="addRow(\'', sec.id, '\')">+ Ajouter une ligne</button>',
+    '</div>'
+  ].join('');
+}
+
+function renderSidebarSections() {
+  var container = document.getElementById('cp-sections-list');
+  if (!container) return;
+  container.innerHTML = (_cpData.sections || []).map(function(sec) {
+    var color = escapeHtml(sec.color || '#9a7a2a');
+    var label = escapeHtml(sec.shortTitle || sec.title || sec.id);
+    var title = escapeHtml(sec.title || sec.id);
+    return [
+      '<div class="cp-section-toggle', _cpFilter.sections[sec.id] === false ? ' hidden' : '', '" id="cp-toggle-', sec.id, '" onclick="toggleCpSection(\'', sec.id, '\')" title="', title, '">',
+        '<span class="cp-section-dot" id="cp-dot-', sec.id, '" style="background:', color, '"></span>',
+        '<span class="cp-section-name" id="cp-name-', sec.id, '">', label, '</span>',
+        '<span class="cp-section-count" id="cp-count-', sec.id, '">&mdash;</span>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
+function hexToRgba(hex, alpha) {
+  var value = String(hex || '').replace('#', '').trim();
+  if (value.length !== 6) return 'rgba(138,106,26,' + alpha + ')';
+  var r = parseInt(value.slice(0, 2), 16);
+  var g = parseInt(value.slice(2, 4), 16);
+  var b = parseInt(value.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+function renderSectionMeta() {
+  if (!_cpData || !_cpData.sections) return;
+  _cpData.sections.forEach(function(sec) {
+    var sectionBlock = document.getElementById('sb-' + sec.id);
+    var sectionTitle = sectionBlock ? sectionBlock.querySelector('.section-title') : null;
+    var sectionTable = sectionBlock ? sectionBlock.querySelector('table') : null;
+    var titleNode = document.getElementById('section-title-' + sec.id);
+    var titleInput = document.getElementById('section-input-title-' + sec.id);
+    var shortTitleInput = document.getElementById('section-input-short-title-' + sec.id);
+    var prefixInput = document.getElementById('section-input-prefix-' + sec.id);
+    var colorInput = document.getElementById('section-input-color-' + sec.id);
+    var dotNode = document.getElementById('section-dot-' + sec.id);
+    var sidebarDot = document.getElementById('cp-dot-' + sec.id);
+    var sidebarName = document.getElementById('cp-name-' + sec.id);
+    var displayTitle = sec.title || sec.id;
+    var sidebarTitle = sec.shortTitle || sec.title || sec.id;
+    var color = sec.color || '#9a7a2a';
+
+    if (titleNode) titleNode.textContent = displayTitle;
+    if (titleInput) titleInput.value = displayTitle;
+    if (shortTitleInput) shortTitleInput.value = sidebarTitle;
+    if (prefixInput) prefixInput.value = sec.codePrefix || '';
+    if (colorInput) colorInput.value = color;
+    if (dotNode) dotNode.style.background = color;
+    if (sidebarDot) sidebarDot.style.background = color;
+    if (sidebarName) sidebarName.textContent = sidebarTitle;
+    if (sectionTitle) {
+      sectionTitle.style.borderColor = hexToRgba(color, 0.55);
+      sectionTitle.style.background = 'linear-gradient(135deg, ' + hexToRgba(color, 0.88) + ', rgba(42,26,8,0.88))';
+    }
+    if (sectionTable) {
+      sectionTable.style.borderColor = hexToRgba(color, 0.55);
+    }
+  });
+}
+
+function syncSectionEditorPreview(secId) {
+  var section = getSectionMeta(secId);
+  if (!section) return;
+  var titleInput = document.getElementById('section-input-title-' + secId);
+  var shortTitleInput = document.getElementById('section-input-short-title-' + secId);
+  var prefixInput = document.getElementById('section-input-prefix-' + secId);
+  var colorInput = document.getElementById('section-input-color-' + secId);
+  var titleNode = document.getElementById('section-title-' + secId);
+  var sidebarName = document.getElementById('cp-name-' + secId);
+  var sidebarDot = document.getElementById('cp-dot-' + secId);
+  var dotNode = document.getElementById('section-dot-' + secId);
+  var sectionBlock = document.getElementById('sb-' + secId);
+  var sectionTitle = sectionBlock ? sectionBlock.querySelector('.section-title') : null;
+  var sectionTable = sectionBlock ? sectionBlock.querySelector('table') : null;
+  var title = (titleInput && titleInput.value.trim()) || section.title || secId;
+  var shortTitle = (shortTitleInput && shortTitleInput.value.trim()) || title;
+  if (prefixInput) {
+    prefixInput.value = prefixInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  }
+  var color = (colorInput && colorInput.value.trim()) || section.color || '#9a7a2a';
+
+  if (titleNode) titleNode.textContent = title;
+  if (sidebarName) sidebarName.textContent = shortTitle;
+  if (dotNode) dotNode.style.background = color;
+  if (sidebarDot) sidebarDot.style.background = color;
+  if (sectionTitle) {
+    sectionTitle.style.borderColor = hexToRgba(color, 0.55);
+    sectionTitle.style.background = 'linear-gradient(135deg, ' + hexToRgba(color, 0.88) + ', rgba(42,26,8,0.88))';
+  }
+  if (sectionTable) {
+    sectionTable.style.borderColor = hexToRgba(color, 0.55);
+  }
+  refreshSectionCodes(secId);
+}
+
+function getSectionPrefix(secId) {
+  var section = getSectionMeta(secId);
+  var prefixInput = document.getElementById('section-input-prefix-' + secId);
+  return String((prefixInput && prefixInput.value) || (section && section.codePrefix) || secId || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 8) || secId.toUpperCase();
+}
+
+function refreshSectionCodes(secId) {
+  var tbody = document.getElementById('tbody-' + secId);
+  if (!tbody) return;
+  var prefix = getSectionPrefix(secId);
+  Array.from(tbody.querySelectorAll('tr')).forEach(function(tr, index) {
+    var codeCell = tr.querySelector('td[data-field="code"]');
+    if (codeCell) {
+      var codeText = codeCell.querySelector('.row-code-text');
+      if (codeText) {
+        codeText.textContent = prefix + '.' + (index + 1);
+      } else {
+        codeCell.textContent = prefix + '.' + (index + 1);
+      }
+    }
+  });
+}
+
+function clearDropMarkers(secId) {
+  var tbody = document.getElementById('tbody-' + secId);
+  if (!tbody) return;
+  tbody.querySelectorAll('tr').forEach(function(row) {
+    row.classList.remove('drag-row-active', 'drag-over-before', 'drag-over-after');
+  });
+}
+
+function finishPointerRowDrag(cancelOnly) {
+  if (_cpDraggedSectionId) {
+    clearDropMarkers(_cpDraggedSectionId);
+  }
+
+  if (!cancelOnly && _cpDraggedRow && _cpDropTargetRow && _cpDraggedSectionId) {
+    var tbody = document.getElementById('tbody-' + _cpDraggedSectionId);
+    if (tbody) {
+      tbody.insertBefore(
+        _cpDraggedRow,
+        _cpDropInsertBefore ? _cpDropTargetRow : _cpDropTargetRow.nextSibling
+      );
+      refreshSectionCodes(_cpDraggedSectionId);
+    }
+  }
+
+  _cpDraggedRow = null;
+  _cpDraggedSectionId = null;
+  _cpDropTargetRow = null;
+  document.body.classList.remove('cp-row-dragging');
+}
+
+function updatePointerRowTarget(event) {
+  if (!_cpEditing || !_cpDraggedRow || !_cpDraggedSectionId) return;
+
+  var hovered = document.elementFromPoint(event.clientX, event.clientY);
+  var row = hovered ? hovered.closest('tr[data-section-id]') : null;
+  clearDropMarkers(_cpDraggedSectionId);
+
+  if (!row || row === _cpDraggedRow || row.dataset.sectionId !== _cpDraggedSectionId) {
+    _cpDropTargetRow = null;
+    return;
+  }
+
+  var rect = row.getBoundingClientRect();
+  _cpDropInsertBefore = event.clientY < rect.top + (rect.height / 2);
+  _cpDropTargetRow = row;
+  _cpDraggedRow.classList.add('drag-row-active');
+  row.classList.add(_cpDropInsertBefore ? 'drag-over-before' : 'drag-over-after');
+}
+
+function ensurePointerRowDragListeners() {
+  if (_cpPointerDragBound) return;
+  _cpPointerDragBound = true;
+
+  document.addEventListener('pointermove', updatePointerRowTarget);
+  document.addEventListener('pointerup', function() { finishPointerRowDrag(false); });
+  document.addEventListener('pointercancel', function() { finishPointerRowDrag(true); });
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      finishPointerRowDrag(true);
+    }
+  });
+}
+
+function bindRowDragAndDrop(tr, secId) {
+  if (!tr) return;
+  var handle = tr.querySelector('.row-drag-handle');
+  tr.dataset.sectionId = secId;
+  tr.classList.toggle('cp-row-draggable', !!_cpEditing);
+  if (handle) {
+    handle.draggable = false;
+  }
+
+  ensurePointerRowDragListeners();
+
+  if (tr.dataset.dragBound === 'true') return;
+  tr.dataset.dragBound = 'true';
+  if (!handle) return;
+
+  handle.addEventListener('pointerdown', function(event) {
+    if (!_cpEditing) return;
+    event.preventDefault();
+    _cpDraggedRow = tr;
+    _cpDraggedSectionId = secId;
+    _cpDropTargetRow = null;
+    _cpDropInsertBefore = true;
+    clearDropMarkers(secId);
+    tr.classList.add('drag-row-active');
+    document.body.classList.add('cp-row-dragging');
+  });
+}
+
+function bindSectionEditorInputs() {
+  if (!_cpData || !_cpData.sections) return;
+  (_cpData.sections || []).forEach(function(sec) {
+    var secId = sec.id;
+    var titleInput = document.getElementById('section-input-title-' + secId);
+    var shortTitleInput = document.getElementById('section-input-short-title-' + secId);
+    var prefixInput = document.getElementById('section-input-prefix-' + secId);
+    var colorInput = document.getElementById('section-input-color-' + secId);
+    if (titleInput && !titleInput.dataset.bound) {
+      titleInput.dataset.bound = 'true';
+      titleInput.addEventListener('input', function() { syncSectionEditorPreview(secId); });
+    }
+    if (shortTitleInput && !shortTitleInput.dataset.bound) {
+      shortTitleInput.dataset.bound = 'true';
+      shortTitleInput.addEventListener('input', function() { syncSectionEditorPreview(secId); });
+    }
+    if (prefixInput && !prefixInput.dataset.bound) {
+      prefixInput.dataset.bound = 'true';
+      prefixInput.addEventListener('input', function() { syncSectionEditorPreview(secId); });
+    }
+    if (colorInput && !colorInput.dataset.bound) {
+      colorInput.dataset.bound = 'true';
+      colorInput.addEventListener('input', function() { syncSectionEditorPreview(secId); });
+    }
+  });
+}
+
+function renderAllSections() {
+  if (!_cpData || !_cpData.sections) return;
+  ensureSectionFilters();
+  renderSidebarSections();
+  var container = document.getElementById('cp-sections-container');
+  if (container) {
+    container.innerHTML = (_cpData.sections || []).map(buildSectionMarkup).join('');
+  }
+  _cpData.sections.forEach(function(sec) {
+    var tbody = document.getElementById('tbody-' + sec.id);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    (sec.rows || []).forEach(function(row) {
+      tbody.appendChild(makeRow(row, sec.id));
+    });
+    refreshSectionCodes(sec.id);
+  });
+  renderSectionMeta();
+  bindSectionEditorInputs();
+  renderLexique();
+  applyMeta(_cpData.meta);
+  applyTheme(_cpData.theme);
+  var addSectionButton = document.getElementById('btn-add-section');
+  if (addSectionButton) addSectionButton.style.display = _cpEditing ? '' : 'none';
+  if (_cpEditing) {
+    document.querySelectorAll('.section-block').forEach(function(sb) {
+      sb.classList.add('edit-active');
+      sb.querySelectorAll('tbody td[data-field]').forEach(function(td) {
+        td.contentEditable = td.dataset.field === 'peine' ? 'false' : 'true';
+      });
+    });
+    enablePenaltyEditors();
+  }
+  updateCpCounts();
+  applyFilter();
+}
+
+function renderLexique() {
+  if (!_cpData) return;
+  var lexique = _cpData.lexique || {};
+  document.querySelectorAll('[data-lexique-field]').forEach(function(node) {
+    var path = node.getAttribute('data-lexique-field').split('.');
+    var value = lexique;
+    path.forEach(function(part) {
+      value = value && value[part];
+    });
+    if (typeof value === 'string' && value.trim()) {
+      node.textContent = value;
+    }
+  });
+  var thresholdInput = document.getElementById('lexique-threshold-signalement');
+  if (thresholdInput) {
+    thresholdInput.value = String(((lexique.avertissement || {}).thresholdForSignalement) || 2);
+  }
+  var jugementThresholdInput = document.getElementById('lexique-threshold-jugement');
+  if (jugementThresholdInput) {
+    jugementThresholdInput.value = String(((lexique.signalement || {}).thresholdForJugement) || 1);
+  }
+  var propagateToggle = document.getElementById('lexique-propagate-rules');
+  if (propagateToggle) {
+    propagateToggle.checked = !lexique.rules || lexique.rules.propagateEscalationToDossiers !== false;
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SIDEBAR FILTRE — état & logique
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _cpFilter = {
+  q:        '',
+  code:     '',
+  peine:    '',
+  sections: { c: true, n: true, g: true, k: true, r: true },
+  sort:     'default',
+  scope:    'all'
+};
+
+function toggleCpSidebar() {
+  document.getElementById('cp-sidebar').classList.toggle('open');
+}
+
+function onCpSearch(val) {
+  _cpFilter.q = (val || '').trim().toLowerCase();
+  var btn = document.getElementById('cp-search-clear');
+  if (btn) btn.classList.toggle('visible', _cpFilter.q.length > 0);
+  applyFilter();
+}
+
+function clearCpSearch() {
+  var inp = document.getElementById('cp-search-input');
+  if (inp) inp.value = '';
+  onCpSearch('');
+}
+
+function onCpCodeSearch(val) {
+  _cpFilter.code = (val || '').trim().toLowerCase();
+  applyFilter();
+}
+
+function onCpPeineSearch(val) {
+  _cpFilter.peine = (val || '').trim().toLowerCase();
+  applyFilter();
+}
+
+function toggleCpSection(id) {
+  _cpFilter.sections[id] = !_cpFilter.sections[id];
+  var tog = document.getElementById('cp-toggle-' + id);
+  if (tog) tog.classList.toggle('hidden', !_cpFilter.sections[id]);
+  applyFilter();
+}
+
+function onCpSort(val) {
+  _cpFilter.sort = val || 'default';
+  applyFilter();
+}
+
+function onCpScope(val) {
+  _cpFilter.scope = val || 'all';
+  applyFilter();
+}
+
+function resetCpFilter() {
+  _cpFilter.q    = '';
+  _cpFilter.code = '';
+  _cpFilter.peine = '';
+  _cpFilter.sort = 'default';
+  _cpFilter.scope = 'all';
+  (_cpData.sections || []).forEach(function(sec) { _cpFilter.sections[sec.id] = true; });
+  var inp = document.getElementById('cp-search-input');
+  if (inp) inp.value = '';
+  var codeInput = document.getElementById('cp-code-input');
+  if (codeInput) codeInput.value = '';
+  var peineInput = document.getElementById('cp-peine-input');
+  if (peineInput) peineInput.value = '';
+  var clr = document.getElementById('cp-search-clear');
+  if (clr) clr.classList.remove('visible');
+  var sel = document.getElementById('cp-sort-select');
+  if (sel) sel.value = 'default';
+  var scopeSel = document.getElementById('cp-scope-select');
+  if (scopeSel) scopeSel.value = 'all';
+  (_cpData.sections || []).forEach(function(sec) {
+    var tog = document.getElementById('cp-toggle-' + sec.id);
+    if (tog) tog.classList.remove('hidden');
+  });
+  applyFilter();
+}
+
+function applyFilter() {
+  if (!_cpData || !_cpData.sections) return;
+  var q = _cpFilter.q;
+  var codeQuery = _cpFilter.code;
+  var peineQuery = _cpFilter.peine;
+  var totalVisible = 0;
+
+  _cpData.sections.forEach(function(sec) {
+    var sbEl  = document.getElementById('sb-' + sec.id);
+    var tbody = document.getElementById('tbody-' + sec.id);
+    if (!sbEl || !tbody) return;
+
+    /* Masquer la section entière si désactivée */
+    if (!_cpFilter.sections[sec.id]) {
+      sbEl.classList.add('cp-section-hidden');
+      return;
+    }
+    sbEl.classList.remove('cp-section-hidden');
+
+    /* Filtrer les lignes par recherche */
+    var allTr = Array.from(tbody.querySelectorAll('tr'));
+    var visibleTr = [];
+    allTr.forEach(function(tr) {
+      var infractionTd = tr.querySelector('td[data-field="infraction"]');
+      var descriptionTd = tr.querySelector('td[data-field="description"]');
+      var peineTd = tr.querySelector('td[data-field="peine"]');
+      var codeTd = tr.querySelector('td[data-field="code"]');
+      var allText = tr.textContent.toLowerCase();
+      var scopeText = allText;
+
+      if (_cpFilter.scope === 'infraction') scopeText = infractionTd ? infractionTd.textContent.toLowerCase() : '';
+      else if (_cpFilter.scope === 'description') scopeText = descriptionTd ? descriptionTd.textContent.toLowerCase() : '';
+      else if (_cpFilter.scope === 'peine') scopeText = peineTd ? peineTd.textContent.toLowerCase() : '';
+
+      var show = (!q || scopeText.indexOf(q) !== -1) &&
+        (!codeQuery || ((codeTd ? codeTd.textContent : '').toLowerCase().indexOf(codeQuery) !== -1)) &&
+        (!peineQuery || ((peineTd ? peineTd.textContent : '').toLowerCase().indexOf(peineQuery) !== -1));
+      tr.classList.toggle('cp-hidden', !show);
+      if (show) visibleTr.push(tr);
+    });
+
+    /* Appliquer le tri (uniquement sur les lignes visibles) */
+    if (_cpFilter.sort !== 'default') {
+      var parts = _cpFilter.sort.split('-');
+      var field = parts[0];
+      var asc   = parts[1] === 'asc';
+      allTr.sort(function(a, b) {
+        var tdA = a.querySelector('td[data-field="' + field + '"]');
+        var tdB = b.querySelector('td[data-field="' + field + '"]');
+        var va = tdA ? tdA.textContent.trim() : '';
+        var vb = tdB ? tdB.textContent.trim() : '';
+        return asc ? va.localeCompare(vb, 'fr') : vb.localeCompare(va, 'fr');
+      });
+      allTr.forEach(function(r) { tbody.appendChild(r); });
+    }
+
+    /* Message « aucun résultat » dans la section */
+    var noRes = sbEl.querySelector('.cp-no-results');
+    if (!noRes) {
+      noRes = document.createElement('div');
+      noRes.className = 'cp-no-results';
+      noRes.textContent = 'Aucune infraction ne correspond \u00e0 votre recherche.';
+      sbEl.appendChild(noRes);
+    }
+    noRes.classList.toggle('visible', visibleTr.length === 0);
+
+    /* Compteur de la section dans la sidebar */
+    var countEl = document.getElementById('cp-count-' + sec.id);
+    if (countEl) countEl.textContent = visibleTr.length;
+    totalVisible += visibleTr.length;
+  });
+
+  /* Compteur global */
+  var resEl = document.getElementById('cp-result-count');
+  if (resEl) {
+    resEl.textContent = q
+      ? totalVisible + ' résultat' + (totalVisible !== 1 ? 's' : '')
+      : '';
+  }
+}
+
+function updateCpCounts() {
+  if (!_cpData || !_cpData.sections) return;
+  _cpData.sections.forEach(function(sec) {
+    var countEl = document.getElementById('cp-count-' + sec.id);
+    if (countEl) countEl.textContent = (sec.rows || []).length;
+  });
+}
+
+function moveSection(secId, direction) {
+  if (!_cpEditing || !_cpData || !_cpData.sections) return;
+  var currentIndex = (_cpData.sections || []).findIndex(function(sec) { return sec.id === secId; });
+  var targetIndex = currentIndex + direction;
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= _cpData.sections.length) return;
+  var moved = _cpData.sections.splice(currentIndex, 1)[0];
+  _cpData.sections.splice(targetIndex, 0, moved);
+  renderAllSections();
+}
+
+function deleteSection(secId) {
+  if (!_cpEditing || !_cpData || !_cpData.sections) return;
+  var section = getSectionMeta(secId);
+  if (!section) return;
+  if (!window.confirm('Supprimer la categorie "' + (section.title || secId) + '" et toutes ses infractions ?')) return;
+  pushUndo();
+  _cpData.sections = (_cpData.sections || []).filter(function(sec) { return sec.id !== secId; });
+  delete _cpFilter.sections[secId];
+  renderAllSections();
+}
+
+function addSection() {
+  if (!_cpEditing || !_cpData) return;
+  pushUndo();
+  var nextIndex = (_cpData.sections || []).length + 1;
+  var baseTitle = 'Nouvelle categorie ' + nextIndex;
+  var id = buildSectionId(baseTitle);
+  var section = {
+    id: id,
+    cssClass: 'section-custom',
+    title: baseTitle,
+    shortTitle: baseTitle,
+    color: '#8f7b38',
+    codePrefix: 'X' + nextIndex,
+    rows: []
+  };
+  _cpData.sections.push(section);
+  _cpFilter.sections[id] = true;
+  renderAllSections();
+  var titleInput = document.getElementById('section-input-title-' + id);
+  if (titleInput) {
+    titleInput.focus();
+    titleInput.select();
+  }
+}
+
+var STATUS_LABELS = { suspended: 'Suspendu', abrogated: 'Abrogé', provisional: 'Provisoire', temporary: 'Temporaire' };
+
+function makeRow(row, secId) {
+  var tr = document.createElement('tr');
+  var status = (row && row.status) || 'active';
+  var expiresAt = (row && row.expiresAt) || '';
+  var notes = (row && row.notes) || '';
+
+  tr.dataset.rowStatus = status;
+  tr.dataset.rowExpiresAt = expiresAt;
+  tr.dataset.rowNotes = notes;
+  if (status !== 'active') tr.classList.add('row-status-' + status);
+
+  /* Code cell — drag handle + code text + props button */
+  var tdCode = document.createElement('td');
+  tdCode.dataset.field = 'code';
+
+  var dragHandle = document.createElement('button');
+  dragHandle.type = 'button';
+  dragHandle.className = 'row-drag-handle';
+  dragHandle.title = 'Glisser pour deplacer cette ligne';
+  dragHandle.setAttribute('aria-label', 'Deplacer cette ligne');
+  dragHandle.textContent = '⋮⋮';
+  dragHandle.draggable = true;
+
+  var propsBtn = document.createElement('button');
+  propsBtn.type = 'button';
+  propsBtn.className = 'row-props-btn';
+  propsBtn.title = 'Propriétés de l\'article';
+  propsBtn.textContent = '⚙';
+  propsBtn.contentEditable = 'false';
+  (function(currentTr, sid) {
+    propsBtn.onclick = function(e) {
+      e.stopPropagation();
+      if (!_cpEditing) return;
+      selectArticleRow(currentTr, sid);
+    };
+  })(tr, secId);
+
+  var codeText = document.createElement('span');
+  codeText.className = 'row-code-text';
+  codeText.textContent = row.code || '';
+
+  tdCode.appendChild(dragHandle);
+  tdCode.appendChild(propsBtn);
+  tdCode.appendChild(codeText);
+  tr.appendChild(tdCode);
+
+  /* Infraction cell — badge + main text + expiry + notes indicator */
+  var tdInfraction = document.createElement('td');
+  tdInfraction.dataset.field = 'infraction';
+
+  var statusBadge = document.createElement('span');
+  statusBadge.className = 'article-status-badge status-' + status;
+  statusBadge.contentEditable = 'false';
+  statusBadge.style.display = status === 'active' ? 'none' : '';
+  if (status !== 'active') statusBadge.textContent = STATUS_LABELS[status] || status;
+
+  var infractionSpan = document.createElement('span');
+  infractionSpan.className = 'infraction-main-text';
+  infractionSpan.textContent = row.infraction || '';
+
+  tdInfraction.appendChild(statusBadge);
+  tdInfraction.appendChild(infractionSpan);
+
+  if (status === 'temporary' && expiresAt) {
+    var expiryBadge = document.createElement('span');
+    expiryBadge.className = 'article-expiry-badge';
+    expiryBadge.contentEditable = 'false';
+    expiryBadge.textContent = formatCountdown(expiresAt);
+    tdInfraction.appendChild(expiryBadge);
+  }
+
+  if (notes && _cpCanSeeNotes) {
+    var notesBtn = document.createElement('button');
+    notesBtn.type = 'button';
+    notesBtn.className = 'row-notes-indicator';
+    notesBtn.contentEditable = 'false';
+    notesBtn.title = 'Annotations internes (Justice)';
+    notesBtn.textContent = '📋';
+    (function(n, td) {
+      notesBtn.onclick = function(e) {
+        e.stopPropagation();
+        var existing = td.querySelector('.row-notes-block');
+        if (existing) { existing.remove(); return; }
+        var nb = document.createElement('div');
+        nb.className = 'row-notes-block';
+        nb.textContent = n;
+        td.appendChild(nb);
+      };
+    })(notes, tdInfraction);
+    tdInfraction.appendChild(notesBtn);
+  }
+
+  tr.appendChild(tdInfraction);
+
+  /* Description + Peine cells */
+  ['description', 'peine'].forEach(function(field) {
+    var td = document.createElement('td');
+    td.textContent = row[field] || '';
+    td.dataset.field = field;
+    if (field === 'peine') td.classList.add('td-peine');
+    tr.appendChild(td);
+  });
+
+  /* Colonne delete cachée (width:0 en lecture) */
+  var tdDel = document.createElement('td');
+  tdDel.className = 'td-del';
+  var btnDel = document.createElement('button');
+  btnDel.className = 'btn-del-row';
+  btnDel.textContent = '\u00d7';
+  btnDel.title = 'Supprimer cette ligne';
+  (function(r, sectionId) {
+    btnDel.onclick = function() {
+      r.remove();
+      refreshSectionCodes(sectionId);
+    };
+  })(tr, secId);
+  tdDel.appendChild(btnDel);
+  tr.appendChild(tdDel);
+
+  bindRowDragAndDrop(tr, secId);
+
+  return tr;
+}
+
+function enablePenaltyEditors(scope) {
+  (scope || document).querySelectorAll('td[data-field="peine"]').forEach(function(td) {
+    td.contentEditable = 'false';
+    convertPeineCellToEditor(td);
+  });
+}
+
+function normalizePenaltyText(value) {
+  return String(value || '')
+    .replace(/[‐‑‒–—−]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function splitPenaltyParts(text) {
+  return normalizePenaltyText(text)
+    .split(/\s*\+\s*/g)
+    .map(function(part) { return part.trim(); })
+    .filter(Boolean);
+}
+
+function normalizePenaltyComparable(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/gi, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function matchesPenaltyLabel(raw, lexiqueKey, fallbacks) {
+  var labels = [];
+  var current = _cpData && _cpData.lexique && _cpData.lexique[lexiqueKey] && _cpData.lexique[lexiqueKey].label;
+  if (current) labels.push(current);
+  (fallbacks || []).forEach(function(label) { labels.push(label); });
+  var candidate = normalizePenaltyComparable(raw);
+  return labels.some(function(label) { return normalizePenaltyComparable(label) === candidate; });
+}
+
+function parsePenaltyPart(part) {
+  var raw = normalizePenaltyText(part);
+  if (!raw) return null;
+
+  var amendeMatch = raw.match(/^(\d[\d\s]*)\s*r(?:yos?)?$/i);
+  if (amendeMatch) {
+    return { type: 'amende', value: String(amendeMatch[1]).replace(/\s+/g, '') };
+  }
+
+  var celluleMatch = raw.match(/^cellule\s*(\d+)\s*min(?:utes?)?$/i);
+  if (celluleMatch) {
+    return { type: 'cellule', value: celluleMatch[1] };
+  }
+
+  var jugementMatch = raw.match(/^jugement(?:\s*\((.+)\))?$/i);
+  if (jugementMatch) {
+    return { type: 'jugement', value: (jugementMatch[1] || '').trim() };
+  }
+
+  if (/^avert(?:issement)?$/i.test(raw) || matchesPenaltyLabel(raw, 'avertissement', ['Avertissement', 'Avert'])) return { type: 'avertissement', value: '' };
+  if (/^signalement$/i.test(raw) || matchesPenaltyLabel(raw, 'signalement', ['Signalement'])) return { type: 'signalement', value: '' };
+  if (/^tig$/i.test(raw) || matchesPenaltyLabel(raw, 'tig', ['TIG', 'Travaux d Interet Generaux'])) return { type: 'tig', value: '' };
+  if (/^detention$/i.test(raw) || matchesPenaltyLabel(raw, 'detention', ['Detention'])) return { type: 'detention', value: '' };
+  if (matchesPenaltyLabel(raw, 'jugement', ['Jugement'])) return { type: 'jugement', value: '' };
+  if (/^confiscation(?:\s+des\s+objets)?$/i.test(raw)) return { type: 'confiscation', value: '' };
+
+  return { type: 'custom', value: raw };
+}
+
+function getPenaltyTypeLabel(type) {
+  var labels = {
+    avertissement: 'Avertissement',
+    amende: 'Amende',
+    tig: 'TIG',
+    signalement: 'Signalement',
+    jugement: 'Jugement',
+    cellule: 'Cellule',
+    detention: 'Detention',
+    confiscation: 'Confiscation',
+    custom: 'Texte libre'
+  };
+  return labels[type] || 'Texte libre';
+}
+
+function buildPenaltySelect(selectedType) {
+  var select = document.createElement('select');
+  select.className = 'penalty-type-select';
+  [
+    'avertissement',
+    'amende',
+    'tig',
+    'signalement',
+    'jugement',
+    'cellule',
+    'detention',
+    'confiscation',
+    'custom'
+  ].forEach(function(type) {
+    var option = document.createElement('option');
+    option.value = type;
+    option.textContent = getPenaltyTypeLabel(type);
+    option.selected = type === selectedType;
+    select.appendChild(option);
+  });
+  return select;
+}
+
+function getPenaltyInputMeta(type) {
+  switch (type) {
+    case 'amende':
+      return { placeholder: '5000', suffix: 'ryos', inputMode: 'numeric' };
+    case 'cellule':
+      return { placeholder: '15', suffix: 'minutes', inputMode: 'numeric' };
+    case 'jugement':
+      return { placeholder: 'Motif ou precision (optionnel)', suffix: '', inputMode: 'text' };
+    case 'custom':
+      return { placeholder: 'Texte libre', suffix: '', inputMode: 'text' };
+    default:
+      return { placeholder: '', suffix: '', inputMode: 'text' };
+  }
+}
+
+function refreshPenaltyRowUi(row) {
+  var select = row.querySelector('.penalty-type-select');
+  var input = row.querySelector('.penalty-value-input');
+  var suffix = row.querySelector('.penalty-value-suffix');
+  if (!select || !input || !suffix) return;
+
+  var meta = getPenaltyInputMeta(select.value);
+  input.placeholder = meta.placeholder;
+  input.inputMode = meta.inputMode;
+  suffix.textContent = meta.suffix;
+  var requiresValue = select.value === 'amende' || select.value === 'cellule' || select.value === 'jugement' || select.value === 'custom';
+  row.classList.toggle('has-extra-input', requiresValue);
+  input.style.display = requiresValue ? '' : 'none';
+  suffix.style.display = meta.suffix ? '' : 'none';
+  if (!requiresValue) {
+    input.value = '';
+  }
+}
+
+function createPenaltyEditorRow(item) {
+  var row = document.createElement('div');
+  row.className = 'penalty-editor-row';
+
+  var select = buildPenaltySelect((item && item.type) || 'avertissement');
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'penalty-value-input';
+  input.value = (item && item.value) || '';
+
+  var suffix = document.createElement('span');
+  suffix.className = 'penalty-value-suffix';
+
+  var removeButton = document.createElement('button');
+  removeButton.type = 'button';
+  removeButton.className = 'penalty-remove-btn';
+  removeButton.textContent = '×';
+  removeButton.title = 'Retirer cette peine';
+  removeButton.onclick = function() {
+    var editor = row.closest('.penalty-editor');
+    row.remove();
+    if (editor && !editor.querySelector('.penalty-editor-row')) {
+      editor.appendChild(createPenaltyEditorRow({ type: 'avertissement', value: '' }));
+    }
+  };
+
+  select.addEventListener('change', function() {
+    refreshPenaltyRowUi(row);
+  });
+
+  row.appendChild(select);
+  row.appendChild(input);
+  row.appendChild(suffix);
+  row.appendChild(removeButton);
+  refreshPenaltyRowUi(row);
+  return row;
+}
+
+function convertPeineCellToEditor(td) {
+  if (!td || td.querySelector('.penalty-editor')) return;
+  var initialParts = splitPenaltyParts(td.textContent).map(parsePenaltyPart).filter(Boolean);
+  if (!initialParts.length) {
+    initialParts = [{ type: 'avertissement', value: '' }];
+  }
+
+  var editor = document.createElement('div');
+  editor.className = 'penalty-editor';
+
+  initialParts.forEach(function(item) {
+    editor.appendChild(createPenaltyEditorRow(item));
+  });
+
+  var addButton = document.createElement('button');
+  addButton.type = 'button';
+  addButton.className = 'penalty-add-btn';
+  addButton.textContent = '+ Ajouter une peine';
+  addButton.onclick = function() {
+    editor.insertBefore(createPenaltyEditorRow({ type: 'amende', value: '' }), addButton);
+  };
+
+  editor.appendChild(addButton);
+  td.textContent = '';
+  td.appendChild(editor);
+}
+
+function serializePenaltyPart(item) {
+  if (!item || !item.type) return '';
+  switch (item.type) {
+    case 'avertissement': return 'un avertissement';
+    case 'amende': return item.value ? (item.value + ' ryos') : '';
+    case 'tig': return 'un TIG';
+    case 'signalement': return 'un signalement';
+    case 'jugement': return item.value ? ('un jugement (' + item.value + ')') : 'un jugement';
+    case 'cellule': return item.value ? (item.value + ' minutes de cellule') : '';
+    case 'detention': return 'une detention';
+    case 'confiscation': return 'une confiscation';
+    case 'custom': return String(item.value || '').trim();
+    default: return '';
+  }
+}
+
+function collectPenaltyEditorValue(td) {
+  if (!td) return '';
+  var rows = Array.from(td.querySelectorAll('.penalty-editor-row')).map(function(row) {
+    var select = row.querySelector('.penalty-type-select');
+    var input = row.querySelector('.penalty-value-input');
+    return {
+      type: select ? select.value : '',
+      value: input ? String(input.value || '').trim() : ''
+    };
+  });
+
+  var parts = rows.map(serializePenaltyPart).filter(Boolean);
+  if (!parts.length) return '';
+  if (parts.length === 1) {
+    return formatPenaltySentence(parts);
+  }
+  return formatPenaltySentence(parts);
+}
+
+function formatPenaltySentence(parts) {
+  var list = Array.isArray(parts) ? parts.filter(Boolean) : [];
+  if (!list.length) return '';
+  var sentence = list.length === 1
+    ? list[0]
+    : list.slice(0, -1).join(', ') + ' ainsi que ' + list[list.length - 1];
+
+  sentence = sentence
+    .replace(/\bque un\b/gi, "qu'un")
+    .replace(/\bque une\b/gi, "qu'une");
+
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CODE PÉNAL — mode édition
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+async function canUserEditCP(user) {
+  if (!user || user.permission === 'GUEST') return false;
+  try {
+    var r = await fetch('/auth/can-edit-cp', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) return false;
+    return (await r.json()).canEdit === true;
+  } catch(e) { return false; }
+}
+
+function toggleEditMode() {
+  if (!_cpCanEdit) return;
+  _cpEditing ? cancelEditMode() : enterEditMode();
+}
+
+function enterEditMode() {
+  _cpEditing = true;
+  _cpOriginal = JSON.parse(JSON.stringify(_cpData));
+  document.body.classList.add('cp-editing');
+
+  document.querySelectorAll('.section-block').forEach(function(sb) {
+    sb.classList.add('edit-active');
+    sb.querySelectorAll('tbody td[data-field]').forEach(function(td) {
+      td.contentEditable = td.dataset.field === 'peine' ? 'false' : 'true';
+    });
+  });
+  enablePenaltyEditors();
+  document.querySelectorAll('[data-lexique-field]').forEach(function(node) {
+    node.contentEditable = 'true';
+  });
+  document.querySelectorAll('.section-editor-row input').forEach(function(input) {
+    input.disabled = false;
+  });
+  var thresholdInput = document.getElementById('lexique-threshold-signalement');
+  if (thresholdInput) thresholdInput.disabled = false;
+  var jugementThresholdInput = document.getElementById('lexique-threshold-jugement');
+  if (jugementThresholdInput) jugementThresholdInput.disabled = false;
+  var propagateToggle = document.getElementById('lexique-propagate-rules');
+  if (propagateToggle) propagateToggle.disabled = false;
+
+  document.getElementById('edit-bar').classList.add('visible');
+  var btn = document.getElementById('btn-edit-cp');
+  btn.textContent = '\u2756 En \u00e9dition';
+  btn.style.color = '#90e080';
+  btn.style.borderColor = '#50a030';
+  document.getElementById('edit-status').textContent = 'Mode \u00e9dition actif';
+  document.getElementById('edit-status').style.color = '';
+  _undoStack = [];
+  _redoStack = [];
+  openStudio('document');
+}
+
+function cancelEditMode() {
+  _cpEditing = false;
+  _cpData    = JSON.parse(JSON.stringify(_cpOriginal));
+  renderAllSections();
+  exitEditUI();
+}
+
+function exitEditUI() {
+  document.body.classList.remove('cp-editing');
+  document.querySelectorAll('.section-block').forEach(function(sb) {
+    sb.classList.remove('edit-active');
+    sb.querySelectorAll('tbody td[data-field]').forEach(function(td) {
+      td.contentEditable = 'false';
+    });
+  });
+  document.querySelectorAll('[data-lexique-field]').forEach(function(node) {
+    node.contentEditable = 'false';
+  });
+  document.querySelectorAll('.section-editor-row input').forEach(function(input) {
+    input.disabled = true;
+  });
+  var thresholdInput = document.getElementById('lexique-threshold-signalement');
+  if (thresholdInput) thresholdInput.disabled = true;
+  var jugementThresholdInput = document.getElementById('lexique-threshold-jugement');
+  if (jugementThresholdInput) jugementThresholdInput.disabled = true;
+  var propagateToggle = document.getElementById('lexique-propagate-rules');
+  if (propagateToggle) propagateToggle.disabled = true;
+  document.getElementById('edit-bar').classList.remove('visible');
+  var btn = document.getElementById('btn-edit-cp');
+  btn.textContent = '\u2756 Modifier';
+  btn.style.color = '';
+  btn.style.borderColor = '';
+  closeStudio();
+}
+
+function collectCodePenal() {
+  var avertDescription = (document.querySelector('[data-lexique-field="avertissement.description"]') || {}).textContent || '';
+  var thresholdInput = document.getElementById('lexique-threshold-signalement');
+  var thresholdValue = thresholdInput ? Number(thresholdInput.value || 2) : 2;
+  var jugementThresholdInput = document.getElementById('lexique-threshold-jugement');
+  var jugementThresholdValue = jugementThresholdInput ? Number(jugementThresholdInput.value || 1) : 1;
+  var propagateToggle = document.getElementById('lexique-propagate-rules');
+  var result = {
+    sections: [],
+    preamble: (_cpData && _cpData.preamble) || '',
+    meta:     (_cpData && _cpData.meta)     ? JSON.parse(JSON.stringify(_cpData.meta))  : {},
+    theme:    (_cpData && _cpData.theme)    ? JSON.parse(JSON.stringify(_cpData.theme)) : {},
+    lexique: {
+      detention: {
+        label: ((document.querySelector('[data-lexique-field="detention.label"]') || {}).textContent || '').trim(),
+        description: ((document.querySelector('[data-lexique-field="detention.description"]') || {}).textContent || '').trim()
+      },
+      cellule: {
+        label: ((document.querySelector('[data-lexique-field="cellule.label"]') || {}).textContent || '').trim(),
+        description: ((document.querySelector('[data-lexique-field="cellule.description"]') || {}).textContent || '').trim()
+      },
+      avertissement: {
+        label: ((document.querySelector('[data-lexique-field="avertissement.label"]') || {}).textContent || '').trim(),
+        description: avertDescription.trim(),
+        thresholdForSignalement: thresholdValue > 0 ? thresholdValue : 2
+      },
+      signalement: {
+        label: ((document.querySelector('[data-lexique-field="signalement.label"]') || {}).textContent || '').trim(),
+        description: ((document.querySelector('[data-lexique-field="signalement.description"]') || {}).textContent || '').trim(),
+        thresholdForJugement: jugementThresholdValue > 0 ? jugementThresholdValue : 1
+      },
+      jugement: {
+        label: ((document.querySelector('[data-lexique-field="jugement.label"]') || {}).textContent || '').trim(),
+        description: ((document.querySelector('[data-lexique-field="jugement.description"]') || {}).textContent || '').trim()
+      },
+      tig: {
+        label: ((document.querySelector('[data-lexique-field="tig.label"]') || {}).textContent || '').trim(),
+        description: ((document.querySelector('[data-lexique-field="tig.description"]') || {}).textContent || '').trim()
+      },
+      rules: {
+        propagateEscalationToDossiers: !propagateToggle || propagateToggle.checked
+      }
+    }
+  };
+  (_cpData.sections || []).forEach(function(origSec) {
+    var tbody = document.getElementById('tbody-' + origSec.id);
+    if (!tbody) return;
+    var rows = [];
+      tbody.querySelectorAll('tr').forEach(function(tr) {
+        var obj = {};
+        tr.querySelectorAll('td[data-field]').forEach(function(td) {
+          if (td.dataset.field === 'peine') {
+            obj[td.dataset.field] = collectPenaltyEditorValue(td);
+            return;
+          }
+          if (td.dataset.field === 'code') {
+            var codeNode = td.querySelector('.row-code-text');
+            obj[td.dataset.field] = (codeNode ? codeNode.textContent : td.textContent).trim();
+            return;
+          }
+          if (td.dataset.field === 'infraction') {
+            var mainText = td.querySelector('.infraction-main-text');
+            obj[td.dataset.field] = (mainText ? mainText.textContent : td.textContent).trim();
+            return;
+          }
+          obj[td.dataset.field] = td.textContent.trim();
+        });
+        obj.status = tr.dataset.rowStatus || 'active';
+        obj.expiresAt = tr.dataset.rowExpiresAt || null;
+        obj.notes = tr.dataset.rowNotes || '';
+        if (obj.code) rows.push(obj);
+      });
+    result.sections.push({
+      id: origSec.id,
+      cssClass: origSec.cssClass,
+      title: ((document.getElementById('section-input-title-' + origSec.id) || {}).value || origSec.title || '').trim(),
+      shortTitle: ((document.getElementById('section-input-short-title-' + origSec.id) || {}).value || origSec.shortTitle || origSec.title || '').trim(),
+      color: ((document.getElementById('section-input-color-' + origSec.id) || {}).value || origSec.color || '#9a7a2a').trim(),
+      codePrefix: (((document.getElementById('section-input-prefix-' + origSec.id) || {}).value || origSec.codePrefix || '').trim() || ('X' + (result.sections.length + 1))).toUpperCase(),
+      icon: origSec.icon || '',
+      preamble: origSec.preamble || '',
+      rows: rows
+    });
+  });
+  return result;
+}
+
+async function saveCodePenal() {
+  var data = collectCodePenal();
+  var statusEl = document.getElementById('edit-status');
+  statusEl.textContent = 'Sauvegarde\u2026';
+  statusEl.style.color = '#c9a84c';
+  try {
+    var endpoints = [
+      { url: '/api/v1/codepenal', method: 'PUT' },
+      { url: '/admin/codepenal', method: 'POST' }
+    ];
+    var saved = false;
+
+    for (var i = 0; i < endpoints.length; i++) {
+      var endpoint = endpoints[i];
+      var r = await fetch(endpoint.url, {
+        method: endpoint.method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+        body: JSON.stringify(data)
+      });
+
+      if (r.ok) {
+        saved = true;
+        break;
+      }
+
+      var contentType = (r.headers.get('content-type') || '').toLowerCase();
+      var payload = null;
+      if (contentType.indexOf('application/json') !== -1) {
+        payload = await r.json().catch(function() { return null; });
+      } else {
+        await r.text().catch(function() { return ''; });
+      }
+
+      if (r.status !== 404 && r.status !== 405) {
+        throw new Error((payload && payload.error) || 'Erreur serveur');
+      }
+    }
+
+    if (!saved) {
+      throw new Error('Aucune route de sauvegarde compatible n est disponible');
+    }
+
+    _cpData     = data;
+    _cpOriginal = JSON.parse(JSON.stringify(data));
+    _cpEditing  = false;
+    renderAllSections();
+    exitEditUI();
+    showEditFlash('\u2756 Code P\u00e9nal mis \u00e0 jour', true);
+  } catch(e) {
+    statusEl.textContent = '\u26a0 ' + e.message;
+    statusEl.style.color = '#e08060';
+  }
+}
+
+function addRow(secId) {
+  var tbody = document.getElementById('tbody-' + secId);
+  if (!tbody) return;
+  pushUndo();
+  var num = tbody.querySelectorAll('tr').length + 1;
+  var newRow = makeRow({
+    code:       getSectionPrefix(secId) + '.' + num,
+    infraction: 'Nouvelle infraction',
+    description:'Description',
+    peine:      'Un avertissement'
+  }, secId);
+  newRow.querySelectorAll('td[data-field]').forEach(function(td) {
+    td.contentEditable = td.dataset.field === 'peine' ? 'false' : 'true';
+  });
+  tbody.appendChild(newRow);
+  refreshSectionCodes(secId);
+  enablePenaltyEditors(newRow);
+  var cell = newRow.querySelector('td[data-field="infraction"]');
+  if (cell) {
+    cell.focus();
+    var rng = document.createRange(); rng.selectNodeContents(cell);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+  }
+}
+
+function showEditFlash(msg, success) {
+  var bar = document.getElementById('edit-bar');
+  var st  = document.getElementById('edit-status');
+  bar.classList.add('visible');
+  st.textContent = msg;
+  st.style.color = success ? '#90e060' : '#e08060';
+  setTimeout(function() {
+    bar.classList.remove('visible');
+    st.style.color = '';
+  }, 2800);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BOOT
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+var currentUser = null;
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  setupUserBar(currentUser);
+  var canEdit = await canUserEditCP(currentUser);
+  _cpCanEdit = canEdit;
+  if (canEdit) document.getElementById('btn-edit-cp').style.display = 'inline-block';
+  await loadCodePenal();
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   POPUP PROFIL — GESTION
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+var _pendingAvatar = null;
+
+function toggleProfilePopup() {
+  var popup = document.getElementById('profile-popup');
+  if (popup.classList.contains('open')) {
+    closeProfilePopup(null, true);
+  } else {
+    openProfilePopup();
+  }
+}
+
+async function openProfilePopup() {
+  if (!currentUser || currentUser.permission === 'GUEST') return;
+  var popup = document.getElementById('profile-popup');
+  _pendingAvatar = null;
+  document.getElementById('profile-save-btn').disabled = true;
+  document.getElementById('profile-save-status').textContent = '';
+
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  ph.style.display = '';
+
+  try {
+    var r = await fetch('/auth/profile/avatar/' + encodeURIComponent(currentUser.pseudo), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (r.ok) {
+      var data = await r.json();
+      if (data.avatar) {
+        var img = document.createElement('img');
+        img.src = data.avatar;
+        ph.style.display = 'none';
+        preview.appendChild(img);
+      }
+    }
+  } catch(e) {}
+
+  if (window.ServiceWidget) {
+    window.ServiceWidget.refresh(currentUser);
+  }
+
+  popup.style.display = 'block';
+  requestAnimationFrame(function() { popup.classList.add('open'); });
+  setTimeout(function() {
+    document.addEventListener('click', _outsideProfileClick);
+  }, 50);
+}
+
+function _outsideProfileClick(e) {
+  var popup = document.getElementById('profile-popup');
+  var badge = document.getElementById('user-badge');
+  if (!popup.contains(e.target) && e.target !== badge) {
+    closeProfilePopup(null, true);
+  }
+}
+
+function closeProfilePopup(e, force) {
+  if (!force) return;
+  var popup = document.getElementById('profile-popup');
+  popup.classList.remove('open');
+  document.removeEventListener('click', _outsideProfileClick);
+  setTimeout(function() { popup.style.display = 'none'; }, 220);
+}
+
+function resizeImageToBase64(file, maxPx, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) {
+          if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else        { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleAvatarSelect(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var b64 = await resizeImageToBase64(file, 256, 0.82);
+  _pendingAvatar = b64;
+  var preview = document.getElementById('profile-avatar-preview');
+  var ph = document.getElementById('profile-avatar-ph');
+  var oldImg = preview.querySelector('img');
+  if (oldImg) oldImg.remove();
+  var img = document.createElement('img');
+  img.src = b64;
+  ph.style.display = 'none';
+  preview.appendChild(img);
+  document.getElementById('profile-save-btn').disabled = false;
+  document.getElementById('profile-save-status').textContent = '';
+  evt.target.value = '';
+}
+
+async function saveAvatar() {
+  if (!_pendingAvatar) return;
+  var btn = document.getElementById('profile-save-btn');
+  var status = document.getElementById('profile-save-status');
+  btn.disabled = true;
+  status.textContent = 'Envoi…';
+  try {
+    var r = await fetch('/auth/profile/avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ avatar: _pendingAvatar })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+    _pendingAvatar = null;
+    status.style.color = '#2c3e1a';
+    status.textContent = '❖ Sauvegardé !';
+    setTimeout(function() { status.textContent = ''; }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    status.style.color = '#8b1a1a';
+    status.textContent = 'âš  ' + e.message;
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeProfilePopup(null, true);
+    if (_cpStudioOpen && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') closeStudio();
+  }
+  if (!_cpEditing) return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveCodePenal(); }
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') { e.preventDefault(); doUndo(); }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) { e.preventDefault(); doRedo(); }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   FORMAT COUNTDOWN
+   ══════════════════════════════════════════════════════════════ */
+function formatCountdown(expiresAt) {
+  if (!expiresAt) return '';
+  var exp = new Date(expiresAt);
+  if (isNaN(exp.getTime())) return String(expiresAt);
+  var now = new Date();
+  var diff = exp - now;
+  if (diff <= 0) return 'Expiré';
+  var days  = Math.floor(diff / 86400000);
+  var hours = Math.floor((diff % 86400000) / 3600000);
+  var mins  = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return 'Exp. dans ' + days + 'j' + (hours > 0 ? ' ' + hours + 'h' : '');
+  if (hours > 0) return 'Exp. dans ' + hours + 'h' + (mins > 0 ? ' ' + mins + 'min' : '');
+  return 'Exp. dans ' + mins + 'min';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UNDO / REDO
+   ══════════════════════════════════════════════════════════════ */
+var _undoStack = [];
+var _redoStack = [];
+
+function pushUndo() {
+  if (!_cpEditing) return;
+  _undoStack.push(JSON.parse(JSON.stringify(_cpData)));
+  if (_undoStack.length > 60) _undoStack.shift();
+  _redoStack = [];
+}
+
+function doUndo() {
+  if (!_undoStack.length) { showEditFlash('Aucune action à annuler', false); return; }
+  _redoStack.push(JSON.parse(JSON.stringify(_cpData)));
+  _cpData = _undoStack.pop();
+  renderAllSections();
+  if (_cpStudioOpen) renderStudioBody();
+  showEditFlash('↩ Annulation', false);
+}
+
+function doRedo() {
+  if (!_redoStack.length) { showEditFlash('Aucune action à rétablir', false); return; }
+  _undoStack.push(JSON.parse(JSON.stringify(_cpData)));
+  _cpData = _redoStack.pop();
+  renderAllSections();
+  if (_cpStudioOpen) renderStudioBody();
+  showEditFlash('↪ Rétablissement', true);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   META & THEME — APPLICATION
+   ══════════════════════════════════════════════════════════════ */
+function applyMeta(meta) {
+  if (!meta) return;
+  var h1 = document.querySelector('h1.page-title');
+  if (h1 && meta.title !== undefined) h1.textContent = meta.title;
+  var sub = document.querySelector('.sub-title');
+  if (sub && meta.subtitle !== undefined) sub.textContent = meta.subtitle;
+  var org = document.querySelector('.kanji-line');
+  if (org && meta.headerOrg !== undefined) org.textContent = meta.headerOrg;
+  var wm = document.querySelector('.watermark');
+  if (wm && meta.watermark !== undefined) wm.textContent = meta.watermark;
+  var seal = document.querySelector('.seal');
+  if (seal && meta.seal !== undefined) seal.textContent = meta.seal;
+  var preambleWrap = document.getElementById('doc-preamble-wrap');
+  var preambleText = document.getElementById('doc-preamble-text');
+  if (preambleWrap && preambleText) {
+    if (meta.preamble) { preambleText.textContent = meta.preamble; preambleWrap.style.display = ''; }
+    else preambleWrap.style.display = 'none';
+  }
+  var footers = document.querySelectorAll('.cp-footer-text');
+  if (footers[0] && meta.footer1 !== undefined) footers[0].textContent = meta.footer1;
+  if (footers[1] && meta.footer2 !== undefined) footers[1].textContent = meta.footer2;
+  if (meta.title) document.title = meta.title + ' - Police Militaire de Konoha';
+}
+
+function applyTheme(theme) {
+  if (!theme) return;
+  var root = document.documentElement;
+  if (theme.bgColor) document.body.style.background = theme.bgColor;
+  if (theme.accentColor) {
+    root.style.setProperty('--border-gold', theme.accentColor);
+    root.style.setProperty('--gold-mid', theme.accentColor);
+    root.style.setProperty('--gold-dark', _shadeColor(theme.accentColor, -30));
+  }
+  if (theme.textColor) {
+    root.style.setProperty('--text-dark', theme.textColor);
+    root.style.setProperty('--text-med', _shadeColor(theme.textColor, 40));
+  }
+  if (theme.sizeBase) {
+    document.querySelectorAll('table tbody td').forEach(function(td) {
+      if (!td.closest('.cp-studio')) td.style.fontSize = theme.sizeBase + 'px';
+    });
+  }
+}
+
+function _shadeColor(hex, pct) {
+  var n = parseInt(String(hex || '').replace('#',''), 16);
+  if (isNaN(n)) return hex;
+  var r = Math.min(255, Math.max(0, (n >> 16) + pct));
+  var g = Math.min(255, Math.max(0, ((n >> 8) & 0xff) + pct));
+  var b = Math.min(255, Math.max(0, (n & 0xff) + pct));
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+
+function collectMeta() {
+  return {
+    title:     (document.getElementById('meta-title') || {}).value,
+    subtitle:  (document.getElementById('meta-subtitle') || {}).value,
+    headerOrg: (document.getElementById('meta-headerOrg') || {}).value,
+    watermark: (document.getElementById('meta-watermark') || {}).value,
+    seal:      (document.getElementById('meta-seal') || {}).value,
+    preamble:  (document.getElementById('meta-preamble') || {}).value,
+    footer1:   (document.getElementById('meta-footer1') || {}).value,
+    footer2:   (document.getElementById('meta-footer2') || {}).value
+  };
+}
+
+function collectTheme() {
+  return {
+    fontTitle:   (document.getElementById('theme-fontTitle') || {}).value   || 'Cinzel',
+    fontBody:    (document.getElementById('theme-fontBody') || {}).value     || 'Crimson Text',
+    sizeBase:    parseInt((document.getElementById('theme-sizeBase') || {}).value || 15),
+    bgColor:     (document.getElementById('theme-bgColor') || {}).value     || '#1a1208',
+    accentColor: (document.getElementById('theme-accentColor') || {}).value || '#b8922a',
+    textColor:   (document.getElementById('theme-textColor') || {}).value   || '#2a1a08'
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STUDIO PANEL
+   ══════════════════════════════════════════════════════════════ */
+var _cpStudioOpen   = false;
+var _cpStudioTabVal = 'document';
+
+function toggleStudio() {
+  _cpStudioOpen ? closeStudio() : openStudio(_cpStudioTabVal);
+}
+
+function openStudio(tab) {
+  if (!_cpEditing) return;
+  _cpStudioOpen  = true;
+  _cpStudioTabVal = tab || _cpStudioTabVal || 'document';
+  var studio = document.getElementById('cp-studio');
+  if (studio) studio.classList.add('open');
+  document.body.classList.add('studio-open');
+  var btn = document.getElementById('btn-studio-toggle');
+  if (btn) { btn.style.color = '#90e0ff'; btn.style.borderColor = '#40a0d0'; }
+  renderStudioTabs();
+  renderStudioBody();
+}
+
+function closeStudio() {
+  _cpStudioOpen = false;
+  var studio = document.getElementById('cp-studio');
+  if (studio) studio.classList.remove('open');
+  document.body.classList.remove('studio-open');
+  var btn = document.getElementById('btn-studio-toggle');
+  if (btn) { btn.style.color = ''; btn.style.borderColor = ''; }
+  if (_cpSelectedRow) { _cpSelectedRow.classList.remove('cp-row-selected'); _cpSelectedRow = null; _cpSelectedSecId = null; }
+}
+
+function switchStudioTab(tab) {
+  _cpStudioTabVal = tab;
+  renderStudioTabs();
+  renderStudioBody();
+}
+
+function renderStudioTabs() {
+  var TABS = [
+    { id: 'document', label: '▤ Document' },
+    { id: 'theme',    label: '◑ Thème'    },
+    { id: 'sections', label: '≡ Sections' },
+    { id: 'article',  label: '◆ Article'  },
+    { id: 'outils',   label: '⚙ Outils'   }
+  ];
+  var bar = document.getElementById('studio-tabs-bar');
+  if (!bar) return;
+  bar.innerHTML = TABS.map(function(t) {
+    return '<button class="cp-studio-tab' + (t.id === _cpStudioTabVal ? ' active' : '') +
+           '" onclick="switchStudioTab(\'' + t.id + '\')">' + t.label + '</button>';
+  }).join('');
+}
+
+function renderStudioBody() {
+  var body = document.getElementById('studio-body');
+  if (!body) return;
+  switch (_cpStudioTabVal) {
+    case 'document': body.innerHTML = buildStudioDocument(); break;
+    case 'theme':    body.innerHTML = buildStudioTheme();    break;
+    case 'sections': body.innerHTML = buildStudioSections(); break;
+    case 'article':  body.innerHTML = buildStudioArticle();  break;
+    case 'outils':   body.innerHTML = buildStudioOutils();   break;
+    default:         body.innerHTML = '<div class="studio-empty">Onglet inconnu</div>';
+  }
+  bindStudioInputEvents();
+}
+
+/* ── Document tab ── */
+function buildStudioDocument() {
+  var meta = (_cpData && _cpData.meta) || {};
+  function v(k, def) { return escapeHtml(meta[k] !== undefined ? meta[k] : def); }
+
+  return '<div class="studio-section-title">En-tête du document</div>' +
+    studioField('Organisation', '<input class="studio-input" id="meta-headerOrg" value="' + v('headerOrg','Police Militaire de Konoha') + '" oninput="liveMetaUpdate()">') +
+    studioField('Titre', '<input class="studio-input" id="meta-title" value="' + v('title','Code Pénal') + '" oninput="liveMetaUpdate()">') +
+    studioField('Sous-titre', '<input class="studio-input" id="meta-subtitle" value="' + v('subtitle','Infractions par Nature — Recueil Officiel') + '" oninput="liveMetaUpdate()">') +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Décoration</div>' +
+    studioField('Filigrane', '<input class="studio-input" id="meta-watermark" value="' + v('watermark','KONOHA') + '" oninput="liveMetaUpdate()">') +
+    studioField('Texte du sceau', '<input class="studio-input" id="meta-seal" value="' + v('seal','Confidentiel') + '" oninput="liveMetaUpdate()">') +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Préambule <span class="studio-help">Texte affiché avant les sections</span></div>' +
+    '<div class="studio-field"><textarea class="studio-textarea" id="meta-preamble" rows="4" placeholder="Présentation officielle, contexte législatif…" oninput="liveMetaUpdate()">' + v('preamble','') + '</textarea></div>' +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Pied de page</div>' +
+    studioField('Ligne 1', '<input class="studio-input" id="meta-footer1" value="' + v('footer1','Document officiel de la Police Militaire — Usage interne') + '" oninput="liveMetaUpdate()">') +
+    studioField('Ligne 2', '<input class="studio-input" id="meta-footer2" value="' + v('footer2','Par décret du Commandement — Village de Konoha') + '" oninput="liveMetaUpdate()">' +
+    '<span class="studio-help">Ces textes sont dynamiquement appliqués au document.</span>');
+}
+
+/* ── Thème tab ── */
+function buildStudioTheme() {
+  var theme = (_cpData && _cpData.theme) || {};
+  var fontTitle   = theme.fontTitle   || 'Cinzel';
+  var fontBody    = theme.fontBody    || 'Crimson Text';
+  var sizeBase    = theme.sizeBase    || 15;
+  var bgColor     = theme.bgColor     || '#1a1208';
+  var accentColor = theme.accentColor || '#b8922a';
+  var textColor   = theme.textColor   || '#2a1a08';
+
+  var FONTS = ['Cinzel','Crimson Text','Georgia','Palatino','Times New Roman','Garamond','Book Antiqua'];
+  function fontSel(id, val, lbl) {
+    return studioField(lbl, '<select class="studio-select" id="' + id + '" onchange="liveThemeUpdate()">' +
+      FONTS.map(function(f) { return '<option value="' + f + '"' + (f===val?' selected':'') + ' style="font-family:' + f + ',serif">' + f + '</option>'; }).join('') +
+      '</select>');
+  }
+  function colorRow(id, val, lbl) {
+    return studioField(lbl,
+      '<div style="display:flex;gap:10px;align-items:center;">' +
+      '<input type="color" id="' + id + '" value="' + val + '" oninput="updateColorHex(\'' + id + '\');liveThemeUpdate()" style="width:44px;height:36px;border:none;background:none;cursor:pointer;flex-shrink:0;">' +
+      '<span class="studio-input" id="' + id + '-hex" style="width:90px;flex-shrink:0;padding:8px;font-family:\'Cinzel\',serif;font-size:11px;">' + val + '</span>' +
+      '</div>');
+  }
+
+  return '<div class="studio-section-title">Typographie</div>' +
+    fontSel('theme-fontTitle', fontTitle, 'Police des titres') +
+    fontSel('theme-fontBody',  fontBody,  'Police du corps texte') +
+    studioField('Taille du corps <span id="theme-size-preview" style="color:#f0c040">' + sizeBase + 'px</span>',
+      '<input type="range" class="studio-input" id="theme-sizeBase" min="12" max="20" value="' + sizeBase +
+      '" oninput="document.getElementById(\'theme-size-preview\').textContent=this.value+\'px\';liveThemeUpdate()" style="padding:4px 0;">') +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Couleurs</div>' +
+    colorRow('theme-bgColor', bgColor, 'Fond de la page') +
+    colorRow('theme-accentColor', accentColor, 'Couleur d\'accent') +
+    colorRow('theme-textColor', textColor, 'Couleur du texte principal') +
+    '<div class="studio-divider"></div>' +
+    '<button class="studio-btn-danger" onclick="resetTheme()">↺ Réinitialiser le thème</button>';
+}
+
+/* ── Sections tab ── */
+function buildStudioSections() {
+  if (!_cpData || !_cpData.sections) return '<div class="studio-empty">Aucune section chargée.</div>';
+  var totalRows = _cpData.sections.reduce(function(s, sec) { return s + (sec.rows || []).length; }, 0);
+
+  var html = '<div class="studio-section-title">Sections (' + _cpData.sections.length + ') — ' + totalRows + ' articles</div>';
+
+  _cpData.sections.forEach(function(sec, idx) {
+    var color    = escapeHtml(sec.color    || '#9a7a2a');
+    var icon     = escapeHtml(sec.icon     || '');
+    var preamble = escapeHtml(sec.preamble || '');
+    var title    = escapeHtml(sec.title    || sec.id);
+    var count    = (sec.rows || []).length;
+
+    html += '<div class="studio-section-item" id="studio-sec-item-' + sec.id + '">' +
+      '<div class="studio-section-item-header" onclick="toggleStudioSecEdit(\'' + sec.id + '\')">' +
+        '<div class="studio-section-dot" style="background:' + color + '"></div>' +
+        '<span class="studio-section-icon-label">' + (icon || '  ') + '</span>' +
+        '<span class="studio-section-item-title">' + title + '</span>' +
+        '<span class="studio-section-count">' + count + '</span>' +
+        '<span class="studio-section-chevron" id="studio-sec-chev-' + sec.id + '">›</span>' +
+      '</div>' +
+      '<div class="studio-section-edit" id="studio-sec-edit-' + sec.id + '" style="display:none">' +
+        studioField('Icône (emoji)', '<input class="studio-input" id="studio-icon-' + sec.id + '" value="' + icon + '" placeholder="🔴 ⚡ 🔥…" maxlength="4" oninput="liveSectionIconUpdate(\'' + sec.id + '\')" style="font-size:20px;text-align:center;width:80px;">') +
+        studioField('Préambule de la section', '<textarea class="studio-textarea" id="studio-preamble-' + sec.id + '" rows="3" placeholder="Texte affiché avant le tableau…" oninput="liveSectionPreambleUpdate(\'' + sec.id + '\')">' + preamble + '</textarea>') +
+      '</div>' +
+    '</div>';
+  });
+  return html;
+}
+
+/* ── Article tab ── */
+function buildStudioArticle() {
+  if (!_cpSelectedRow || !_cpSelectedSecId) {
+    return '<div class="studio-empty">Cliquez sur le bouton <strong>⚙</strong> d\'un article en mode édition pour voir et modifier ses propriétés.</div>';
+  }
+  var status    = _cpSelectedRow.dataset.rowStatus    || 'active';
+  var expiresAt = _cpSelectedRow.dataset.rowExpiresAt || '';
+  var notes     = _cpSelectedRow.dataset.rowNotes     || '';
+  var codeNode      = _cpSelectedRow.querySelector('.row-code-text');
+  var infractionNode = _cpSelectedRow.querySelector('.infraction-main-text');
+  var code      = codeNode      ? codeNode.textContent      : '?';
+  var infraction = infractionNode ? infractionNode.textContent : '';
+
+  var STATUSES = [
+    { value: 'active',      label: 'Actif',       color: '#4caf50' },
+    { value: 'suspended',   label: 'Suspendu',     color: '#ff9800' },
+    { value: 'provisional', label: 'Provisoire',   color: '#42a5f5' },
+    { value: 'temporary',   label: 'Temporaire',   color: '#ce93d8' },
+    { value: 'abrogated',   label: 'Abrogé', color: '#ef5350'  }
+  ];
+
+  var statusGrid = '<div class="studio-status-grid">' +
+    STATUSES.map(function(s) {
+      return '<label class="studio-status-option' + (status === s.value ? ' selected' : '') + '" id="studio-status-opt-' + s.value + '">' +
+        '<input type="radio" name="art-status" value="' + s.value + '"' + (status === s.value ? ' checked' : '') + ' onchange="updateArticleStatus(\'' + s.value + '\')">' +
+        '<span class="studio-status-dot" style="background:' + s.color + ';color:' + s.color + '"></span>' +
+        '<span>' + s.label + '</span></label>';
+    }).join('') +
+  '</div>';
+
+  var expirySection = '<div class="studio-field" id="studio-expiry-field"' + (status !== 'temporary' ? ' style="display:none"' : '') + '>' +
+    '<label>Date d\'expiration</label>' +
+    '<input type="datetime-local" class="studio-input" id="studio-expiresAt" value="' + escapeHtml(expiresAt ? expiresAt.slice(0,16) : '') + '" onchange="updateArticleExpiry(this.value)">' +
+    (expiresAt ? '<div class="studio-countdown">' + escapeHtml(formatCountdown(expiresAt)) + '</div>' : '') +
+  '</div>';
+
+  return '<div class="studio-article-title">' + escapeHtml(code) + ' — ' + escapeHtml(infraction) + '</div>' +
+    '<div class="studio-section-title">Statut légal</div>' +
+    statusGrid + expirySection +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Notes internes <span class="studio-private-tag">Justice</span></div>' +
+    '<div class="studio-info">Visibles uniquement par les membres autorisés.</div>' +
+    studioField('', '<textarea class="studio-textarea" id="studio-notes" rows="4" placeholder="Observations, contexte jurisprudentiel…" oninput="updateArticleNotes(this.value)">' + escapeHtml(notes) + '</textarea>') +
+    '<div class="studio-divider"></div>' +
+    '<button class="studio-btn-danger" onclick="if(confirm(\'Supprimer cet article ?\'))deleteSelectedRow()">× Supprimer cet article</button>';
+}
+
+/* ── Outils tab ── */
+function buildStudioOutils() {
+  if (!_cpData) return '<div class="studio-empty">Données non chargées.</div>';
+
+  var stats = { active:0, suspended:0, abrogated:0, provisional:0, temporary:0 };
+  var total = 0;
+  (_cpData.sections || []).forEach(function(sec) {
+    (sec.rows || []).forEach(function(row) {
+      total++;
+      var s = (row.status || 'active');
+      if (stats[s] !== undefined) stats[s]++; else stats.active++;
+    });
+  });
+
+  var statGrid = '<div class="studio-stats-grid">' +
+    [['active','✅ Actifs','studio-stat-active'],['suspended','⏸ Suspendus','studio-stat-suspended'],
+     ['provisional','🟦 Provisoires','studio-stat-provisional'],['temporary','⌛ Temporaires','studio-stat-temporary'],
+     ['abrogated','❌ Abrogés','studio-stat-abrogated'],['_total','∑ Total','']].map(function(s) {
+       var num = s[0] === '_total' ? total : stats[s[0]];
+       return '<div class="studio-stat-item ' + s[2] + '"><div class="studio-stat-num">' + num + '</div><div class="studio-stat-label">' + s[1] + '</div></div>';
+     }).join('') +
+  '</div>';
+
+  var sectionStats = '<div class="studio-stats-sections">' +
+    (_cpData.sections || []).map(function(sec) {
+      return '<div class="studio-stat-section">' +
+        '<div class="studio-stat-section-dot" style="background:' + escapeHtml(sec.color||'#9a7a2a') + '"></div>' +
+        '<span>' + escapeHtml(sec.shortTitle || sec.title || sec.id) + '</span>' +
+        '<b>' + (sec.rows||[]).length + '</b></div>';
+    }).join('') +
+  '</div>';
+
+  return '<div class="studio-section-title">Statistiques</div>' + statGrid +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Répartition par section</div>' + sectionStats +
+    '<div class="studio-divider"></div>' +
+    '<div class="studio-section-title">Actions</div>' +
+    '<button class="studio-btn-primary" onclick="doPrint()">🖨 Imprimer / Exporter PDF</button>' +
+    '<button class="studio-btn-primary" onclick="doExportJSON()" style="margin-top:8px;">⬇ Exporter JSON</button>' +
+    '<button class="studio-btn-primary" onclick="doImportJSON()" style="margin-top:8px;">⬆ Importer JSON</button>';
+}
+
+/* ── Studio helpers ── */
+function studioField(label, inputHtml) {
+  return '<div class="studio-field">' + (label ? '<label>' + label + '</label>' : '') + inputHtml + '</div>';
+}
+
+function bindStudioInputEvents() {
+  ['bgColor','accentColor','textColor'].forEach(function(id) {
+    var inp = document.getElementById('theme-' + id);
+    var hex = document.getElementById('theme-' + id + '-hex');
+    if (inp && hex) inp.addEventListener('input', function() { hex.textContent = inp.value; });
+  });
+}
+
+function updateColorHex(id) {
+  var inp = document.getElementById(id);
+  var hex = document.getElementById(id + '-hex');
+  if (inp && hex) hex.textContent = inp.value;
+}
+
+function toggleStudioSecEdit(secId) {
+  var edit = document.getElementById('studio-sec-edit-' + secId);
+  var chev = document.getElementById('studio-sec-chev-' + secId);
+  if (!edit) return;
+  var isOpen = edit.style.display !== 'none';
+  edit.style.display = isOpen ? 'none' : '';
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)';
+}
+
+/* ── Live update functions ── */
+function liveMetaUpdate() {
+  var meta = collectMeta();
+  if (!_cpData.meta) _cpData.meta = {};
+  Object.keys(meta).forEach(function(k) { if (meta[k] !== undefined) _cpData.meta[k] = meta[k]; });
+  applyMeta(meta);
+}
+
+function liveThemeUpdate() {
+  var theme = collectTheme();
+  if (!_cpData.theme) _cpData.theme = {};
+  Object.assign(_cpData.theme, theme);
+  applyTheme(theme);
+}
+
+function liveSectionIconUpdate(secId) {
+  var input = document.getElementById('studio-icon-' + secId);
+  if (!input) return;
+  var sec = getSectionMeta(secId);
+  if (!sec) return;
+  sec.icon = input.value;
+  var iconDisplay = document.getElementById('section-icon-' + secId);
+  if (iconDisplay) iconDisplay.textContent = input.value;
+  var studioDot = document.querySelector('#studio-sec-item-' + secId + ' .studio-section-icon-label');
+  if (studioDot) studioDot.textContent = input.value || '  ';
+}
+
+function liveSectionPreambleUpdate(secId) {
+  var input = document.getElementById('studio-preamble-' + secId);
+  if (!input) return;
+  var sec = getSectionMeta(secId);
+  if (!sec) return;
+  sec.preamble = input.value;
+  var el = document.getElementById('section-preamble-' + secId);
+  if (el) { el.textContent = input.value; el.style.display = input.value ? '' : 'none'; }
+}
+
+/* ── Article actions ── */
+function selectArticleRow(tr, secId) {
+  if (!_cpEditing) return;
+  if (_cpSelectedRow) _cpSelectedRow.classList.remove('cp-row-selected');
+  _cpSelectedRow   = tr;
+  _cpSelectedSecId = secId;
+  tr.classList.add('cp-row-selected');
+  _cpStudioTabVal  = 'article';
+  if (!_cpStudioOpen) openStudio('article');
+  else { renderStudioTabs(); renderStudioBody(); }
+}
+
+function updateArticleStatus(newStatus) {
+  if (!_cpSelectedRow) return;
+  pushUndo();
+  _cpSelectedRow.dataset.rowStatus = newStatus;
+  _cpSelectedRow.className = _cpSelectedRow.className.replace(/\brow-status-\S+/g, '').trim();
+  if (newStatus !== 'active') _cpSelectedRow.classList.add('row-status-' + newStatus);
+  var badge = _cpSelectedRow.querySelector('.article-status-badge');
+  if (badge) {
+    badge.className = 'article-status-badge status-' + newStatus;
+    badge.style.display = newStatus === 'active' ? 'none' : '';
+    badge.textContent = STATUS_LABELS[newStatus] || newStatus;
+  }
+  var expiryField = document.getElementById('studio-expiry-field');
+  if (expiryField) expiryField.style.display = newStatus === 'temporary' ? '' : 'none';
+  document.querySelectorAll('.studio-status-option').forEach(function(opt) {
+    var radio = opt.querySelector('input[type="radio"]');
+    opt.classList.toggle('selected', !!(radio && radio.value === newStatus));
+  });
+}
+
+function updateArticleExpiry(value) {
+  if (!_cpSelectedRow) return;
+  _cpSelectedRow.dataset.rowExpiresAt = value || '';
+  var infractionTd = _cpSelectedRow.querySelector('td[data-field="infraction"]');
+  if (infractionTd) {
+    var existing = infractionTd.querySelector('.article-expiry-badge');
+    if (value) {
+      if (!existing) { existing = document.createElement('span'); existing.className = 'article-expiry-badge'; existing.contentEditable = 'false'; infractionTd.appendChild(existing); }
+      existing.textContent = formatCountdown(value);
+    } else if (existing) { existing.remove(); }
+  }
+  var countdown = document.querySelector('.studio-countdown');
+  if (countdown) countdown.textContent = value ? formatCountdown(value) : '';
+}
+
+function updateArticleNotes(value) {
+  if (!_cpSelectedRow) return;
+  _cpSelectedRow.dataset.rowNotes = value || '';
+}
+
+function deleteSelectedRow() {
+  if (!_cpSelectedRow) return;
+  pushUndo();
+  var secId = _cpSelectedSecId;
+  _cpSelectedRow.remove();
+  if (secId) refreshSectionCodes(secId);
+  _cpSelectedRow   = null;
+  _cpSelectedSecId = null;
+  renderStudioBody();
+}
+
+function resetTheme() {
+  var defaults = { fontTitle:'Cinzel', fontBody:'Crimson Text', sizeBase:15, bgColor:'#1a1208', accentColor:'#b8922a', textColor:'#2a1a08' };
+  _cpData.theme = Object.assign({}, defaults);
+  document.body.style.background = '';
+  var root = document.documentElement;
+  root.style.removeProperty('--border-gold');
+  root.style.removeProperty('--gold-mid');
+  root.style.removeProperty('--gold-dark');
+  root.style.removeProperty('--text-dark');
+  root.style.removeProperty('--text-med');
+  document.querySelectorAll('table tbody td').forEach(function(td) { td.style.fontSize = ''; });
+  renderStudioBody();
+}
+
+/* ── Export / Import / Print ── */
+function doPrint() {
+  window.print();
+}
+
+function doExportJSON() {
+  var data = collectCodePenal();
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'codepenal-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function doImportJSON() {
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.sections) throw new Error('Format invalide : champ sections manquant');
+        pushUndo();
+        _cpData = data;
+        renderAllSections();
+        applyMeta(_cpData.meta);
+        applyTheme(_cpData.theme);
+        if (_cpStudioOpen) { renderStudioTabs(); renderStudioBody(); }
+        showEditFlash('❖ JSON importé avec succès', true);
+      } catch(err) { alert('Erreur d\'import : ' + err.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+</script>
+</body>
+</html>
