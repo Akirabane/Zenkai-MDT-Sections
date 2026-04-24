@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion des plaintes - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/gestion-plaintes.css?v=20260414a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=Gestion_Plaintes.html');
+    }
+  })();
+</script>
+</head>
+<body>
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour a l'accueil</span></a>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">Deconnexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-overlay" onclick="if(event.target === this) closeEditModal()">
+  <div class="edit-modal">
+    <div class="modal-title">Modifier la plainte</div>
+    <div class="modal-copy" id="edit-modal-copy">Modification du corps de la plainte.</div>
+    <textarea class="edit-textarea" id="edit-body"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" type="button" onclick="closeEditModal()">Annuler</button>
+      <button class="btn-primary" type="button" onclick="saveComplaintBody()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detail-overlay" onclick="if(event.target === this) closeDetailModal()">
+  <div class="detail-modal">
+    <div class="modal-title">Plainte detaillee</div>
+    <div class="modal-copy" id="detail-modal-copy">Consultation de la plainte selectionnee.</div>
+    <div class="detail-grid" id="detail-grid"></div>
+    <div class="detail-body-wrap">
+      <div class="detail-body-title">Corps de la plainte</div>
+      <div class="detail-body" id="detail-body"></div>
+    </div>
+    <div class="modal-actions" id="detail-actions">
+      <button class="btn-secondary" type="button" onclick="closeDetailModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="frame">
+  <div class="frame-inner">
+    <div class="doc-header">
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Gestion des plaintes</h1>
+      <div class="sub-title">Consultation, modification et suivi des plaintes enregistrees</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-label">Plaintes chargees</div>
+        <div class="summary-value" id="summary-total">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Objets actifs</div>
+        <div class="summary-value" id="summary-objects">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Aujourd hui</div>
+        <div class="summary-value" id="summary-today">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Modification</div>
+        <div class="summary-value" id="summary-manage">Lecture</div>
+      </div>
+    </div>
+
+    <div class="filter-shell">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filter-q">Recherche</label>
+          <input class="filter-input" id="filter-q" type="text" placeholder="Plaignant, accuse, objet, auteur..." oninput="debouncedLoadComplaints()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-objet">Objet</label>
+          <select class="filter-select" id="filter-objet" onchange="loadComplaints()"></select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-author">Policier</label>
+          <input class="filter-input" id="filter-author" type="text" placeholder="Auteur" oninput="debouncedLoadComplaints()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-plaintiff">Plaignant</label>
+          <input class="filter-input" id="filter-plaintiff" type="text" placeholder="Nom RP" oninput="debouncedLoadComplaints()">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-secondary" type="button" onclick="resetComplaintFilters()">Reinitialiser</button>
+        <button class="btn-primary" type="button" onclick="loadComplaints()">Actualiser</button>
+      </div>
+    </div>
+
+    <div class="complaints-list" id="complaints-list">
+      <div class="state-card">Chargement des plaintes...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentUser = null;
+var currentCapabilities = null;
+var complaintsMeta = null;
+var complaintsItems = [];
+var editComplaintId = null;
+var detailComplaintId = null;
+var debounceHandle = null;
+
+function getToken() { return window.UserShell.getToken(); }
+function toggleBurgerMenu() { window.UserShell.toggleBurgerMenu(); }
+function closeBurgerMenu() { window.UserShell.closeBurgerMenu(); }
+function togglePresenceMobile() { window.UserShell.togglePresenceMobile('presence-sidebar'); }
+function openAdminShortcut() { window.UserShell.openAdminShortcut('Backoffice_Admin.html'); }
+async function doLogout() { await window.UserShell.logout({ redirectTo: 'login.html' }); }
+
+async function checkAuth() {
+  return window.UserShell.fetchCurrentUser({ redirectTo: 'login.html?redirect=Gestion_Plaintes.html' });
+}
+
+async function pingPresence() {
+  if (!getToken()) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ status: window.UserShell.currentPresenceStatus() })
+    });
+    if (response.ok) {
+      window.UserShell.renderPresence('presence-list', await response.json());
+    }
+  } catch (error) {}
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeJs(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function formatDateTime(value) {
+  var date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Date inconnue';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+    date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function buildQuery() {
+  var params = new URLSearchParams();
+  var q = document.getElementById('filter-q').value.trim();
+  var objet = document.getElementById('filter-objet').value.trim();
+  var author = document.getElementById('filter-author').value.trim();
+  var plaintiff = document.getElementById('filter-plaintiff').value.trim();
+  if (q) params.set('q', q);
+  if (objet) params.set('objet', objet);
+  if (author) params.set('author', author);
+  if (plaintiff) params.set('plaintiff', plaintiff);
+  params.set('limit', '250');
+  return params.toString();
+}
+
+function renderSummary() {
+  document.getElementById('summary-total').textContent = complaintsItems.length;
+  document.getElementById('summary-objects').textContent = Array.from(new Set(complaintsItems.map(function(item) { return item.objet; }).filter(Boolean))).length;
+  var todayKey = new Date().toISOString().slice(0, 10);
+  document.getElementById('summary-today').textContent = complaintsItems.filter(function(item) {
+    return String(item.timestamp || '').slice(0, 10) === todayKey;
+  }).length;
+  document.getElementById('summary-manage').textContent = currentCapabilities && currentCapabilities.canManageComplaints ? 'Edition' : 'Lecture';
+}
+
+function renderComplaints() {
+  renderSummary();
+  var container = document.getElementById('complaints-list');
+  if (!complaintsItems.length) {
+    container.innerHTML = '<div class="state-card">Aucune plainte ne correspond aux filtres actuels.</div>';
+    return;
+  }
+
+  container.innerHTML = complaintsItems.map(function(item) {
+    var linked = item.linkedDossierId
+      ? '<div class="complaint-summary-line complaint-summary-soft">Rattachee au dossier de ' + escapeHtml(item.linkedDossierName || item.linkedDossierId) + ' • ' + escapeHtml(String(Math.round(Number(item.linkedDossierMatchScore || 0) * 100))) + '%</div>'
+      : '<div class="complaint-summary-line complaint-summary-soft">Aucun dossier existant rapproche</div>';
+    return [
+      '<article class="complaint-card" onclick="openDetailModal(\'' + escapeJs(item.id) + '\')">',
+        '<div class="complaint-header">',
+          '<div class="complaint-emblem">&#9878;</div>',
+          '<div class="complaint-summary">',
+            '<div class="card-chip">' + escapeHtml(item.objet) + '</div>',
+            '<h2 class="card-title">' + escapeHtml((item.accusedPrenom || '') + ' ' + (item.accusedNom || '')) + '</h2>',
+            '<div class="card-meta">Accuse vise par la plainte</div>',
+            '<div class="complaint-summary-line">Plainte deposee par ' + escapeHtml((item.plaintiffPrenom || '') + ' ' + (item.plaintiffNom || '')) + '</div>',
+            '<div class="complaint-summary-line">' + escapeHtml(item.plaintiffGrade || 'Grade non precise') + '</div>',
+            '<div class="complaint-summary-line">Redigee par ' + escapeHtml((item.officerPrenom || '') + ' ' + (item.officerNom || '')) + '</div>',
+            '<div class="complaint-summary-line">' + escapeHtml(item.officerGradeSection || 'Grade non renseigne') + '</div>',
+            linked,
+            '<div class="complaint-summary-line complaint-summary-soft">Faits du ' + escapeHtml(item.date || '-') + '</div>',
+          '</div>',
+        '</div>',
+        '<div class="complaint-card-footer">',
+          '<span class="card-date">' + escapeHtml(formatDateTime(item.timestamp)) + '</span>',
+          '<span class="complaint-open-hint">Ouvrir la plainte</span>',
+        '</div>',
+      '</article>'
+    ].join('');
+  }).join('');
+}
+
+function debouncedLoadComplaints() {
+  clearTimeout(debounceHandle);
+  debounceHandle = setTimeout(loadComplaints, 240);
+}
+
+async function loadComplaints() {
+  document.getElementById('complaints-list').innerHTML = '<div class="state-card">Chargement des plaintes...</div>';
+  try {
+    var response = await fetch('/api/v1/complaints?' + buildQuery(), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Chargement impossible');
+    complaintsItems = data.items || [];
+    renderComplaints();
+    if (detailComplaintId) {
+      var refreshed = complaintsItems.find(function(item) { return item.id === detailComplaintId; });
+      if (refreshed) {
+        openDetailModal(detailComplaintId);
+      } else {
+        closeDetailModal();
+      }
+    }
+  } catch (error) {
+    document.getElementById('complaints-list').innerHTML = '<div class="state-card">Impossible de charger les plaintes.</div>';
+  }
+}
+
+function resetComplaintFilters() {
+  document.getElementById('filter-q').value = '';
+  document.getElementById('filter-objet').value = '';
+  document.getElementById('filter-author').value = '';
+  document.getElementById('filter-plaintiff').value = '';
+  loadComplaints();
+}
+
+function openEditModal(id) {
+  var item = complaintsItems.find(function(entry) { return entry.id === id; });
+  if (!item) return;
+  editComplaintId = id;
+  document.getElementById('edit-modal-copy').textContent = 'Modification du corps de la plainte visant ' + item.accusedPrenom + ' ' + item.accusedNom + '.';
+  document.getElementById('edit-body').value = item.body || '';
+  document.getElementById('edit-overlay').classList.add('active');
+}
+
+function closeEditModal() {
+  editComplaintId = null;
+  document.getElementById('edit-overlay').classList.remove('active');
+}
+
+function buildDetailGrid(item) {
+  var matchText = item.linkedDossierId
+    ? 'Dossier de ' + (item.linkedDossierName || item.linkedDossierId) + ' (' + Math.round(Number(item.linkedDossierMatchScore || 0) * 100) + '%)'
+    : 'Aucun dossier existant rapproche';
+  return [
+    '<div class="detail-pill"><strong>Objet</strong><span>' + escapeHtml(item.objet || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Reference</strong><span>' + escapeHtml(item.id || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Plaignant</strong><span>' + escapeHtml(((item.plaintiffPrenom || '') + ' ' + (item.plaintiffNom || '')).trim() || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Grade armee plaignant</strong><span>' + escapeHtml(item.plaintiffGrade || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Accuse vise</strong><span>' + escapeHtml(((item.accusedPrenom || '') + ' ' + (item.accusedNom || '')).trim() || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Policier redacteur</strong><span>' + escapeHtml(((item.officerPrenom || '') + ' ' + (item.officerNom || '')).trim() || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Grade section</strong><span>' + escapeHtml(item.officerGradeSection || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Date des faits</strong><span>' + escapeHtml(item.date || '-') + '</span></div>',
+    '<div class="detail-pill"><strong>Rattachement dossier</strong><span>' + escapeHtml(matchText) + '</span></div>',
+    '<div class="detail-pill"><strong>Horodatage</strong><span>' + escapeHtml(formatDateTime(item.timestamp)) + '</span></div>'
+  ].join('');
+}
+
+function openDetailModal(id) {
+  var item = complaintsItems.find(function(entry) { return entry.id === id; });
+  if (!item) return;
+  detailComplaintId = id;
+  document.getElementById('detail-modal-copy').textContent = 'Consultation de la plainte deposee par ' + item.plaintiffPrenom + ' ' + item.plaintiffNom + ' contre ' + item.accusedPrenom + ' ' + item.accusedNom + '.';
+  document.getElementById('detail-grid').innerHTML = buildDetailGrid(item);
+  document.getElementById('detail-body').textContent = item.body || 'Aucun contenu';
+  var actions = ['<button class="btn-secondary" type="button" onclick="closeDetailModal()">Fermer</button>'];
+  if (currentCapabilities && currentCapabilities.canManageComplaints) {
+    actions.push('<button class="btn-secondary" type="button" onclick="openEditModalFromDetail()">Modifier le corps</button>');
+  }
+  if (currentCapabilities && (currentCapabilities.canManageComplaints || currentCapabilities.canCreateComplaints)) {
+    actions.push('<button class="btn-secondary" type="button" id="btn-republish" onclick="republishComplaint()">&#128226; Re-publier</button>');
+  }
+  if (currentCapabilities && currentCapabilities.canDeleteComplaints) {
+    actions.push('<button class="btn-danger" type="button" onclick="deleteComplaintFromDetail()">Supprimer</button>');
+  }
+  document.getElementById('detail-actions').innerHTML = actions.join('') + '<span id="republish-status" style="font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:1px;margin-left:8px"></span>';
+  document.getElementById('detail-overlay').classList.add('active');
+}
+
+function closeDetailModal() {
+  detailComplaintId = null;
+  document.getElementById('detail-overlay').classList.remove('active');
+}
+
+function openEditModalFromDetail() {
+  if (!detailComplaintId) return;
+  closeDetailModal();
+  openEditModal(detailComplaintId);
+}
+
+function deleteComplaintFromDetail() {
+  if (!detailComplaintId) return;
+  var id = detailComplaintId;
+  closeDetailModal();
+  deleteComplaint(id);
+}
+
+async function saveComplaintBody() {
+  if (!editComplaintId) return;
+  try {
+    var response = await fetch('/api/v1/complaints/' + encodeURIComponent(editComplaintId), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ body: document.getElementById('edit-body').value.trim() })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Sauvegarde impossible');
+    closeEditModal();
+    await loadComplaints();
+  } catch (error) {
+    alert(error.message || 'Impossible de modifier la plainte.');
+  }
+}
+
+async function republishComplaint() {
+  if (!detailComplaintId) return;
+  var btn = document.getElementById('btn-republish');
+  var status = document.getElementById('republish-status');
+  if (btn) btn.disabled = true;
+  if (status) { status.style.color = ''; status.textContent = 'Publication en cours...'; }
+  try {
+    var response = await fetch('/api/v1/complaints/publish/' + encodeURIComponent(detailComplaintId), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ isUpdate: true })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Publication impossible');
+    if (status) { status.style.color = '#72d840'; status.textContent = '✓ Re-publie sur Discord'; }
+  } catch (error) {
+    if (status) { status.style.color = '#e05050'; status.textContent = error.message || 'Echec'; }
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function deleteComplaint(id) {
+  if (!(currentCapabilities && currentCapabilities.canDeleteComplaints)) return;
+  if (!window.confirm('Supprimer definitivement cette plainte ?')) return;
+  try {
+    var response = await fetch('/api/v1/complaints/' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Suppression impossible');
+    if (detailComplaintId === id) closeDetailModal();
+    await loadComplaints();
+  } catch (error) {
+    alert(error.message || 'Impossible de supprimer la plainte.');
+  }
+}
+
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  window.currentUser = currentUser;
+  window.UserShell.applyUserBar(currentUser);
+  currentCapabilities = currentUser.capabilities || null;
+  if (!currentCapabilities || !currentCapabilities.canViewComplaints) {
+    window.location.replace('index.html');
+    return;
+  }
+
+  try {
+    var metaResponse = await fetch('/api/v1/complaints/meta', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!metaResponse.ok) throw new Error('Meta indisponible');
+    complaintsMeta = await metaResponse.json();
+    document.getElementById('filter-objet').innerHTML = '<option value="">Tous</option>' + (complaintsMeta.objectOptions || []).map(function(item) {
+      return '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>';
+    }).join('');
+  } catch (error) {
+    document.getElementById('complaints-list').innerHTML = '<div class="state-card">Impossible d initialiser la gestion des plaintes.</div>';
+    return;
+  }
+
+  await loadComplaints();
+  pingPresence();
+  setInterval(pingPresence, 25000);
+})();
+</script>
+</body>
+</html>
