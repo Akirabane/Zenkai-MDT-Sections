@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Nouvel artefact</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/dri-pages.css?v=20260420b">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/dri-page-common.js?v=20260420a"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=DRI_Artefact.html');
+    }
+  })();
+</script>
+</head>
+<body class="dri-page">
+
+<div class="dri-back-bar">
+  <a class="dri-back-link" href="DRI.html">&#9674; Retour DRI</a>
+  <a class="dri-back-link" href="index.html">QG</a>
+</div>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="dri-page-shell">
+  <div class="dri-frame">
+    <span class="dri-corner dri-corner-tr">&#10022;</span>
+    <span class="dri-corner dri-corner-bl">&#10022;</span>
+    <div class="dri-watermark">ARTEFACT</div>
+
+    <div class="dri-header">
+      <div class="dri-kicker">&#9674; Archives DRI</div>
+      <h1>Nouvel artefact</h1>
+      <div class="dri-subtitle">Inventaire classifi&eacute; &mdash; suivi des reliques sensibles</div>
+    </div>
+
+    <div class="dri-divider"></div>
+    <div class="dri-kanji-row">&#22120; &middot; &#31192; &middot; &#34255; &middot; &#37682;</div>
+
+    <div class="dri-panel">
+      <div class="dri-panel-head">
+        <div>
+          <div class="dri-panel-kicker">&#9674; Inventaire</div>
+          <h2>Enregistrer un artefact</h2>
+        </div>
+        <span class="dri-panel-badge">Creation</span>
+      </div>
+
+      <form class="dri-form" id="artifact-form" onsubmit="event.preventDefault(); submitArtifact();">
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Artefact</span>
+            <select id="a-name" required></select>
+          </label>
+          <label class="dri-field">
+            <span>Statut</span>
+            <select id="a-status" required></select>
+          </label>
+        </div>
+
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Detenteur / porteur</span>
+            <input type="text" id="a-holder" maxlength="120" placeholder="Nom RP ou cellule">
+          </label>
+          <label class="dri-field">
+            <span>Classification</span>
+            <input type="text" id="a-classification" maxlength="120" placeholder="Priorite rouge, scelle, etc.">
+          </label>
+        </div>
+
+        <div class="dri-field full">
+          <span>Notes classifi&eacute;es</span>
+          <textarea id="a-notes" maxlength="4000" placeholder="Historique, provenance, derniers mouvements, gardes, surveillance..."></textarea>
+        </div>
+
+        <div class="dri-form-actions">
+          <button type="button" class="dri-btn dri-btn-ghost" onclick="resetArtifactForm()">R&eacute;initialiser</button>
+          <button type="submit" class="dri-btn dri-btn-primary">Archiver l'artefact</button>
+        </div>
+      </form>
+
+      <div class="dri-banner" id="result-banner">
+        <strong>Artefact archive</strong>
+        <div class="dri-banner-body" id="result-body">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="dri-page-footer">
+      <div class="dri-stamp">Classifi&eacute;</div>
+      <div class="dri-footer-text">Toute divulgation en dehors de la Division des Renseignements Int&eacute;rieurs est passible de sanction.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dri-toast" id="dri-toast"></div>
+
+<script>
+(function() {
+  var meta = null;
+
+  function bannerMessage(item) {
+    return 'ID <b>' + DRICommon.escapeHtml(item.id) + '</b> &mdash; ' +
+      DRICommon.escapeHtml(item.name) + ' / ' + DRICommon.escapeHtml(item.status) +
+      (item.holderName ? ' &mdash; detenteur: ' + DRICommon.escapeHtml(item.holderName) : '');
+  }
+
+  function resetArtifactForm() {
+    document.getElementById('artifact-form').reset();
+    if (meta) {
+      document.getElementById('a-name').value = meta.artefactOptions[0] || '';
+      document.getElementById('a-status').value = meta.artefactStatusOptions[0] || '';
+    }
+    document.getElementById('result-banner').classList.remove('visible');
+  }
+
+  async function loadMeta() {
+    meta = await DRICommon.fetchJson('/api/v1/dri/meta', {
+      headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+    });
+    DRICommon.fillSelect('a-name', meta.artefactOptions, { defaultFirst: true });
+    DRICommon.fillSelect('a-status', meta.artefactStatusOptions, { defaultFirst: true });
+  }
+
+  async function submitArtifact() {
+    var payload = {
+      name: document.getElementById('a-name').value,
+      status: document.getElementById('a-status').value,
+      holderName: document.getElementById('a-holder').value.trim(),
+      classification: document.getElementById('a-classification').value.trim(),
+      notes: document.getElementById('a-notes').value
+    };
+
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/artifacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+      var banner = document.getElementById('result-banner');
+      document.getElementById('result-body').innerHTML = bannerMessage(data.item);
+      resetArtifactForm();
+      banner.classList.add('visible');
+      DRICommon.showToast('dri-toast', 'Artefact archive');
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Erreur d enregistrement', true);
+    }
+  }
+
+  window.resetArtifactForm = resetArtifactForm;
+  window.submitArtifact = submitArtifact;
+
+  (async function boot() {
+    await DRICommon.bootstrap({ redirectTo: 'DRI_Artefact.html' });
+    try {
+      await loadMeta();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Meta DRI indisponible', true);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

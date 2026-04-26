@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Gestion des fiches ninja</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/dri-pages.css?v=20260420b">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/dri-page-common.js?v=20260420a"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=DRI_Gestion_Fiches.html');
+    }
+  })();
+</script>
+</head>
+<body class="dri-page">
+
+<div class="dri-back-bar">
+  <a class="dri-back-link" href="DRI.html">&#9674; Retour DRI</a>
+  <a class="dri-back-link" href="DRI_Fiche_Ninja.html">Nouvelle fiche</a>
+</div>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview"><span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span></div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list"><div class="presence-empty">&hellip;</div></div>
+</div>
+
+<div class="dri-page-shell">
+  <div class="dri-frame">
+    <span class="dri-corner dri-corner-tr">&#10022;</span>
+    <span class="dri-corner dri-corner-bl">&#10022;</span>
+    <div class="dri-watermark">GESTION</div>
+
+    <div class="dri-header">
+      <div class="dri-kicker">&#9674; Archives DRI</div>
+      <h1>Gestion des fiches ninja</h1>
+      <div class="dri-subtitle">Mise &agrave; jour, correction et purge des dossiers classifi&eacute;s</div>
+    </div>
+
+    <div class="dri-divider"></div>
+    <div class="dri-kanji-row">&#31649; &middot; &#29702; &middot; &#24433; &middot; &#36681;</div>
+
+    <section class="dri-panel">
+        <div class="dri-panel-head">
+          <div>
+            <div class="dri-panel-kicker">&#9674; Recherche</div>
+            <h2>Fiches archiv&eacute;es</h2>
+          </div>
+          <span class="dri-panel-badge" id="count-badge">0 fiche</span>
+        </div>
+
+        <div class="dri-filters">
+          <label class="dri-field">
+            <span>Recherche</span>
+            <input type="text" id="filter-search" placeholder="Nom, clan, rang...">
+          </label>
+          <label class="dri-field">
+            <span>Cat&eacute;gorie</span>
+            <select id="filter-category"></select>
+          </label>
+        </div>
+
+        <div class="dri-list" id="ninja-list"></div>
+    </section>
+
+    <div class="dri-page-footer">
+      <div class="dri-stamp">Classifi&eacute;</div>
+      <div class="dri-footer-text">Toute divulgation en dehors de la Division des Renseignements Int&eacute;rieurs est passible de sanction.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dri-toast" id="dri-toast"></div>
+<div class="dri-modal-backdrop" id="ninja-modal-backdrop">
+  <div class="dri-modal dri-modal-wide">
+    <button type="button" class="dri-modal-close" onclick="closeNinjaModal()">&times;</button>
+    <div class="dri-panel-head">
+      <div>
+        <div class="dri-panel-kicker">&#9674; Edition</div>
+        <h2>Fiche active</h2>
+      </div>
+      <span class="dri-panel-badge" id="f-badge">Aucune</span>
+    </div>
+    <form class="dri-form" id="ninja-form" onsubmit="event.preventDefault(); saveNinja();">
+      <div class="dri-field full">
+        <span>Nom RP complet</span>
+        <input type="text" id="f-fullName" maxlength="120" required placeholder="Selectionner une fiche">
+      </div>
+      <div class="dri-form-row">
+        <label class="dri-field"><span>Cat&eacute;gorie</span><select id="f-category" required></select></label>
+        <label class="dri-field"><span>Clan</span><select id="f-clan" required></select></label>
+      </div>
+      <div class="dri-form-row-3">
+        <label class="dri-field"><span>Rang</span><select id="f-rank" required></select></label>
+        <label class="dri-field"><span>Section</span><select id="f-section" required></select></label>
+        <label class="dri-field"><span>Nature</span><select id="f-nature" required></select></label>
+      </div>
+      <div class="dri-form-row">
+        <label class="dri-field"><span>Kekkai Genkai</span><select id="f-kekkaiGenkai" required></select></label>
+        <label class="dri-field"><span>Artefact</span><select id="f-artefact" required></select></label>
+      </div>
+      <div class="dri-field full">
+        <span>Photo du ninja (optionnel)</span>
+        <div class="dri-media-row">
+          <label class="dri-photo-upload" for="f-photo-input">Choisir une photo</label>
+          <input type="file" id="f-photo-input" accept="image/png,image/jpeg,image/webp" hidden>
+          <button type="button" class="dri-btn dri-btn-ghost" onclick="clearNinjaPhoto()">Retirer</button>
+        </div>
+        <div class="dri-photo-preview" id="f-photo-preview">
+          <span class="dri-photo-placeholder">Aucune photo chargee</span>
+        </div>
+      </div>
+      <div class="dri-field full">
+        <span>Notes</span>
+        <textarea id="f-notes" maxlength="6000"></textarea>
+      </div>
+      <div class="dri-form-actions">
+        <button type="button" class="dri-btn dri-btn-ghost" onclick="closeNinjaModal()">Fermer</button>
+        <button type="submit" class="dri-btn dri-btn-primary">Sauvegarder</button>
+        <button type="button" class="dri-btn dri-btn-danger" onclick="deleteNinja()">Supprimer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var meta = null;
+  var items = [];
+  var selectedId = '';
+  var photoDataUrl = '';
+
+  function byId(id) { return items.find(function(item) { return item.id === id; }) || null; }
+  function modal() { return document.getElementById('ninja-modal-backdrop'); }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() { resolve(String(reader.result || '')); };
+      reader.onerror = function() { reject(new Error('Lecture de l image impossible')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPhotoPreview() {
+    var container = document.getElementById('f-photo-preview');
+    if (!photoDataUrl) {
+      container.innerHTML = '<span class="dri-photo-placeholder">Aucune photo chargee</span>';
+      return;
+    }
+    container.innerHTML = '<img src="' + DRICommon.escapeHtml(photoDataUrl) + '" alt="Photo ninja">';
+  }
+
+  function fillMetaSelects() {
+    DRICommon.fillSelect('f-category', meta.categoryOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-clan', meta.clanOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-rank', meta.rankOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-section', meta.sectionOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-nature', meta.natureOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-kekkaiGenkai', meta.kekkaiGenkaiOptions, { defaultFirst: true });
+    DRICommon.fillSelect('f-artefact', meta.artefactOptions, { defaultFirst: true });
+    DRICommon.fillSelect('filter-category', ['Toutes'].concat(meta.categoryOptions), { value: 'Toutes' });
+  }
+
+  function resetForm() {
+    selectedId = '';
+    photoDataUrl = '';
+    document.getElementById('ninja-form').reset();
+    document.getElementById('f-badge').textContent = 'Aucune';
+    if (meta) fillMetaSelects();
+    renderPhotoPreview();
+    renderList();
+  }
+
+  function populateForm(item) {
+    selectedId = item.id;
+    document.getElementById('f-fullName').value = item.fullName || '';
+    document.getElementById('f-category').value = item.category || '';
+    document.getElementById('f-clan').value = item.clan || 'Aucun';
+    document.getElementById('f-rank').value = item.rank || '';
+    document.getElementById('f-section').value = item.section || 'Aucune';
+    document.getElementById('f-nature').value = item.nature || 'Aucune';
+    document.getElementById('f-kekkaiGenkai').value = item.kekkaiGenkai || 'Aucun';
+    document.getElementById('f-artefact').value = item.artefact || 'Aucun';
+    photoDataUrl = item.photoDataUrl || '';
+    document.getElementById('f-notes').value = item.notes || '';
+    document.getElementById('f-badge').textContent = item.id;
+    renderPhotoPreview();
+    renderList();
+  }
+
+  function openNinjaModal(item) {
+    populateForm(item);
+    modal().classList.add('visible');
+  }
+
+  function closeNinjaModal() {
+    modal().classList.remove('visible');
+  }
+
+  function filteredItems() {
+    var term = document.getElementById('filter-search').value.trim().toLowerCase();
+    var category = document.getElementById('filter-category').value;
+    return items.filter(function(item) {
+      if (category && category !== 'Toutes' && item.category !== category) return false;
+      if (!term) return true;
+      var haystack = [item.fullName, item.clan, item.rank, item.section, item.nature, item.kekkaiGenkai].join(' ').toLowerCase();
+      return haystack.indexOf(term) !== -1;
+    });
+  }
+
+  function renderList() {
+    var list = document.getElementById('ninja-list');
+    var filtered = filteredItems();
+    document.getElementById('count-badge').textContent = filtered.length + ' fiche' + (filtered.length > 1 ? 's' : '');
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="dri-empty">Aucune fiche correspondante.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(function(item) {
+      var activeClass = item.id === selectedId ? ' is-active' : '';
+      return '<article class="dri-card' + activeClass + '" data-id="' + DRICommon.escapeHtml(item.id) + '">' +
+        '<div class="dri-card-hero">' +
+          (item.photoDataUrl
+            ? '<img class="dri-card-avatar" src="' + DRICommon.escapeHtml(item.photoDataUrl) + '" alt="Photo ninja">'
+            : '<div class="dri-card-avatar dri-card-avatar-placeholder">&#9672;</div>') +
+          '<div>' +
+        '<div class="dri-card-tag">' + DRICommon.escapeHtml(item.category) + '</div>' +
+        '<span class="dri-card-title">' + DRICommon.escapeHtml(item.fullName) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="dri-card-meta"><b>Clan :</b> ' + DRICommon.escapeHtml(item.clan) + '<br><b>Rang :</b> ' + DRICommon.escapeHtml(item.rank) + '<br><b>Section :</b> ' + DRICommon.escapeHtml(item.section) + '</div>' +
+        '<div class="dri-card-foot">' + DRICommon.escapeHtml(item.id) + ' &mdash; mis a jour ' + DRICommon.escapeHtml(String(item.updatedAt || '').slice(0, 10)) + '</div>' +
+      '</article>';
+    }).join('');
+
+    list.querySelectorAll('.dri-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var item = byId(card.getAttribute('data-id'));
+        if (item) openNinjaModal(item);
+      });
+    });
+  }
+
+  async function loadMeta() {
+    meta = await DRICommon.fetchJson('/api/v1/dri/meta', { headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() } });
+    fillMetaSelects();
+  }
+
+  async function loadItems() {
+    var data = await DRICommon.fetchJson('/api/v1/dri/ninjas', { headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() } });
+    items = Array.isArray(data.items) ? data.items : [];
+    renderList();
+  }
+
+  async function saveNinja() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une fiche a modifier', true);
+      return;
+    }
+    var payload = {
+      fullName: document.getElementById('f-fullName').value.trim(),
+      category: document.getElementById('f-category').value,
+      clan: document.getElementById('f-clan').value,
+      rank: document.getElementById('f-rank').value,
+      section: document.getElementById('f-section').value,
+      nature: document.getElementById('f-nature').value,
+      kekkaiGenkai: document.getElementById('f-kekkaiGenkai').value,
+      artefact: document.getElementById('f-artefact').value,
+      photoDataUrl: photoDataUrl,
+      notes: document.getElementById('f-notes').value
+    };
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/ninjas/' + encodeURIComponent(selectedId), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + DRICommon.getToken() },
+        body: JSON.stringify(payload)
+      });
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      DRICommon.showToast('dri-toast', 'Fiche mise a jour');
+      closeNinjaModal();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Modification impossible', true);
+    }
+  }
+
+  async function deleteNinja() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une fiche a supprimer', true);
+      return;
+    }
+    var item = byId(selectedId);
+    if (!item || !window.confirm('Supprimer la fiche de ' + item.fullName + ' ?')) return;
+    try {
+      await DRICommon.fetchJson('/api/v1/dri/ninjas/' + encodeURIComponent(selectedId), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      items = items.filter(function(entry) { return entry.id !== selectedId; });
+      resetForm();
+      closeNinjaModal();
+      DRICommon.showToast('dri-toast', 'Fiche supprimee');
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Suppression impossible', true);
+    }
+  }
+
+  function clearNinjaPhoto() {
+    photoDataUrl = '';
+    document.getElementById('f-photo-input').value = '';
+    renderPhotoPreview();
+  }
+
+  window.closeNinjaModal = closeNinjaModal;
+  window.clearNinjaPhoto = clearNinjaPhoto;
+  window.resetForm = resetForm;
+  window.saveNinja = saveNinja;
+  window.deleteNinja = deleteNinja;
+
+  (async function boot() {
+    await DRICommon.bootstrap({ redirectTo: 'DRI_Gestion_Fiches.html' });
+    try {
+      await loadMeta();
+      await loadItems();
+      document.getElementById('f-photo-input').addEventListener('change', async function(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          photoDataUrl = '';
+          renderPhotoPreview();
+          return;
+        }
+        try {
+          photoDataUrl = await readFileAsDataUrl(file);
+          renderPhotoPreview();
+        } catch (error) {
+          photoDataUrl = '';
+          event.target.value = '';
+          DRICommon.showToast('dri-toast', error.message || 'Photo invalide', true);
+        }
+      });
+      modal().addEventListener('click', function(event) {
+        if (event.target === modal()) {
+          closeNinjaModal();
+        }
+      });
+      renderPhotoPreview();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Chargement DRI impossible', true);
+    }
+
+    document.getElementById('filter-search').addEventListener('input', renderList);
+    document.getElementById('filter-category').addEventListener('change', renderList);
+  })();
+})();
+</script>
+</body>
+</html>

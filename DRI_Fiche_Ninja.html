@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Nouvelle fiche ninja</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/dri-pages.css?v=20260420a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=DRI_Fiche_Ninja.html');
+    }
+  })();
+</script>
+</head>
+<body class="dri-page">
+
+<!-- Bouton retour en haut a gauche -->
+<div class="dri-back-bar">
+  <a class="dri-back-link" href="DRI.html">&#9674; Retour DRI</a>
+  <a class="dri-back-link" href="index.html">QG</a>
+</div>
+
+<!-- User bar en haut a droite -->
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<!-- Profile popup (identique au reste du site) -->
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<!-- Presence sidebar -->
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="dri-page-shell">
+  <div class="dri-frame">
+    <span class="dri-corner dri-corner-tr">&#10022;</span>
+    <span class="dri-corner dri-corner-bl">&#10022;</span>
+    <div class="dri-watermark">FICHE</div>
+
+    <div class="dri-header">
+      <div class="dri-kicker">&#9674; Archives DRI</div>
+      <h1>Nouvelle fiche ninja</h1>
+      <div class="dri-subtitle">Dossier classifi&eacute; &mdash; usage strictement interne</div>
+    </div>
+
+    <div class="dri-divider"></div>
+    <div class="dri-kanji-row">&#35426; &middot; &#23494; &middot; &#24433; &middot; &#22577;</div>
+
+    <div class="dri-panel">
+      <div class="dri-panel-head">
+        <div>
+          <div class="dri-panel-kicker">&#9674; Identification</div>
+          <h2>Constituer le dossier</h2>
+        </div>
+        <span class="dri-panel-badge">Cr&eacute;ation</span>
+      </div>
+
+      <form class="dri-form" id="ninja-form" onsubmit="event.preventDefault(); submitNinja();">
+        <div class="dri-field full">
+          <span>Nom RP complet</span>
+          <input type="text" id="f-fullName" maxlength="120" required placeholder="Pr&eacute;nom Nom">
+        </div>
+
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Cat&eacute;gorie</span>
+            <select id="f-category" required></select>
+          </label>
+          <label class="dri-field">
+            <span>Clan</span>
+            <select id="f-clan" required></select>
+          </label>
+        </div>
+
+        <div class="dri-form-row-3">
+          <label class="dri-field">
+            <span>Rang</span>
+            <select id="f-rank" required></select>
+          </label>
+          <label class="dri-field">
+            <span>Section</span>
+            <select id="f-section" required></select>
+          </label>
+          <label class="dri-field">
+            <span>Nature de chakra</span>
+            <select id="f-nature" required></select>
+          </label>
+        </div>
+
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Kekkai Genkai</span>
+            <select id="f-kekkaiGenkai" required></select>
+          </label>
+          <label class="dri-field">
+            <span>Artefact li&eacute;</span>
+            <select id="f-artefact" required></select>
+          </label>
+        </div>
+
+        <div class="dri-field full">
+          <span>Photo du ninja (optionnel)</span>
+          <div class="dri-media-row">
+            <label class="dri-photo-upload" for="f-photo-input">Choisir une photo</label>
+            <input type="file" id="f-photo-input" accept="image/png,image/jpeg,image/webp" hidden>
+            <button type="button" class="dri-btn dri-btn-ghost" onclick="clearPhoto()">Retirer</button>
+          </div>
+          <div class="dri-photo-preview" id="f-photo-preview">
+            <span class="dri-photo-placeholder">Aucune photo chargee</span>
+          </div>
+        </div>
+
+        <div class="dri-field full">
+          <span>Notes classifi&eacute;es</span>
+          <textarea id="f-notes" maxlength="6000" placeholder="Observations, liens connus, comportements suspects, contacts..."></textarea>
+        </div>
+
+        <div class="dri-form-actions">
+          <button type="button" class="dri-btn dri-btn-ghost" onclick="resetNinjaForm()">R&eacute;initialiser</button>
+          <button type="submit" class="dri-btn dri-btn-primary">Archiver la fiche</button>
+        </div>
+      </form>
+
+      <div class="dri-banner" id="result-banner">
+        <strong>Fiche archiv&eacute;e</strong>
+        <div class="dri-banner-body" id="result-body">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="dri-page-footer">
+      <div class="dri-stamp">Classifi&eacute;</div>
+      <div class="dri-footer-text">Toute divulgation en dehors de la Division des Renseignements Int&eacute;rieurs est passible de sanction.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dri-toast" id="dri-toast"></div>
+
+<!-- Capabilities guard -->
+<script>
+(function() {
+  var token = sessionStorage.getItem('policeToken');
+  if (!token) return;
+  fetch('/auth/capabilities', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(caps) {
+      if (!caps || !caps.canAccessDRI) {
+        window.location.replace('index.html');
+      }
+    })
+    .catch(function() {});
+})();
+</script>
+
+<!-- User chrome boot (identique aux autres pages) -->
+<script>
+(function() {
+  var _pFocused = document.hasFocus();
+  window.currentUser = null;
+
+  function getToken() { return window.UserShell.getToken(); }
+  function getCachedUser() { return window.UserShell.getCachedUser(); }
+
+  async function checkAuth() {
+    if (!getToken()) {
+      window.location.replace('login.html?redirect=DRI_Fiche_Ninja.html');
+      return null;
+    }
+    try {
+      var response = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+      if (!response.ok) {
+        sessionStorage.clear();
+        window.location.replace('login.html?redirect=DRI_Fiche_Ninja.html');
+        return null;
+      }
+      var user = await response.json();
+      window.UserShell.saveUser(user);
+      return user;
+    } catch (error) {
+      return getCachedUser();
+    }
+  }
+
+  function setupUserBar(user) { window.UserShell.applyUserBar(user); }
+  function openAdminShortcut() { window.UserShell.openAdminShortcut('Backoffice_Admin.html'); }
+  function toggleBurgerMenu() { window.UserShell.toggleBurgerMenu(); }
+  function closeBurgerMenu() { window.UserShell.closeBurgerMenu(); }
+  async function doLogout() { await window.UserShell.logout({ redirectTo: 'login.html' }); }
+  function togglePresenceMobile() { window.UserShell.togglePresenceMobile('presence-sidebar'); }
+
+  function currentPresenceStatus() {
+    if (document.hidden || !_pFocused) return 'away';
+    return window.UserShell.currentPresenceStatus();
+  }
+
+  function renderPresence(data) { window.UserShell.renderPresence('presence-list', data); }
+
+  async function pingPresence() {
+    try {
+      var token = getToken();
+      if (!token) return;
+      var response = await fetch('/presence/ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: currentPresenceStatus() })
+      });
+      if (response.ok) renderPresence(await response.json());
+    } catch (error) {}
+  }
+
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('#user-bar')) closeBurgerMenu();
+  });
+  document.addEventListener('visibilitychange', pingPresence);
+  window.addEventListener('focus', function() { _pFocused = true; pingPresence(); });
+  window.addEventListener('blur', function() { _pFocused = false; pingPresence(); });
+
+  window.toggleBurgerMenu = toggleBurgerMenu;
+  window.closeBurgerMenu = closeBurgerMenu;
+  window.togglePresenceMobile = togglePresenceMobile;
+  window.openAdminShortcut = openAdminShortcut;
+  window.doLogout = doLogout;
+
+  (async function initUserChrome() {
+    window.currentUser = await checkAuth();
+    setupUserBar(window.currentUser);
+    await pingPresence();
+    setInterval(pingPresence, 25000);
+  })();
+})();
+</script>
+
+<!-- Form logic -->
+<script>
+(function() {
+  var meta = null;
+  var photoDataUrl = '';
+
+  function getToken() { return window.UserShell && window.UserShell.getToken ? window.UserShell.getToken() : sessionStorage.getItem('policeToken'); }
+
+  function fillSelect(id, options, firstValueDefault) {
+    var select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = options.map(function(opt) {
+      return '<option value="' + escapeAttr(opt) + '">' + escapeHtml(opt) + '</option>';
+    }).join('');
+    if (firstValueDefault && options.length) {
+      select.value = options[0];
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function escapeAttr(value) { return escapeHtml(value); }
+
+  async function loadMeta() {
+    var response = await fetch('/api/v1/dri/meta', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    if (!response.ok) { throw new Error('Meta DRI indisponible'); }
+    meta = await response.json();
+    fillSelect('f-category', meta.categoryOptions, true);
+    fillSelect('f-clan', meta.clanOptions, true);
+    fillSelect('f-rank', meta.rankOptions, true);
+    fillSelect('f-section', meta.sectionOptions, true);
+    fillSelect('f-nature', meta.natureOptions, true);
+    fillSelect('f-kekkaiGenkai', meta.kekkaiGenkaiOptions, true);
+    fillSelect('f-artefact', meta.artefactOptions, true);
+  }
+
+  function showToast(message, isError) {
+    var toast = document.getElementById('dri-toast');
+    toast.textContent = message;
+    toast.classList.toggle('error', !!isError);
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 3600);
+  }
+
+  function renderPhotoPreview() {
+    var container = document.getElementById('f-photo-preview');
+    if (!container) return;
+    if (!photoDataUrl) {
+      container.innerHTML = '<span class="dri-photo-placeholder">Aucune photo chargee</span>';
+      return;
+    }
+    container.innerHTML = '<img src="' + escapeAttr(photoDataUrl) + '" alt="Photo ninja">';
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() { resolve(String(reader.result || '')); };
+      reader.onerror = function() { reject(new Error('Lecture de l image impossible')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  window.resetNinjaForm = function() {
+    document.getElementById('ninja-form').reset();
+    photoDataUrl = '';
+    if (meta) {
+      document.getElementById('f-category').value = meta.categoryOptions[0];
+      document.getElementById('f-clan').value = meta.clanOptions[0];
+      document.getElementById('f-rank').value = meta.rankOptions[0];
+      document.getElementById('f-section').value = meta.sectionOptions[0];
+      document.getElementById('f-nature').value = meta.natureOptions[0];
+      document.getElementById('f-kekkaiGenkai').value = meta.kekkaiGenkaiOptions[0];
+      document.getElementById('f-artefact').value = meta.artefactOptions[0];
+    }
+    renderPhotoPreview();
+    document.getElementById('result-banner').classList.remove('visible');
+  };
+
+  window.clearPhoto = function() {
+    photoDataUrl = '';
+    document.getElementById('f-photo-input').value = '';
+    renderPhotoPreview();
+  };
+
+  window.submitNinja = async function() {
+    var payload = {
+      fullName: document.getElementById('f-fullName').value.trim(),
+      category: document.getElementById('f-category').value,
+      clan: document.getElementById('f-clan').value,
+      rank: document.getElementById('f-rank').value,
+      section: document.getElementById('f-section').value,
+      nature: document.getElementById('f-nature').value,
+      kekkaiGenkai: document.getElementById('f-kekkaiGenkai').value,
+      artefact: document.getElementById('f-artefact').value,
+      photoDataUrl: photoDataUrl,
+      notes: document.getElementById('f-notes').value
+    };
+
+    if (payload.fullName.length < 3) {
+      showToast('Nom RP trop court', true);
+      return;
+    }
+
+    try {
+      var response = await fetch('/api/v1/dri/ninjas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+      var data = await response.json();
+      if (!response.ok) throw new Error((data && data.error) || 'Enregistrement impossible');
+
+      var banner = document.getElementById('result-banner');
+      document.getElementById('result-body').innerHTML =
+        'ID <b>' + escapeHtml(data.item.id) + '</b> &mdash; ' +
+        escapeHtml(data.item.fullName) + ' (' + escapeHtml(data.item.category) + ', rang ' + escapeHtml(data.item.rank) + ')';
+      banner.classList.add('visible');
+      showToast('Fiche archivee');
+      window.resetNinjaForm();
+      banner.classList.add('visible');
+    } catch (error) {
+      showToast(error.message || 'Erreur d\u2019enregistrement', true);
+    }
+  };
+
+  (async function boot() {
+    try {
+      await loadMeta();
+      document.getElementById('f-photo-input').addEventListener('change', async function(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          photoDataUrl = '';
+          renderPhotoPreview();
+          return;
+        }
+        try {
+          photoDataUrl = await readFileAsDataUrl(file);
+          renderPhotoPreview();
+        } catch (error) {
+          photoDataUrl = '';
+          event.target.value = '';
+          showToast(error.message || 'Photo invalide', true);
+        }
+      });
+      renderPhotoPreview();
+    } catch (error) {
+      showToast(error.message || 'Meta DRI indisponible', true);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

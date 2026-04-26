@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Gestion des enqu&ecirc;tes internes</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/dri-pages.css?v=20260421a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/dri-page-common.js?v=20260420a"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=DRI_Gestion_Enquetes.html');
+    }
+  })();
+</script>
+</head>
+<body class="dri-page">
+
+<div class="dri-back-bar">
+  <a class="dri-back-link" href="DRI.html">&#9674; Retour DRI</a>
+  <a class="dri-back-link" href="DRI_Enquete.html">Nouvelle enqu&ecirc;te</a>
+</div>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview"><span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span></div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list"><div class="presence-empty">&hellip;</div></div>
+</div>
+
+<div class="dri-page-shell">
+  <div class="dri-frame">
+    <span class="dri-corner dri-corner-tr">&#10022;</span>
+    <span class="dri-corner dri-corner-bl">&#10022;</span>
+    <div class="dri-watermark">ENQUETES</div>
+
+    <div class="dri-header">
+      <div class="dri-kicker">&#9674; Archives DRI</div>
+      <h1>Gestion des enqu&ecirc;tes</h1>
+      <div class="dri-subtitle">Coordonner, prolonger et cl&ocirc;turer les dossiers internes sensibles</div>
+    </div>
+
+    <div class="dri-divider"></div>
+    <div class="dri-kanji-row">&#31649; &middot; &#29702; &middot; &#25506; &middot; &#26597;</div>
+
+    <section class="dri-panel">
+        <div class="dri-panel-head">
+          <div>
+            <div class="dri-panel-kicker">&#9674; Recherche</div>
+            <h2>Enqu&ecirc;tes archiv&eacute;es</h2>
+          </div>
+          <span class="dri-panel-badge" id="count-badge">0 enqu&ecirc;te</span>
+        </div>
+
+        <div class="dri-filters">
+          <label class="dri-field">
+            <span>Recherche</span>
+            <input type="text" id="filter-search" placeholder="Titre, statut, agent, auteur...">
+          </label>
+          <label class="dri-field">
+            <span>Statut</span>
+            <select id="filter-status"></select>
+          </label>
+          <label class="dri-field">
+            <span>Agent attitr&eacute;</span>
+            <select id="filter-agent"></select>
+          </label>
+        </div>
+
+        <div class="dri-list" id="investigation-list"></div>
+    </section>
+
+    <div class="dri-page-footer">
+      <div class="dri-stamp">Classifi&eacute;</div>
+      <div class="dri-footer-text">Toute divulgation en dehors de la Division des Renseignements Int&eacute;rieurs est passible de sanction.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dri-toast" id="dri-toast"></div>
+<div class="dri-modal-backdrop" id="investigation-modal-backdrop">
+  <div class="dri-modal dri-modal-wide">
+    <button type="button" class="dri-modal-close" onclick="closeInvestigationModal()">&times;</button>
+    <div class="dri-panel-head">
+      <div>
+        <div class="dri-panel-kicker">&#9674; Edition</div>
+        <h2>Enqu&ecirc;te active</h2>
+      </div>
+      <span class="dri-panel-badge" id="i-badge">Aucune</span>
+    </div>
+    <form class="dri-form" id="investigation-form" onsubmit="event.preventDefault(); saveInvestigation();">
+      <div class="dri-field full">
+        <span>Titre de l'enqu&ecirc;te</span>
+        <input type="text" id="i-title" maxlength="160" required placeholder="Selectionner une enquete">
+      </div>
+      <div class="dri-form-row">
+        <label class="dri-field">
+          <span>Statut</span>
+          <select id="i-status" required></select>
+        </label>
+        <label class="dri-field">
+          <span>Equipe assign&eacute;e</span>
+          <div class="dri-chip-row">
+            <select id="i-agent-select"></select>
+            <button type="button" class="dri-btn dri-btn-secondary" onclick="addAssignedAgent()">Ajouter</button>
+          </div>
+        </label>
+      </div>
+      <div class="dri-field full">
+        <span>Agents attitr&eacute;s</span>
+        <div class="dri-chip-list" id="i-agent-chips"></div>
+      </div>
+      <div class="dri-field full">
+        <span>Fiches ninja liees</span>
+        <div class="dri-chip-row">
+          <select id="i-ninja-select"></select>
+          <button type="button" class="dri-btn dri-btn-secondary" onclick="addLinkedNinja()">Ajouter</button>
+        </div>
+        <div class="dri-chip-list" id="i-ninja-chips"></div>
+      </div>
+      <div class="dri-field full">
+        <span>R&eacute;sum&eacute;</span>
+        <textarea id="i-summary" maxlength="1200"></textarea>
+      </div>
+      <div class="dri-meta-bar" id="i-meta-bar"></div>
+      <div class="dri-detail-columns">
+        <section class="dri-detail-section">
+          <div class="dri-section-headline">
+            <h3>Suivi et temoignages</h3>
+            <p>Chaque entree complete l historique de l enquete DRI.</p>
+          </div>
+          <div class="dri-inline-form" id="i-entry-form">
+            <select id="i-entry-kind"></select>
+            <textarea id="i-entry-content" placeholder="Ajouter un suivi, un temoignage, une note interne..."></textarea>
+            <button type="button" class="dri-btn dri-btn-primary" onclick="addInvestigationEntry()">Ajouter</button>
+          </div>
+          <div class="dri-stack-list" id="i-entry-list"></div>
+        </section>
+
+        <section class="dri-detail-section">
+          <div class="dri-section-headline">
+            <h3>Liens metier</h3>
+            <p>Rattacher directement un dossier, une plainte ou un rapport a l enquete.</p>
+          </div>
+          <div class="dri-inline-form" id="i-link-form">
+            <select id="i-link-type" onchange="refreshLinkTargetOptions()"></select>
+            <select id="i-link-target"></select>
+            <button type="button" class="dri-btn dri-btn-primary" onclick="addInvestigationLink()">Lier</button>
+          </div>
+          <div class="dri-stack-list" id="i-link-list"></div>
+        </section>
+      </div>
+
+      <section class="dri-detail-section">
+        <div class="dri-section-headline">
+          <h3>Photos et pieces jointes</h3>
+          <p>Les preuves imagees restent dans l espace DRI et s affichent comme dans les enquetes police.</p>
+        </div>
+        <div class="dri-inline-form dri-inline-form-attachments" id="i-attachment-form">
+          <input type="file" id="i-attachment-file" accept="image/png,image/jpeg,image/webp">
+          <input type="text" id="i-attachment-caption" placeholder="Legende optionnelle">
+          <button type="button" class="dri-btn dri-btn-primary" onclick="uploadAttachment()">Ajouter la photo</button>
+        </div>
+        <div class="dri-attachment-grid" id="i-attachment-grid"></div>
+      </section>
+      <div class="dri-form-actions">
+        <button type="button" class="dri-btn dri-btn-ghost" onclick="closeInvestigationModal()">Fermer</button>
+        <button type="submit" class="dri-btn dri-btn-primary">Sauvegarder</button>
+        <button type="button" class="dri-btn dri-btn-secondary" id="transfer-to-police-btn" onclick="transferInternalInvestigationToPolice()" style="display:none">Transferer vers la police</button>
+        <button type="button" class="dri-btn dri-btn-danger" onclick="deleteInvestigation()">Supprimer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var meta = null;
+  var items = [];
+  var selectedId = '';
+  var assignedAgents = [];
+  var linkedNinjaIds = [];
+  var attachmentPreviewUrls = [];
+
+  function byId(id) {
+    return items.find(function(item) { return item.id === id; }) || null;
+  }
+  function modal() { return document.getElementById('investigation-modal-backdrop'); }
+
+  function formatDateTime(value) {
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Date inconnue';
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+      date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function ninjaLabelMap() {
+    return new Map((meta && Array.isArray(meta.ninjaFiles) ? meta.ninjaFiles : []).map(function(item) {
+      return [item.id, item.label];
+    }));
+  }
+
+  function ninjaSelectOptions() {
+    return (meta && Array.isArray(meta.ninjaFiles) ? meta.ninjaFiles : []).map(function(item) {
+      return {
+        value: item.id,
+        label: item.label + ' • ' + item.rank + ' • ' + item.category
+      };
+    });
+  }
+
+  function renderAgents() {
+    DRICommon.renderChipList('i-agent-chips', assignedAgents, function(index) {
+      assignedAgents.splice(index, 1);
+      renderAgents();
+    }, 'Aucun agent attitre');
+  }
+
+  function renderLinkedNinjas() {
+    var labels = ninjaLabelMap();
+    DRICommon.renderChipList('i-ninja-chips', linkedNinjaIds.map(function(id) {
+      return labels.get(id) || id;
+    }), function(index) {
+      linkedNinjaIds.splice(index, 1);
+      renderLinkedNinjas();
+    }, 'Aucune fiche liee');
+  }
+
+  function fillMetaSelects() {
+    DRICommon.fillSelect('i-status', meta.internalStatusOptions, { defaultFirst: true });
+    DRICommon.fillSelect('i-agent-select', meta.assignableAgents, { placeholder: 'Selectionner un agent' });
+    DRICommon.fillSelect('i-ninja-select', ninjaSelectOptions(), { placeholder: 'Selectionner une fiche ninja' });
+    DRICommon.fillSelect('i-entry-kind', meta.updateKinds, { defaultFirst: true });
+    document.getElementById('i-link-type').innerHTML = [
+      '<option value="dossier">Dossier / casier</option>',
+      '<option value="complaint">Plainte</option>',
+      '<option value="patrol_report">Rapport de patrouille</option>'
+    ].join('');
+    DRICommon.fillSelect('filter-status', ['Tous'].concat(meta.internalStatusOptions), { value: 'Tous' });
+    DRICommon.fillSelect('filter-agent', ['Tous'].concat(meta.assignableAgents), { value: 'Tous' });
+    refreshLinkTargetOptions();
+  }
+
+  function resetForm() {
+    revokeAttachmentPreviewUrls();
+    selectedId = '';
+    assignedAgents = [];
+    linkedNinjaIds = [];
+    document.getElementById('investigation-form').reset();
+    document.getElementById('i-badge').textContent = 'Aucune';
+    document.getElementById('i-meta-bar').innerHTML = '';
+    document.getElementById('i-entry-list').innerHTML = '';
+    document.getElementById('i-link-list').innerHTML = '';
+    document.getElementById('i-attachment-grid').innerHTML = '';
+    if (meta) fillMetaSelects();
+    renderAgents();
+    renderLinkedNinjas();
+    renderList();
+  }
+
+  function populateForm(item) {
+    selectedId = item.id;
+    assignedAgents = DRICommon.normalizeAssignedAgents(item.assignedAgents || []);
+    linkedNinjaIds = DRICommon.normalizeIdList(item.linkedNinjaIds || []);
+    document.getElementById('i-title').value = item.title || '';
+    document.getElementById('i-status').value = item.status || '';
+    document.getElementById('i-summary').value = item.summary || '';
+    document.getElementById('i-badge').textContent = item.id;
+    document.getElementById('i-agent-select').value = '';
+    document.getElementById('i-ninja-select').value = '';
+    document.getElementById('i-meta-bar').innerHTML = buildMetaBar(item);
+    renderAgents();
+    renderLinkedNinjas();
+    renderEntries(item);
+    renderLinks(item);
+    renderAttachments(item);
+    renderList();
+  }
+
+  async function openInvestigationModal(itemId) {
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(itemId), {
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      populateForm(data.item);
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Chargement impossible', true);
+      return;
+    }
+    modal().classList.add('visible');
+  }
+
+  function closeInvestigationModal() {
+    revokeAttachmentPreviewUrls();
+    modal().classList.remove('visible');
+  }
+
+  function addAssignedAgent() {
+    var select = document.getElementById('i-agent-select');
+    var value = String(select.value || '').trim();
+    if (!value) return;
+    assignedAgents = DRICommon.normalizeAssignedAgents(assignedAgents.concat(value));
+    select.value = '';
+    renderAgents();
+  }
+
+  function addLinkedNinja() {
+    var select = document.getElementById('i-ninja-select');
+    var value = String(select.value || '').trim();
+    if (!value) return;
+    linkedNinjaIds = DRICommon.normalizeIdList(linkedNinjaIds.concat(value));
+    select.value = '';
+    renderLinkedNinjas();
+  }
+
+  function filteredItems() {
+    var term = document.getElementById('filter-search').value.trim().toLowerCase();
+    var status = document.getElementById('filter-status').value;
+    var agent = document.getElementById('filter-agent').value;
+
+    return items.filter(function(item) {
+      if (status && status !== 'Tous' && item.status !== status) return false;
+      if (agent && agent !== 'Tous' && !(item.assignedAgents || []).includes(agent)) return false;
+      if (!term) return true;
+      var haystack = [
+        item.title,
+        item.status,
+        item.createdBy,
+        item.summary,
+        (item.assignedAgents || []).join(' ')
+      ].join(' ').toLowerCase();
+      return haystack.indexOf(term) !== -1;
+    });
+  }
+
+  function renderList() {
+    var list = document.getElementById('investigation-list');
+    var filtered = filteredItems();
+    document.getElementById('count-badge').textContent = filtered.length + ' enqu' + (filtered.length > 1 ? 'etes' : 'ete');
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="dri-empty">Aucune enquete correspondante.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(function(item) {
+      var activeClass = item.id === selectedId ? ' is-active' : '';
+      var agents = (item.assignedAgents && item.assignedAgents.length)
+        ? item.assignedAgents.join(', ')
+        : 'Aucun agent';
+      var labels = ninjaLabelMap();
+      var linkedNinjas = (item.linkedNinjaIds || []).map(function(id) { return labels.get(id) || id; });
+      return '<article class="dri-card' + activeClass + '" data-id="' + DRICommon.escapeHtml(item.id) + '">' +
+        '<div class="dri-card-tag">' + DRICommon.escapeHtml(item.status) + '</div>' +
+        '<span class="dri-card-title">' + DRICommon.escapeHtml(item.title) + '</span>' +
+        '<div class="dri-card-meta"><b>Agents :</b> ' + DRICommon.escapeHtml(agents) + '<br><b>Fiches liees :</b> ' + DRICommon.escapeHtml(linkedNinjas.length ? linkedNinjas.join(', ') : 'Aucune') + '<br><b>Resume :</b> ' + DRICommon.escapeHtml(item.summary || 'Aucun resume') + '<br><b>Suivis :</b> ' + DRICommon.escapeHtml(String(item.updateCount || 0)) + ' &middot; <b>Pieces :</b> ' + DRICommon.escapeHtml(String(item.attachmentCount || 0)) + '</div>' +
+        '<div class="dri-card-foot">' + DRICommon.escapeHtml(item.id) + ' &mdash; mis a jour ' + DRICommon.escapeHtml(String(item.updatedAt || '').slice(0, 10)) + '</div>' +
+      '</article>';
+    }).join('');
+
+    list.querySelectorAll('.dri-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var itemId = card.getAttribute('data-id');
+        if (itemId) openInvestigationModal(itemId);
+      });
+    });
+  }
+
+  function buildMetaBar(item) {
+    return [
+      '<span><strong>Statut :</strong> ' + DRICommon.escapeHtml(item.status || 'En cours') + '</span>',
+      '<span><strong>Agents :</strong> ' + DRICommon.escapeHtml((item.assignedAgents || []).length ? item.assignedAgents.join(', ') : 'Aucun') + '</span>',
+      '<span><strong>Fiches :</strong> ' + DRICommon.escapeHtml(String((item.linkedNinjaIds || []).length)) + '</span>',
+      '<span><strong>Ouverte :</strong> ' + DRICommon.escapeHtml(formatDateTime(item.createdAt)) + '</span>',
+      '<span><strong>Mise a jour :</strong> ' + DRICommon.escapeHtml(formatDateTime(item.updatedAt)) + '</span>'
+    ].join('');
+  }
+
+  function renderEntries(item) {
+    var list = item.updates || [];
+    document.getElementById('i-entry-list').innerHTML = list.length ? list.map(function(entry) {
+      return '<article class="dri-timeline-entry"><div class="dri-timeline-head"><span class="dri-timeline-kind">' + DRICommon.escapeHtml(entry.kind) + '</span><span class="dri-timeline-meta">' + DRICommon.escapeHtml(entry.author || '-') + ' • ' + DRICommon.escapeHtml(formatDateTime(entry.createdAt)) + '</span></div><div class="dri-timeline-content">' + DRICommon.escapeHtml(entry.content || '') + '</div></article>';
+    }).join('') : '<div class="dri-empty compact">Aucun suivi ajoute pour le moment.</div>';
+  }
+
+  function renderLinks(item) {
+    var list = item.links || [];
+    document.getElementById('i-link-list').innerHTML = list.length ? list.map(function(link) {
+      return '<div class="dri-linked-pill"><div class="dri-linked-copy"><span class="dri-linked-kind">' + DRICommon.escapeHtml(link.linkLabel) + '</span><strong class="dri-linked-title">' + DRICommon.escapeHtml(link.linkedLabel || link.linkedId) + '</strong><span class="dri-linked-ref">Reference : ' + DRICommon.escapeHtml(link.linkedId || '-') + '</span></div>' +
+        '<button class="dri-pill-delete" type="button" onclick="removeLink(\'' + DRICommon.escapeHtml(link.id) + '\')">&times;</button>' +
+        '</div>';
+    }).join('') : '<div class="dri-empty compact">Aucun lien metier sur cette enquete.</div>';
+  }
+
+  function renderAttachments(item) {
+    revokeAttachmentPreviewUrls();
+    var list = item.attachments || [];
+    document.getElementById('i-attachment-grid').innerHTML = list.length ? list.map(function(file) {
+      return '<figure class="dri-attachment-card"><img src="" data-attachment-url="' + DRICommon.escapeHtml(file.url) + '" alt="' + DRICommon.escapeHtml(file.filename) + '"><figcaption><strong>' + DRICommon.escapeHtml(file.filename) + '</strong>' +
+        (file.caption ? '<span>' + DRICommon.escapeHtml(file.caption) + '</span>' : '') +
+        '<span>' + DRICommon.escapeHtml(formatDateTime(file.uploadedAt)) + '</span>' +
+        '<button class="dri-btn dri-btn-danger" type="button" onclick="removeAttachment(\'' + DRICommon.escapeHtml(file.id) + '\')">Supprimer</button>' +
+        '</figcaption></figure>';
+    }).join('') : '<div class="dri-empty compact">Aucune image jointe pour le moment.</div>';
+    hydrateAttachmentPreviews();
+  }
+
+  function revokeAttachmentPreviewUrls() {
+    attachmentPreviewUrls.forEach(function(url) {
+      try { URL.revokeObjectURL(url); } catch (error) {}
+    });
+    attachmentPreviewUrls = [];
+  }
+
+  async function hydrateAttachmentPreviews() {
+    var images = Array.prototype.slice.call(document.querySelectorAll('#i-attachment-grid img[data-attachment-url]'));
+    await Promise.all(images.map(async function(image) {
+      var url = image.getAttribute('data-attachment-url');
+      if (!url) return;
+      try {
+        var response = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+        });
+        if (!response.ok) throw new Error('Image indisponible');
+        var blob = await response.blob();
+        var objectUrl = URL.createObjectURL(blob);
+        attachmentPreviewUrls.push(objectUrl);
+        image.src = objectUrl;
+      } catch (error) {
+        image.removeAttribute('data-attachment-url');
+        image.alt = 'Image indisponible';
+      }
+    }));
+  }
+
+  function refreshLinkTargetOptions() {
+    if (!meta) return;
+    var type = document.getElementById('i-link-type').value;
+    var source = [];
+    if (type === 'dossier') source = meta.dossierOptions || [];
+    else if (type === 'complaint') source = meta.complaintOptions || [];
+    else if (type === 'patrol_report') source = meta.patrolReportOptions || [];
+    document.getElementById('i-link-target').innerHTML = '<option value="">Selectionner une reference</option>' + source.map(function(item) {
+      return '<option value="' + DRICommon.escapeHtml(item.id) + '">' + DRICommon.escapeHtml(item.label) + '</option>';
+    }).join('');
+  }
+
+  function findSelectedLinkMeta(type, id) {
+    var source = [];
+    if (type === 'dossier') source = meta.dossierOptions || [];
+    else if (type === 'complaint') source = meta.complaintOptions || [];
+    else if (type === 'patrol_report') source = meta.patrolReportOptions || [];
+    return source.find(function(item) { return item.id === id; }) || null;
+  }
+
+  async function loadMeta() {
+    meta = await DRICommon.fetchJson('/api/v1/dri/meta', {
+      headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+    });
+    fillMetaSelects();
+    renderAgents();
+  }
+
+  async function loadItems() {
+    var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations', {
+      headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+    });
+    items = Array.isArray(data.items) ? data.items : [];
+    renderList();
+  }
+
+  async function saveInvestigation() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete a modifier', true);
+      return;
+    }
+
+    var payload = {
+      title: document.getElementById('i-title').value.trim(),
+      status: document.getElementById('i-status').value,
+      assignedAgents: assignedAgents.slice(),
+      linkedNinjaIds: linkedNinjaIds.slice(),
+      summary: document.getElementById('i-summary').value
+    };
+
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      DRICommon.showToast('dri-toast', 'Enquete mise a jour');
+      await loadItems();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Modification impossible', true);
+    }
+  }
+
+  async function addInvestigationEntry() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete a enrichir', true);
+      return;
+    }
+
+    var content = document.getElementById('i-entry-content').value.trim();
+    if (!content) {
+      DRICommon.showToast('dri-toast', 'Renseigne le contenu du suivi', true);
+      return;
+    }
+
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/updates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify({
+          kind: document.getElementById('i-entry-kind').value,
+          content: content
+        })
+      });
+      document.getElementById('i-entry-content').value = '';
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      renderList();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Ajout impossible', true);
+    }
+  }
+
+  async function addInvestigationLink() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete a lier', true);
+      return;
+    }
+
+    var type = document.getElementById('i-link-type').value;
+    var id = document.getElementById('i-link-target').value;
+    var option = findSelectedLinkMeta(type, id);
+    if (!option) {
+      DRICommon.showToast('dri-toast', 'Selectionne une reference valide', true);
+      return;
+    }
+
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/links', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify({
+          linkType: type,
+          linkedId: option.id,
+          linkedLabel: option.label,
+          linkedMeta: option.meta || {}
+        })
+      });
+      document.getElementById('i-link-target').value = '';
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      renderList();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Lien impossible', true);
+    }
+  }
+
+  function resizeImageToDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        var image = new Image();
+        image.onload = function() {
+          var maxSize = 1600;
+          var width = image.width;
+          var height = image.height;
+          if (width > maxSize || height > maxSize) {
+            var ratio = Math.min(maxSize / width, maxSize / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(image, 0, 0, width, height);
+          var mime = file.type === 'image/png' ? 'image/png' : (file.type === 'image/webp' ? 'image/webp' : 'image/jpeg');
+          var quality = mime === 'image/png' ? undefined : 0.86;
+          resolve(canvas.toDataURL(mime, quality));
+        };
+        image.onerror = function() { reject(new Error('Image invalide')); };
+        image.src = reader.result;
+      };
+      reader.onerror = function() { reject(new Error('Lecture du fichier impossible')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadAttachment() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete avant ajout', true);
+      return;
+    }
+
+    var fileInput = document.getElementById('i-attachment-file');
+    var file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      DRICommon.showToast('dri-toast', 'Selectionne une image', true);
+      return;
+    }
+
+    try {
+      var dataUrl = await resizeImageToDataUrl(file);
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/attachments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify({
+          filename: file.name.replace(/\.[^.]+$/, ''),
+          mimeType: file.type === 'image/png' ? 'image/png' : (file.type === 'image/webp' ? 'image/webp' : 'image/jpeg'),
+          dataUrl: dataUrl,
+          caption: document.getElementById('i-attachment-caption').value.trim()
+        })
+      });
+      fileInput.value = '';
+      document.getElementById('i-attachment-caption').value = '';
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      renderList();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Ajout image impossible', true);
+    }
+  }
+
+  async function removeAttachment(attachmentId) {
+    if (!selectedId) return;
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/attachments/' + encodeURIComponent(attachmentId), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      renderList();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Suppression impossible', true);
+    }
+  }
+
+  async function removeLink(linkId) {
+    if (!selectedId) return;
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/links/' + encodeURIComponent(linkId), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      items = items.map(function(item) { return item.id === data.item.id ? data.item : item; });
+      populateForm(data.item);
+      renderList();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Suppression impossible', true);
+    }
+  }
+
+  async function transferInternalInvestigationToPolice() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete a transferer', true);
+      return;
+    }
+
+    if (!window.confirm('Transferer cette enquete DRI vers le panel d enquetes police classique ?')) {
+      return;
+    }
+
+    try {
+      await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId) + '/transfer-to-police', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      items = items.filter(function(entry) { return entry.id !== selectedId; });
+      resetForm();
+      closeInvestigationModal();
+      DRICommon.showToast('dri-toast', 'Enquete transferee vers la police');
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Transfert impossible', true);
+    }
+  }
+
+  async function deleteInvestigation() {
+    if (!selectedId) {
+      DRICommon.showToast('dri-toast', 'Selectionne une enquete a supprimer', true);
+      return;
+    }
+
+    var item = byId(selectedId);
+    if (!item || !window.confirm('Supprimer l enquete ' + item.title + ' ?')) return;
+
+    try {
+      await DRICommon.fetchJson('/api/v1/dri/internal-investigations/' + encodeURIComponent(selectedId), {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+      });
+      items = items.filter(function(entry) { return entry.id !== selectedId; });
+      resetForm();
+      closeInvestigationModal();
+      DRICommon.showToast('dri-toast', 'Enquete supprimee');
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Suppression impossible', true);
+    }
+  }
+
+  window.closeInvestigationModal = closeInvestigationModal;
+  window.addAssignedAgent = addAssignedAgent;
+  window.addLinkedNinja = addLinkedNinja;
+  window.resetForm = resetForm;
+  window.saveInvestigation = saveInvestigation;
+  window.deleteInvestigation = deleteInvestigation;
+  window.transferInternalInvestigationToPolice = transferInternalInvestigationToPolice;
+  window.addInvestigationEntry = addInvestigationEntry;
+  window.addInvestigationLink = addInvestigationLink;
+  window.removeLink = removeLink;
+  window.uploadAttachment = uploadAttachment;
+  window.removeAttachment = removeAttachment;
+  window.refreshLinkTargetOptions = refreshLinkTargetOptions;
+
+  (async function boot() {
+    await DRICommon.bootstrap({ redirectTo: 'DRI_Gestion_Enquetes.html' });
+    try {
+      var transferButton = document.getElementById('transfer-to-police-btn');
+      if (transferButton) {
+        transferButton.style.display = window.currentCapabilities && (window.currentCapabilities.canTransferInvestigationsAcrossDivisions || window.currentCapabilities.canAccessDRI) ? '' : 'none';
+      }
+      await loadMeta();
+      await loadItems();
+      modal().addEventListener('click', function(event) {
+        if (event.target === modal()) {
+          closeInvestigationModal();
+        }
+      });
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Chargement DRI impossible', true);
+    }
+
+    document.getElementById('filter-search').addEventListener('input', renderList);
+    document.getElementById('filter-status').addEventListener('change', renderList);
+    document.getElementById('filter-agent').addEventListener('change', renderList);
+  })();
+})();
+</script>
+</body>
+</html>

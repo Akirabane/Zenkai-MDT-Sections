@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Division des Renseignements Int&eacute;rieurs</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/index.css?v=20260420b">
+<link rel="stylesheet" href="CSS/dri.css?v=20260420b">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  document.title = 'DRI \u2014 Division des Renseignements Int\u00E9rieurs';
+  (function() {
+    var hasToken = sessionStorage.getItem('policeToken');
+    if (!hasToken) {
+      window.location.replace('login.html?redirect=DRI.html');
+    }
+  })();
+</script>
+</head>
+<body class="home-landing dri-landing">
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <a class="btn-user-action btn-user-back" href="index.html">&#9674; Retour QG</a>
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="home-layout" id="home-layout">
+<div class="landing-frame dri-frame">
+  <span class="corner-tr">&#10022;</span>
+  <span class="corner-bl">&#10022;</span>
+  <div class="watermark">DRI</div>
+
+  <!-- Shuriken decorations -->
+  <svg class="shuriken-deco shuriken-tl" width="50" height="50" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 4 L36 28 L60 32 L36 36 L32 60 L28 36 L4 32 L28 28 Z" fill="#8b1a1a" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="6" fill="#1a0808" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2.5" fill="#d4a017"/>
+  </svg>
+  <svg class="shuriken-deco shuriken-br" width="50" height="50" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 4 L36 28 L60 32 L36 36 L32 60 L28 36 L4 32 L28 28 Z" fill="#8b1a1a" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="6" fill="#1a0808" stroke="#d4a017" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="2.5" fill="#d4a017"/>
+  </svg>
+
+  <!-- Logo DRI -->
+  <div class="logo-container">
+    <svg class="logo-svg dri-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#4a0f0a" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+      <circle fill="#4a0f0a" cx="39" cy="39" r="12"/>
+      <circle fill="#4a0f0a" cx="161" cy="39" r="12"/>
+      <circle fill="#4a0f0a" cx="39" cy="161" r="12"/>
+      <circle fill="#4a0f0a" cx="161" cy="161" r="12"/>
+      <circle cx="100" cy="100" r="42" fill="none" stroke="#d4a017" stroke-width="2.5" opacity="0.9"/>
+      <circle cx="100" cy="100" r="13" fill="#8b1a1a" stroke="#f0c040" stroke-width="2"/>
+      <path d="M100 70 L105 92 L128 92 L110 106 L116 128 L100 115 L84 128 L90 106 L72 92 L95 92 Z" fill="#d4a017" opacity="0.85"/>
+    </svg>
+  </div>
+
+  <!-- Title -->
+  <div class="title-block">
+    <h1>Renseignements Int&eacute;rieurs</h1>
+    <div class="subtitle">Archives Classifi&eacute;es &mdash; Acc&egrave;s Restreint</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="kanji-row">&#35426; &middot; &#23494; &middot; &#24433; &middot; &#22577;</div>
+
+  <!-- Navigation -->
+  <div class="nav-shell dri-nav-shell sections-2">
+    <section class="hub-section hub-section-ops dri-hub dri-hub-intel">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Renseignement</div>
+        <h2>Dossiers et Investigations</h2>
+        <p>Constituer les archives classifi&eacute;es&nbsp;: fiches ninja, artefacts surveill&eacute;s, enqu&ecirc;tes internes et theatres exterieurs.</p>
+      </div>
+      <div class="nav-grid nav-grid-training dri-grid-nav">
+        <a href="DRI_Fiche_Ninja.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="3" width="28" height="30" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <rect x="4" y="3" width="28" height="7" fill="#5a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <circle cx="18" cy="17" r="5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="1.1"/>
+              <path d="M10 29c1.8-4 4.8-6 8-6s6.2 2 8 6" stroke="#f0d890" stroke-width="1.4" stroke-linecap="round"/>
+              <text x="18" y="8.2" text-anchor="middle" fill="#f0c0a0" font-size="5.2" font-family="Cinzel,serif" font-weight="700">DRI</text>
+            </svg>
+          </span>
+          <div class="nav-card-title">Fiche Ninja</div>
+          <div class="nav-card-desc">Constituer le dossier d&rsquo;un ninja (clan, ind&eacute;pendant ou nukenin) avec nature, rang et section</div>
+        </a>
+
+        <a href="DRI_Artefact.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="28" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <path d="M11 26 L18 8 L25 26 Z" fill="#8b1a1a" stroke="#d4a017" stroke-width="1.4" stroke-linejoin="round"/>
+              <path d="M14 21h8" stroke="#f0c040" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="18" cy="14" r="1.8" fill="#f0c040"/>
+              <path d="M9 29h18" stroke="#d4a017" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Artefact</div>
+          <div class="nav-card-desc">R&eacute;f&eacute;rencer une arme ou relique surveill&eacute;e &mdash; les 7 &eacute;p&eacute;es, parchemins interdits, joyaux</div>
+        </a>
+
+        <a href="DRI_Enquete.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="28" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <circle cx="15" cy="15" r="5.2" stroke="#f0d890" stroke-width="1.5"/>
+              <path d="M19 19l7 7" stroke="#f0d890" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M9 28h14" stroke="#8b1a1a" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="27" cy="9" r="3" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.8"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Enqu&ecirc;te interne</div>
+          <div class="nav-card-desc">Ouvrir une investigation confidentielle, hors radar de la police r&eacute;guli&egrave;re</div>
+        </a>
+
+        <a href="DRI_Enquete_Externe.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="28" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="8" stroke="#f0d890" stroke-width="1.4"/>
+              <path d="M18 10v16" stroke="#8b1a1a" stroke-width="1.1" stroke-linecap="round"/>
+              <path d="M10 18h16" stroke="#8b1a1a" stroke-width="1.1" stroke-linecap="round"/>
+              <path d="M12.5 12.5c2.6 1.7 8.4 1.7 11 0" stroke="#f0c040" stroke-width="1" stroke-linecap="round"/>
+              <path d="M12.5 23.5c2.6-1.7 8.4-1.7 11 0" stroke="#f0c040" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Enqu&ecirc;te externe</div>
+          <div class="nav-card-desc">Ouvrir un dossier hors Konoha sur des activit&eacute;s, relais ou menaces ext&eacute;rieures</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="hub-section hub-section-command dri-hub dri-hub-supervision">
+      <div class="hub-heading">
+        <div class="hub-kicker">&#9674; Supervision</div>
+        <h2>Archives et Gestion</h2>
+        <p>Consulter, amender et archiver les dossiers d&eacute;j&agrave; enregistr&eacute;s par la Division, y compris hors Konoha.</p>
+      </div>
+      <div class="nav-grid nav-grid-training dri-grid-nav">
+        <a href="DRI_Gestion_Fiches.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="30" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <rect x="7" y="8" width="22" height="5" fill="#5a0a0a" stroke="#d4a017" stroke-width="0.9"/>
+              <line x1="10" y1="17" x2="26" y2="17" stroke="#f0d890" stroke-width="1"/>
+              <line x1="10" y1="21" x2="26" y2="21" stroke="#f0d890" stroke-width="1"/>
+              <line x1="10" y1="25" x2="20" y2="25" stroke="#f0d890" stroke-width="1"/>
+              <circle cx="27" cy="26" r="5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="1"/>
+              <path d="M25 26h4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+              <path d="M27 24v4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Gestion des fiches</div>
+          <div class="nav-card-desc">Consulter, filtrer et mettre &agrave; jour les fiches ninja archiv&eacute;es par la DRI</div>
+        </a>
+
+        <a href="DRI_Gestion_Artefacts.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="30" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <path d="M10 22 L14 12 L18 22 Z" fill="#8b1a1a" stroke="#d4a017" stroke-width="1.1" stroke-linejoin="round"/>
+              <path d="M20 26 L24 14 L28 26 Z" fill="#5a0a0a" stroke="#d4a017" stroke-width="1.1" stroke-linejoin="round"/>
+              <path d="M7 29h22" stroke="#d4a017" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="27" cy="9" r="3" fill="#f0c040" opacity="0.85"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Gestion des artefacts</div>
+          <div class="nav-card-desc">Superviser l&rsquo;inventaire classifi&eacute; des artefacts, d&eacute;placements et d&eacute;tenteurs</div>
+        </a>
+
+        <a href="DRI_Gestion_Enquetes.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="30" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <path d="M9 12h18" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M9 17h18" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M9 22h12" stroke="#f0d890" stroke-width="1.2" stroke-linecap="round"/>
+              <rect x="21.5" y="20.5" width="7" height="7" rx="1" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.9"/>
+              <path d="M25 22.3v3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+              <path d="M23.3 24h3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Gestion des enqu&ecirc;tes</div>
+          <div class="nav-card-desc">Relire, prolonger ou cl&ocirc;turer les enqu&ecirc;tes internes de la Division</div>
+        </a>
+
+        <a href="DRI_Gestion_Enquetes_Externes.html" class="nav-card nav-card--dri">
+          <span class="nav-card-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="30" height="28" rx="2" fill="#2a0a0a" stroke="#d4a017" stroke-width="1.5"/>
+              <circle cx="18" cy="16" r="6.5" stroke="#f0d890" stroke-width="1.2"/>
+              <path d="M18 9.5v13" stroke="#f0c040" stroke-width="1"/>
+              <path d="M11.5 16h13" stroke="#f0c040" stroke-width="1"/>
+              <rect x="22.5" y="21.5" width="7" height="7" rx="1" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.9"/>
+              <path d="M26 23.3v3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+              <path d="M24.3 25h3.4" stroke="#f0c0a0" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="nav-card-title">Gestion des enqu&ecirc;tes externes</div>
+          <div class="nav-card-desc">Suivre, corriger et cl&ocirc;turer les dossiers DRI men&eacute;s en dehors du village</div>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <div class="stamp-section">
+    <div class="stamp">Classifi&eacute;</div>
+    <div class="footer-text">Archives de la Division des Renseignements Int&eacute;rieurs &mdash; diffusion strictement interdite.</div>
+  </div>
+</div>
+</div>
+
+<script>
+(function() {
+  var token = sessionStorage.getItem('policeToken');
+  if (!token) return;
+
+  fetch('/auth/capabilities', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+    .then(function(r) {
+      if (!r.ok) return null;
+      return r.json();
+    })
+    .then(function(capabilities) {
+      if (!capabilities || !capabilities.canAccessDRI) {
+        window.location.replace('index.html');
+      }
+    })
+    .catch(function() {});
+})();
+</script>
+<script>
+(function() {
+  var _pFocused = document.hasFocus();
+  window.currentUser = null;
+
+  function getToken() {
+    return window.UserShell.getToken();
+  }
+
+  function getCachedUser() {
+    return window.UserShell.getCachedUser();
+  }
+
+  async function checkAuth() {
+    if (!getToken()) {
+      window.location.replace('login.html?redirect=DRI.html');
+      return null;
+    }
+
+    try {
+      var response = await fetch('/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
+
+      if (!response.ok) {
+        sessionStorage.clear();
+        window.location.replace('login.html?redirect=DRI.html');
+        return null;
+      }
+
+      var user = await response.json();
+      window.UserShell.saveUser(user);
+      return user;
+    } catch (error) {
+      return getCachedUser();
+    }
+  }
+
+  function setupUserBar(user) {
+    window.UserShell.applyUserBar(user);
+  }
+
+  function openAdminShortcut() {
+    window.UserShell.openAdminShortcut('Backoffice_Admin.html');
+  }
+
+  function toggleBurgerMenu() {
+    window.UserShell.toggleBurgerMenu();
+  }
+
+  function closeBurgerMenu() {
+    window.UserShell.closeBurgerMenu();
+  }
+
+  async function doLogout() {
+    await window.UserShell.logout({ redirectTo: 'login.html' });
+  }
+
+  function togglePresenceMobile() {
+    window.UserShell.togglePresenceMobile('presence-sidebar');
+  }
+
+  function currentPresenceStatus() {
+    if (document.hidden || !_pFocused) return 'away';
+    return window.UserShell.currentPresenceStatus();
+  }
+
+  function renderPresence(data) {
+    window.UserShell.renderPresence('presence-list', data);
+  }
+
+  async function pingPresence() {
+    try {
+      var token = getToken();
+      if (!token) return;
+
+      var response = await fetch('/presence/ping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ status: currentPresenceStatus() })
+      });
+
+      if (response.ok) {
+        renderPresence(await response.json());
+      }
+    } catch (error) {}
+  }
+
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('#user-bar')) closeBurgerMenu();
+  });
+
+  document.addEventListener('visibilitychange', function() {
+    pingPresence();
+  });
+
+  window.addEventListener('focus', function() {
+    _pFocused = true;
+    pingPresence();
+  });
+
+  window.addEventListener('blur', function() {
+    _pFocused = false;
+    pingPresence();
+  });
+
+  window.toggleBurgerMenu = toggleBurgerMenu;
+  window.closeBurgerMenu = closeBurgerMenu;
+  window.togglePresenceMobile = togglePresenceMobile;
+  window.openAdminShortcut = openAdminShortcut;
+  window.doLogout = doLogout;
+
+  (async function initUserChrome() {
+    window.currentUser = await checkAuth();
+    setupUserBar(window.currentUser);
+    await pingPresence();
+    setInterval(pingPresence, 25000);
+  })();
+})();
+</script>
+</body>
+</html>

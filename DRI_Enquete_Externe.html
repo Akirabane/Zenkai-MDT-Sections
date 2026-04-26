@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI &mdash; Nouvelle enqu&ecirc;te externe</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/dri-pages.css?v=20260420b">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/dri-page-common.js?v=20260420a"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=DRI_Enquete_Externe.html');
+    }
+  })();
+</script>
+</head>
+<body class="dri-page">
+
+<div class="dri-back-bar">
+  <a class="dri-back-link" href="DRI.html">&#9674; Retour DRI</a>
+  <a class="dri-back-link" href="index.html">QG</a>
+</div>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="dri-page-shell">
+  <div class="dri-frame">
+    <span class="dri-corner dri-corner-tr">&#10022;</span>
+    <span class="dri-corner dri-corner-bl">&#10022;</span>
+    <div class="dri-watermark">EXTERNE</div>
+
+    <div class="dri-header">
+      <div class="dri-kicker">&#9674; Archives DRI</div>
+      <h1>Nouvelle enqu&ecirc;te externe</h1>
+      <div class="dri-subtitle">Operation hors Konoha &mdash; territoire etranger, relais, pistes et cibles</div>
+    </div>
+
+    <div class="dri-divider"></div>
+    <div class="dri-kanji-row">&#22806; &middot; &#22519; &middot; &#25506; &middot; &#32034;</div>
+
+    <div class="dri-panel">
+      <div class="dri-panel-head">
+        <div>
+          <div class="dri-panel-kicker">&#9674; Theatre exterieur</div>
+          <h2>Ouvrir un dossier hors village</h2>
+        </div>
+        <span class="dri-panel-badge">Creation</span>
+      </div>
+
+      <form class="dri-form" id="external-investigation-form" onsubmit="event.preventDefault(); submitExternalInvestigation();">
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Titre de l'enqu&ecirc;te</span>
+            <input type="text" id="x-title" maxlength="160" required placeholder="Ex: Trafic d artefacts sur les frontieres de Kiri">
+          </label>
+          <label class="dri-field">
+            <span>Statut</span>
+            <select id="x-status" required></select>
+          </label>
+        </div>
+
+        <div class="dri-form-row">
+          <label class="dri-field">
+            <span>Zone cible</span>
+            <input type="text" id="x-target-zone" maxlength="160" placeholder="Ex: Pays de l Eau / Port secondaire">
+          </label>
+          <label class="dri-field">
+            <span>Equipe assign&eacute;e</span>
+            <div class="dri-chip-row">
+              <select id="x-agent-select"></select>
+              <button type="button" class="dri-btn dri-btn-secondary" onclick="addAssignedAgent()">Ajouter</button>
+            </div>
+          </label>
+        </div>
+
+        <div class="dri-field full">
+          <span>Agents attitr&eacute;s</span>
+          <div class="dri-chip-list" id="x-agent-chips"></div>
+        </div>
+
+        <div class="dri-field full">
+          <span>R&eacute;sum&eacute; initial</span>
+          <textarea id="x-summary" maxlength="1200" placeholder="Contexte externe, points d entree, relais, risques diplomatiques, couverture..."></textarea>
+        </div>
+
+        <div class="dri-form-actions">
+          <button type="button" class="dri-btn dri-btn-ghost" onclick="resetExternalInvestigationForm()">R&eacute;initialiser</button>
+          <button type="submit" class="dri-btn dri-btn-primary">Ouvrir l'enqu&ecirc;te</button>
+        </div>
+      </form>
+
+      <div class="dri-banner" id="result-banner">
+        <strong>Enqu&ecirc;te externe ouverte</strong>
+        <div class="dri-banner-body" id="result-body">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="dri-page-footer">
+      <div class="dri-stamp">Classifi&eacute;</div>
+      <div class="dri-footer-text">Toute divulgation en dehors de la Division des Renseignements Int&eacute;rieurs est passible de sanction.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dri-toast" id="dri-toast"></div>
+
+<script>
+(function() {
+  var meta = null;
+  var assignedAgents = [];
+
+  function renderAgents() {
+    DRICommon.renderChipList('x-agent-chips', assignedAgents, function(index) {
+      assignedAgents.splice(index, 1);
+      renderAgents();
+    }, 'Aucun agent attitre');
+  }
+
+  function resetExternalInvestigationForm() {
+    document.getElementById('external-investigation-form').reset();
+    assignedAgents = [];
+    if (meta) {
+      document.getElementById('x-status').value = meta.externalStatusOptions[0] || '';
+      DRICommon.fillSelect('x-agent-select', meta.assignableAgents, { placeholder: 'Selectionner un agent' });
+    }
+    renderAgents();
+    document.getElementById('result-banner').classList.remove('visible');
+  }
+
+  function addAssignedAgent() {
+    var select = document.getElementById('x-agent-select');
+    var value = String(select.value || '').trim();
+    if (!value) return;
+    assignedAgents = DRICommon.normalizeAssignedAgents(assignedAgents.concat(value));
+    select.value = '';
+    renderAgents();
+  }
+
+  async function loadMeta() {
+    meta = await DRICommon.fetchJson('/api/v1/dri/meta', {
+      headers: { 'Authorization': 'Bearer ' + DRICommon.getToken() }
+    });
+    DRICommon.fillSelect('x-status', meta.externalStatusOptions, { defaultFirst: true });
+    DRICommon.fillSelect('x-agent-select', meta.assignableAgents, { placeholder: 'Selectionner un agent' });
+    renderAgents();
+  }
+
+  async function submitExternalInvestigation() {
+    var payload = {
+      title: document.getElementById('x-title').value.trim(),
+      status: document.getElementById('x-status').value,
+      assignedAgents: assignedAgents.slice(),
+      targetZone: document.getElementById('x-target-zone').value.trim(),
+      summary: document.getElementById('x-summary').value
+    };
+
+    if (payload.title.length < 3) {
+      DRICommon.showToast('dri-toast', 'Titre trop court', true);
+      return;
+    }
+
+    try {
+      var data = await DRICommon.fetchJson('/api/v1/dri/external-investigations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + DRICommon.getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+      var banner = document.getElementById('result-banner');
+      document.getElementById('result-body').innerHTML =
+        'ID <b>' + DRICommon.escapeHtml(data.item.id) + '</b> &mdash; ' +
+        DRICommon.escapeHtml(data.item.title) + ' / ' + DRICommon.escapeHtml(data.item.status) +
+        (data.item.targetZone ? ' &mdash; ' + DRICommon.escapeHtml(data.item.targetZone) : '') +
+        (data.item.assignedAgents && data.item.assignedAgents.length ? ' &mdash; ' + DRICommon.escapeHtml(data.item.assignedAgents.join(', ')) : '');
+      resetExternalInvestigationForm();
+      banner.classList.add('visible');
+      DRICommon.showToast('dri-toast', 'Enquete externe ouverte');
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Erreur d ouverture', true);
+    }
+  }
+
+  window.addAssignedAgent = addAssignedAgent;
+  window.resetExternalInvestigationForm = resetExternalInvestigationForm;
+  window.submitExternalInvestigation = submitExternalInvestigation;
+
+  (async function boot() {
+    await DRICommon.bootstrap({ redirectTo: 'DRI_Enquete_Externe.html' });
+    try {
+      await loadMeta();
+    } catch (error) {
+      DRICommon.showToast('dri-toast', error.message || 'Meta DRI indisponible', true);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
