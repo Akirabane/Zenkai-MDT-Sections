@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rapport de patrouille — Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/casier.css?v=20260408a">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    var hasToken = sessionStorage.getItem('policeToken');
+    if (!hasToken) {
+      window.location.replace('login.html?redirect=Rapport_Patrouille.html');
+      return;
+    }
+  })();
+</script>
+</head>
+<body>
+
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer;" title="Modifier mon profil">&#8230;</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">PATROUILLE</div>
+
+    <div class="doc-header">
+      <svg class="konoha-symbol" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+        <circle fill="#427b8f" cx="39" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="39" r="12"/>
+        <circle fill="#427b8f" cx="39" cy="161" r="12"/>
+        <circle fill="#427b8f" cx="161" cy="161" r="12"/>
+        <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+        <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+      </svg>
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Rapport de patrouille</h1>
+      <div class="sub-title">Compte-rendu terrain &mdash; version &agrave; copier sur Discord</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="casier-form" id="casier-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-agent-nom">Nom de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-nom" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-agent-prenom">Pr&eacute;nom de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-prenom" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="f-agent-grade">Grade de l&rsquo;Agent</label>
+          <input class="form-input" type="text" id="f-agent-grade" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-date">Date de la Patrouille</label>
+          <input class="form-input" type="text" id="f-date" placeholder="dd/mm/YYYY">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label" for="f-rapport">Rapport</label>
+          <textarea class="form-textarea" id="f-rapport" placeholder="Explication simple de votre patrouille, sans informations superflues."></textarea>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="grave-toggle">
+            <input type="checkbox" id="f-grave" onchange="toggleGraveDetails()">
+            <span>Evenement grave</span>
+          </label>
+          <div class="grave-event-panel hidden" id="grave-panel">
+            <label class="form-label" for="f-grave-details">Detail de l'evenement grave</label>
+            <textarea class="form-textarea" id="f-grave-details" placeholder="Detaillez precisement les faits graves observes pendant la patrouille."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <div class="result-divider"></div>
+      <button class="btn-generate" onclick="generatePatrolReport()">&#9878; G&eacute;n&eacute;rer le Rapport de Patrouille</button>
+      <div class="output-box" id="output-box"></div>
+      <div class="output-actions" id="output-actions">
+        <button class="btn-copy" id="btn-copy" onclick="copyCurrentReport()">&#128203; Copier pour Discord</button>
+        <button class="btn-reset-form" onclick="resetForm()">&#8635; Nouveau Rapport</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getToken() { return sessionStorage.getItem('policeToken'); }
+function getCachedUser() { try { return JSON.parse(sessionStorage.getItem('policeUser')); } catch(e) { return null; } }
+
+var currentUser = null;
+var currentGeneratedText = '';
+var _pendingAvatar = null;
+
+async function checkAuth() {
+  if (!sessionStorage.getItem('policeToken')) {
+    window.location.href = 'login.html?redirect=Rapport_Patrouille.html';
+    return null;
+  }
+  var token = getToken();
+  if (!token) { window.location.href = 'login.html?redirect=Rapport_Patrouille.html'; return null; }
+  try {
+    var r = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) { sessionStorage.clear(); window.location.href = 'login.html?redirect=Rapport_Patrouille.html'; return null; }
+    var user = await r.json();
+    sessionStorage.setItem('policeUser', JSON.stringify(user));
+    return user;
+  } catch(e) { return getCachedUser(); }
+}
+
+function setupUserBar(user) {
+  if (user.permission === 'GUEST') {
+    var badge = document.getElementById('user-badge');
+    badge.textContent = '\u25c8 Visiteur';
+    badge.classList.add('guest');
+    return;
+  }
+  document.getElementById('user-badge').textContent = '\u25c6 ' + user.pseudo;
+  if (user.permission === 'ADMIN') {
+    document.getElementById('btn-admin-panel').style.display = '';
+  }
+}
+
+function openAdminShortcut() {
+  window.location.href = 'Backoffice_Admin.html';
+}
+
+function canCreatePatrolReports() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canCreatePatrolReport);
+}
+
+function canViewPatrolReportPage() {
+  return !!(currentUser && currentUser.capabilities && currentUser.capabilities.canViewPatrolReportPage);
+}
+
+function setPatrolReadOnlyMode(enabled) {
+  document.querySelectorAll('#casier-form input, #casier-form textarea, #casier-form button').forEach(function(node) {
+    node.disabled = !!enabled;
+  });
+  var copyButton = document.getElementById('btn-copy');
+  if (copyButton) copyButton.style.display = enabled ? 'none' : '';
+
+  var existing = document.getElementById('patrol-readonly-note');
+  if (existing) existing.remove();
+
+  if (enabled) {
+    var note = document.createElement('div');
+    note.id = 'patrol-readonly-note';
+    note.style.cssText = 'margin:0 0 18px;padding:12px 16px;border:1px solid rgba(138,96,16,0.35);background:rgba(255,248,220,0.72);color:#5a3a10;font-family:Georgia,serif;font-style:italic;';
+    note.textContent = 'Acces Justice : consultation uniquement sur ce rapport.';
+    var form = document.getElementById('casier-form');
+    if (form && form.parentNode) form.parentNode.insertBefore(note, form);
+  }
+}
+
+async function doLogout() {
+  var token = getToken();
+  if (token) { try { await fetch('/auth/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } }); } catch(e) {} }
+  sessionStorage.clear();
+  window.location.href = 'login.html';
+}
+
+function toggleBurgerMenu() { document.getElementById('user-bar-inner').classList.toggle('open'); }
+function closeBurgerMenu() { document.getElementById('user-bar-inner').classList.remove('open'); }
+function togglePresenceMobile() {
+  if (window.innerWidth <= 700) {
+    document.getElementById('presence-sidebar').classList.toggle('mobile-open');
+  }
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+function toggleProfilePopup() {
+  var popup = document.getElementById('profile-popup');
+  var opening = popup.style.display !== 'block';
+  popup.style.display = opening ? 'block' : 'none';
+  if (opening && window.ServiceWidget) {
+    window.ServiceWidget.refresh(currentUser);
+  }
+}
+
+function resizeImageToBase64(file, maxSize, quality, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleAvatarSelect(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  resizeImageToBase64(file, 256, 0.82, function(b64) {
+    _pendingAvatar = b64;
+    document.getElementById('profile-avatar-preview').innerHTML = '<img src="' + b64 + '">';
+    document.getElementById('profile-save-btn').disabled = false;
+  });
+}
+
+async function saveAvatar() {
+  if (!_pendingAvatar) return;
+  var status = document.getElementById('profile-save-status');
+  status.textContent = 'Sauvegarde...';
+  status.style.color = '';
+  try {
+    var r = await fetch('/auth/profile/avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ avatar: _pendingAvatar })
+    });
+    if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'Erreur'); }
+    _pendingAvatar = null;
+    status.style.color = '#2c3e1a';
+    status.textContent = '\u2756 Sauvegarde !';
+    document.getElementById('profile-save-btn').disabled = true;
+  } catch(e) {
+    status.style.color = '#8b1a1a';
+    status.textContent = e.message || 'Echec de sauvegarde.';
+  }
+}
+
+async function loadAvatar() {
+  if (!currentUser || !currentUser.pseudo) return;
+  try {
+    var r = await fetch('/auth/profile/avatar/' + encodeURIComponent(currentUser.pseudo), { headers: { 'Authorization': 'Bearer ' + getToken() } });
+    if (r.ok) {
+      var data = await r.json();
+      if (data.avatar) {
+        document.getElementById('profile-avatar-preview').innerHTML = '<img src="' + data.avatar + '">';
+      }
+    }
+  } catch(e) {}
+}
+
+function currentPresenceStatus() {
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (document.hidden || !document.hasFocus()) return 'away';
+  if (isMobile) return 'mobile';
+  return 'active';
+}
+
+async function pingPresence() {
+  var token = getToken();
+  if (!token) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ status: currentPresenceStatus() })
+    });
+    if (response.ok) {
+      renderPresence(await response.json());
+    }
+  } catch(e) {}
+}
+
+function renderPresence(data) {
+  if (window.PresenceUI) window.PresenceUI.renderPresence('presence-list', data);
+}
+
+function toggleGraveDetails() {
+  var checked = document.getElementById('f-grave').checked;
+  document.getElementById('grave-panel').classList.toggle('hidden', !checked);
+  if (!checked) {
+    document.getElementById('f-grave-details').value = '';
+  }
+}
+
+function formatTodayFrench() {
+  var now = new Date();
+  return String(now.getDate()).padStart(2, '0') + '/' +
+    String(now.getMonth() + 1).padStart(2, '0') + '/' +
+    now.getFullYear();
+}
+
+async function prefillAgentInfo() {
+  if (!currentUser) return;
+  document.getElementById('f-date').value = formatTodayFrench();
+  var pseudoHRP = currentUser.linkedMembre || currentUser.pseudo;
+  try {
+    var mr = await fetch('/api/v1/membres/' + encodeURIComponent(pseudoHRP));
+    if (mr.ok) {
+      var membre = await mr.json();
+      if (membre.nomRP) {
+        var parts = membre.nomRP.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          document.getElementById('f-agent-prenom').value = parts[0];
+          document.getElementById('f-agent-nom').value = parts.slice(1).join(' ');
+        } else {
+          document.getElementById('f-agent-nom').value = membre.nomRP;
+        }
+      }
+      document.getElementById('f-agent-grade').value = membre.rang || membre.grade || '';
+      return;
+    }
+  } catch(e) {}
+
+  document.getElementById('f-agent-nom').value = currentUser.pseudo || '';
+  document.getElementById('f-agent-prenom').value = '';
+  document.getElementById('f-agent-grade').value = '';
+}
+
+function formatPatrolOutput(record) {
+  var lines = [];
+  lines.push('> # *Rapport du ' + (record.date || 'xx/xx/xx') + '* #');
+  lines.push('> ');
+  lines.push('> ***__Agent :__***');
+  lines.push('> *' + ([record.agentPrenom, record.agentNom].filter(Boolean).join(' ').trim() || 'Sentinel inconnu') + ' - ' + (record.agentGrade || 'Grade inconnu') + '*');
+  lines.push('> ');
+  lines.push('> ***__Rapport :__***');
+  lines.push('> *' + (record.rapport || 'Explication simple de votre patrouille, sans informations superflues.') + '*');
+  if (record.graveEvent && record.graveEventDetails) {
+    lines.push('> ');
+    lines.push('> ***__Evenement Grave :__***');
+    lines.push('> *' + record.graveEventDetails + '*');
+  }
+  return lines.join('\n');
+}
+
+async function savePatrolToServer(payload) {
+  try {
+    var token = getToken();
+    if (!token) return null;
+    var res = await fetch('/api/v1/casier/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      var err = await res.json().catch(function() { return {}; });
+      throw new Error(err.error || 'Sauvegarde impossible');
+    }
+    return await res.json();
+  } catch(e) {
+    alert(e.message || 'Impossible de sauvegarder le rapport de patrouille.');
+    return null;
+  }
+}
+
+async function generatePatrolReport() {
+  if (!canCreatePatrolReports()) {
+    alert('Acces lecture seule : la Justice de Konoha ne peut pas generer de rapport de patrouille.');
+    return;
+  }
+  var payload = {
+    reportType: 'patrol',
+    agentNom: (document.getElementById('f-agent-nom').value || '').trim(),
+    agentPrenom: (document.getElementById('f-agent-prenom').value || '').trim(),
+    agentGrade: (document.getElementById('f-agent-grade').value || '').trim(),
+    date: (document.getElementById('f-date').value || '').trim(),
+    rapport: (document.getElementById('f-rapport').value || '').trim(),
+    graveEvent: document.getElementById('f-grave').checked,
+    graveEventDetails: (document.getElementById('f-grave-details').value || '').trim(),
+    delits: []
+  };
+
+  if (!payload.rapport) {
+    alert('Veuillez rediger le rapport de patrouille.');
+    return;
+  }
+  if (payload.graveEvent && !payload.graveEventDetails) {
+    alert('Veuillez detailler l evenement grave.');
+    return;
+  }
+
+  var saveResult = await savePatrolToServer(payload);
+  if (!saveResult || !saveResult.success || !saveResult.record) return;
+
+  currentGeneratedText = formatPatrolOutput(saveResult.record);
+  var box = document.getElementById('output-box');
+  box.textContent = currentGeneratedText;
+  box.classList.add('visible');
+  document.getElementById('output-actions').classList.add('visible');
+}
+
+async function copyCurrentReport() {
+  if (!canCreatePatrolReports()) {
+    alert('Acces lecture seule : copie reservee aux policiers.');
+    return;
+  }
+  if (!currentGeneratedText) return;
+  try {
+    await navigator.clipboard.writeText(currentGeneratedText);
+    var btn = document.getElementById('btn-copy');
+    btn.textContent = 'Copie !';
+    btn.classList.add('copied');
+    setTimeout(function() {
+  btn.textContent = 'Copier pour Discord';
+      btn.classList.remove('copied');
+    }, 1400);
+  } catch(e) {
+    alert('Impossible de copier automatiquement. Selectionnez le texte manuellement.');
+  }
+}
+
+function resetForm() {
+  currentGeneratedText = '';
+  document.getElementById('f-rapport').value = '';
+  document.getElementById('f-grave').checked = false;
+  document.getElementById('f-grave-details').value = '';
+  document.getElementById('output-box').classList.remove('visible');
+  document.getElementById('output-box').textContent = '';
+  document.getElementById('output-actions').classList.remove('visible');
+  toggleGraveDetails();
+  prefillAgentInfo();
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) generatePatrolReport();
+});
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser || !canViewPatrolReportPage()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  setupUserBar(currentUser);
+  setPatrolReadOnlyMode(!canCreatePatrolReports());
+  await prefillAgentInfo();
+  await loadAvatar();
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+</script>
+</body>
+</html>

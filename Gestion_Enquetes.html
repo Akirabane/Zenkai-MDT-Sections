@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enquêtes - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/gestion-enquetes.css?v=20260417e">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    if (!sessionStorage.getItem('policeToken')) {
+      window.location.replace('login.html?redirect=Gestion_Enquetes.html');
+    }
+  })();
+</script>
+</head>
+<body class="page-investigations">
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour a l'accueil</span></a>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">Deconnexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(window.currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detail-overlay" onclick="if(event.target === this) closeDetailModal()">
+  <div class="detail-modal" id="detail-modal">
+    <div class="detail-header">
+      <div>
+        <div class="detail-kicker">&#9674; Dossier d'enquete</div>
+        <h2 class="detail-title" id="detail-title">Enquete</h2>
+      </div>
+      <button class="modal-close" type="button" onclick="closeDetailModal()">&times;</button>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-top-grid">
+        <div class="detail-field">
+          <label>Statut</label>
+          <select id="detail-status"></select>
+        </div>
+        <div class="detail-field">
+          <label>Agents attitres</label>
+          <div class="agent-picker">
+            <div class="agent-picker-row">
+              <select id="detail-assigned-source"></select>
+              <button class="btn-secondary btn-agent-add" type="button" onclick="addAssignedAgent('detail')">Ajouter</button>
+            </div>
+            <div class="agent-chip-list" id="detail-assigned-list"></div>
+          </div>
+        </div>
+        <div class="detail-field detail-field-wide">
+          <label>Resume</label>
+          <textarea id="detail-summary" class="detail-textarea detail-textarea-short"></textarea>
+        </div>
+      </div>
+
+      <div class="detail-meta-bar" id="detail-meta-bar"></div>
+
+      <div class="detail-columns">
+      <section class="detail-section">
+        <div class="section-headline">
+          <h3>Suivi et temoignages</h3>
+          <p>Chaque entree vient enrichir le fil chronologique de l'enquete.</p>
+        </div>
+        <div class="entry-form" id="entry-form">
+          <select id="entry-kind"></select>
+          <textarea id="entry-content" class="detail-textarea" placeholder="Ajouter un suivi, un temoignage, une note de terrain..."></textarea>
+          <button class="btn-primary" type="button" onclick="addInvestigationEntry()">Ajouter au suivi</button>
+        </div>
+        <div class="entry-list" id="entry-list"></div>
+      </section>
+
+      <section class="detail-section">
+        <div class="section-headline">
+          <h3>Liens metier</h3>
+          <p>Lier des dossiers, plaintes et rapports directement a l'enquete.</p>
+        </div>
+        <div class="link-form" id="link-form">
+          <select id="link-type" onchange="refreshLinkTargetOptions()"></select>
+          <select id="link-target"></select>
+          <button class="btn-primary" type="button" onclick="addInvestigationLink()">Lier a l'enquete</button>
+        </div>
+        <div class="link-list" id="link-list"></div>
+      </section>
+      </div>
+
+      <section class="detail-section detail-section-full">
+      <div class="section-headline">
+        <h3>Photos et pieces jointes</h3>
+        <p>Upload direct sur le serveur pour garder les preuves dans le MDT.</p>
+      </div>
+      <div class="attachment-form" id="attachment-form">
+        <input type="file" id="attachment-file" class="filter-input" accept="image/png,image/jpeg,image/webp">
+        <input type="text" id="attachment-caption" class="filter-input" placeholder="Legende optionnelle">
+        <button class="btn-primary" type="button" onclick="uploadAttachment()">Ajouter la photo</button>
+      </div>
+      <div class="attachment-grid" id="attachment-grid"></div>
+      </section>
+    </div>
+
+    <div class="modal-actions" id="detail-actions">
+      <button class="btn-secondary" type="button" onclick="closeDetailModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+  <div class="frame-inner">
+    <div class="watermark">ENQUETES</div>
+    <div class="doc-header">
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Enquetes</h1>
+      <div class="sub-title">Pilotage, suivi, pieces jointes et rapprochements metier</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="summary-label">Enquetes visibles</div>
+        <div class="summary-value" id="summary-total">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">En cours</div>
+        <div class="summary-value" id="summary-open">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Bouclees</div>
+        <div class="summary-value" id="summary-closed">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Suivis ajoutes</div>
+        <div class="summary-value" id="summary-updates">0</div>
+      </div>
+    </div>
+
+    <div class="create-shell" id="create-shell" style="display:none">
+      <div class="shell-header shell-header-create">
+        <div class="shell-copy">
+          <div class="shell-kicker">&#9674; Ouverture de dossier</div>
+          <h2>Nouvelle enquete</h2>
+          <p>Creer un dossier d'investigation, l'assigner et poser un cadre de suivi des le depart.</p>
+        </div>
+        <div class="shell-aside">
+          <div class="aside-pill">Inspecteur +</div>
+          <div class="aside-text">Chaque enquete creee ici devient un dossier centralisable avec suivi, liens metier et pieces jointes.</div>
+        </div>
+      </div>
+      <div class="filter-grid">
+        <div class="filter-group grow">
+          <label for="create-title">Nom de l'enquete</label>
+          <input class="filter-input" id="create-title" type="text" placeholder="Ex: Enquete sur les degradations du Quartier Nord">
+        </div>
+        <div class="filter-group">
+          <label for="create-status">Statut</label>
+          <select class="filter-select" id="create-status"></select>
+        </div>
+        <div class="filter-group">
+          <label for="create-assigned-source">Agents attitres</label>
+          <div class="agent-picker">
+            <div class="agent-picker-row">
+              <select class="filter-select" id="create-assigned-source"></select>
+              <button class="btn-secondary btn-agent-add" type="button" onclick="addAssignedAgent('create')">Ajouter</button>
+            </div>
+            <div class="agent-chip-list" id="create-assigned-list"></div>
+          </div>
+        </div>
+        <div class="filter-group full">
+          <label for="create-summary">Resume initial</label>
+          <textarea class="detail-textarea detail-textarea-short" id="create-summary" placeholder="Contexte initial, angle de travail, point de depart des recherches..."></textarea>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-secondary" type="button" onclick="resetCreateForm()">Reinitialiser</button>
+        <button class="btn-primary" type="button" onclick="createInvestigation()">Creer l'enquete</button>
+      </div>
+    </div>
+
+    <div class="filter-shell">
+      <div class="shell-header shell-header-filters">
+        <div class="shell-copy">
+          <div class="shell-kicker">&#9674; Recherche et tri</div>
+          <h2>Retrouver une enquete</h2>
+          <p>Filtre par titre, statut, auteur ou agent attitre pour rouvrir rapidement un dossier.</p>
+        </div>
+      </div>
+      <div class="filter-grid">
+        <div class="filter-group grow">
+          <label for="filter-q">Recherche</label>
+          <input class="filter-input" id="filter-q" type="text" placeholder="titre, statut, agent, auteur..." oninput="debouncedLoadInvestigations()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-status">Statut</label>
+          <select class="filter-select" id="filter-status" onchange="loadInvestigations()"></select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-assigned">Agent attitre</label>
+          <input class="filter-input" id="filter-assigned" type="text" placeholder="soullera" oninput="debouncedLoadInvestigations()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-author">Auteur</label>
+          <input class="filter-input" id="filter-author" type="text" placeholder="pseudo" oninput="debouncedLoadInvestigations()">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-secondary" type="button" onclick="resetFilters()">Reinitialiser</button>
+        <button class="btn-primary" type="button" onclick="loadInvestigations()">Actualiser</button>
+      </div>
+    </div>
+
+    <div class="results-head">
+      <div>
+        <div class="shell-kicker">&#9674; Dossiers visibles</div>
+        <h2 class="results-title">Tableau des enquetes</h2>
+      </div>
+      <div class="results-copy">Clique sur une carte pour ouvrir le dossier complet, ajouter un suivi ou rattacher des pieces.</div>
+    </div>
+
+    <div class="investigation-grid" id="investigation-grid">
+      <div class="state-card">Chargement des enquetes...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentUser = null;
+var currentCapabilities = null;
+var meta = null;
+var investigations = [];
+var debounceHandle = null;
+var activeInvestigationId = null;
+var createAssignedAgents = [];
+var detailAssignedAgents = [];
+var attachmentPreviewUrls = [];
+
+function getToken() { return window.UserShell.getToken(); }
+function toggleBurgerMenu() { window.UserShell.toggleBurgerMenu(); }
+function closeBurgerMenu() { window.UserShell.closeBurgerMenu(); }
+function togglePresenceMobile() { window.UserShell.togglePresenceMobile('presence-sidebar'); }
+function openAdminShortcut() { window.UserShell.openAdminShortcut('Backoffice_Admin.html'); }
+async function doLogout() { await window.UserShell.logout({ redirectTo: 'login.html' }); }
+
+async function checkAuth() {
+  return window.UserShell.fetchCurrentUser({ redirectTo: 'login.html?redirect=Gestion_Enquetes.html' });
+}
+
+async function pingPresence() {
+  if (!getToken()) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ status: window.UserShell.currentPresenceStatus() })
+    });
+    if (response.ok) {
+      window.UserShell.renderPresence('presence-list', await response.json());
+    }
+  } catch (error) {}
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatDateTime(value) {
+  var date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Date inconnue';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+    date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function setSelectOptions(id, items, placeholder) {
+  var html = placeholder ? '<option value="">' + escapeHtml(placeholder) + '</option>' : '';
+  html += (items || []).map(function(item) {
+    return '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>';
+  }).join('');
+  document.getElementById(id).innerHTML = html;
+}
+
+function uniqueAssignedAgents(values) {
+  var seen = {};
+  return (Array.isArray(values) ? values : [values]).reduce(function(items, value) {
+    var trimmed = String(value || '').trim();
+    var key = trimmed.toLowerCase();
+    if (!trimmed || seen[key]) return items;
+    seen[key] = true;
+    items.push(trimmed);
+    return items;
+  }, []);
+}
+
+function pickDefaultAssignedAgents(preferredValues) {
+  var options = (meta && meta.assignableAgents) || [];
+  if (!options.length) return [];
+  var preferred = uniqueAssignedAgents(preferredValues || []);
+  var matching = preferred.filter(function(item) {
+    return options.indexOf(item) >= 0;
+  });
+  return matching.length ? matching : [];
+}
+
+function getAssignedAgentState(mode) {
+  return mode === 'detail' ? detailAssignedAgents : createAssignedAgents;
+}
+
+function setAssignedAgentState(mode, values) {
+  if (mode === 'detail') {
+    detailAssignedAgents = uniqueAssignedAgents(values);
+  } else {
+    createAssignedAgents = uniqueAssignedAgents(values);
+  }
+  syncAssignedAgentPicker(mode);
+}
+
+function syncAssignedAgentPicker(mode) {
+  var options = (meta && meta.assignableAgents) || [];
+  var selected = getAssignedAgentState(mode);
+  var sourceId = mode === 'detail' ? 'detail-assigned-source' : 'create-assigned-source';
+  var listId = mode === 'detail' ? 'detail-assigned-list' : 'create-assigned-list';
+  var source = document.getElementById(sourceId);
+  var list = document.getElementById(listId);
+  var canEdit = mode === 'detail'
+    ? !!(currentCapabilities && currentCapabilities.canManageInvestigations)
+    : !!(currentCapabilities && currentCapabilities.canCreateInvestigations);
+  if (!source || !list) return;
+
+  var available = options.filter(function(item) {
+    return selected.indexOf(item) === -1;
+  });
+  source.innerHTML = '<option value="">Selectionner un agent</option>' + available.map(function(item) {
+    return '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>';
+  }).join('');
+  source.disabled = !canEdit;
+
+  var addButton = source.parentNode ? source.parentNode.querySelector('.btn-agent-add') : null;
+  if (addButton) {
+    addButton.disabled = !canEdit;
+  }
+
+  list.innerHTML = selected.length ? selected.map(function(item) {
+    return '<span class="agent-chip">' + escapeHtml(item) +
+      (canEdit ? '<button type="button" class="agent-chip-remove" onclick="removeAssignedAgent(\'' + mode + '\', \'' + encodeURIComponent(item) + '\')" aria-label="Retirer ' + escapeHtml(item) + '">&times;</button>' : '') +
+      '</span>';
+  }).join('') : '<span class="agent-chip agent-chip-empty">Aucun agent ajoute</span>';
+}
+
+function addAssignedAgent(mode) {
+  var sourceId = mode === 'detail' ? 'detail-assigned-source' : 'create-assigned-source';
+  var source = document.getElementById(sourceId);
+  if (!source) return;
+  var value = source.value.trim();
+  if (!value) return;
+  var selected = getAssignedAgentState(mode).slice();
+  selected.push(value);
+  setAssignedAgentState(mode, selected);
+}
+
+function removeAssignedAgent(mode, value) {
+  var key = decodeURIComponent(String(value || '')).trim().toLowerCase();
+  setAssignedAgentState(mode, getAssignedAgentState(mode).filter(function(item) {
+    return item.toLowerCase() !== key;
+  }));
+}
+
+function formatAssignedAgents(values) {
+  var items = uniqueAssignedAgents(values || []);
+  if (!items.length) return 'Aucun';
+  if (items.length <= 2) return items.join(', ');
+  return items.slice(0, 2).join(', ') + ' +' + (items.length - 2);
+}
+
+function fillMeta(payload) {
+  meta = payload;
+  setSelectOptions('create-status', meta.statuses || [], '');
+  setSelectOptions('filter-status', meta.statuses || [], 'Tous');
+  setSelectOptions('detail-status', meta.statuses || [], '');
+  setSelectOptions('entry-kind', meta.updateKinds || [], '');
+      document.getElementById('link-type').innerHTML = [
+        '<option value="dossier">Dossier / casier</option>',
+        '<option value="complaint">Plainte</option>',
+        '<option value="patrol_report">Rapport de patrouille</option>'
+      ].join('');
+  document.getElementById('create-status').value = 'En cours';
+  setAssignedAgentState('create', []);
+  setAssignedAgentState('detail', []);
+  refreshLinkTargetOptions();
+}
+
+function buildQuery() {
+  var params = new URLSearchParams();
+  var q = document.getElementById('filter-q').value.trim();
+  var status = document.getElementById('filter-status').value.trim();
+  var assigned = document.getElementById('filter-assigned').value.trim();
+  var author = document.getElementById('filter-author').value.trim();
+  if (q) params.set('q', q);
+  if (status) params.set('status', status);
+  if (assigned) params.set('assignedAgent', assigned);
+  if (author) params.set('author', author);
+  params.set('limit', '200');
+  return params.toString();
+}
+
+function renderSummary() {
+  document.getElementById('summary-total').textContent = investigations.length;
+  document.getElementById('summary-open').textContent = investigations.filter(function(item) { return item.status === 'En cours'; }).length;
+  document.getElementById('summary-closed').textContent = investigations.filter(function(item) { return item.status === 'Bouclee'; }).length;
+  document.getElementById('summary-updates').textContent = investigations.reduce(function(total, item) {
+    return total + Number(item.updateCount || 0);
+  }, 0);
+}
+
+function normalizeStatusClass(status) {
+  return String(status || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'default';
+}
+
+function renderInvestigations() {
+  renderSummary();
+  var container = document.getElementById('investigation-grid');
+  if (!investigations.length) {
+    container.innerHTML = '<div class="state-card">Aucune enquete ne correspond aux filtres actuels.</div>';
+    return;
+  }
+
+    container.innerHTML = investigations.map(function(item) {
+      var statusClass = normalizeStatusClass(item.status);
+      return [
+      '<article class="investigation-card" data-status="' + escapeHtml(statusClass) + '" onclick="openDetailModal(\'' + escapeHtml(item.id) + '\')">',
+          '<div class="investigation-topline"><div class="investigation-status status-' + escapeHtml(statusClass) + '">' + escapeHtml(item.status) + '</div><div class="investigation-updated">MAJ ' + escapeHtml(formatDateTime(item.updatedAt || item.createdAt)) + '</div></div>',
+        '<h2 class="investigation-title">' + escapeHtml(item.title) + '</h2>',
+        '<div class="investigation-summary">' + escapeHtml(item.summary || 'Aucun resume initial renseigne.') + '</div>',
+        '<div class="investigation-meta"><div class="meta-block"><span class="meta-label">Agents attitres</span><strong>' + escapeHtml(formatAssignedAgents(item.assignedAgents || [item.assignedAgent])) + '</strong></div><div class="meta-block"><span class="meta-label">Auteur</span><strong>' + escapeHtml(item.author || '-') + '</strong></div></div>',
+        '<div class="investigation-metrics"><span class="metric-pill">' + escapeHtml(String(item.updateCount || 0)) + ' suivi(s)</span><span class="metric-pill">' + escapeHtml(String(item.linkCount || 0)) + ' lien(s)</span><span class="metric-pill">' + escapeHtml(String(item.attachmentCount || 0)) + ' photo(s)</span></div>',
+        '<div class="investigation-footer"><span>Reference : ' + escapeHtml(item.id) + '</span><span class="footer-cta">Ouvrir le dossier</span></div>',
+      '</article>'
+    ].join('');
+  }).join('');
+}
+
+async function loadInvestigations() {
+  document.getElementById('investigation-grid').innerHTML = '<div class="state-card">Chargement des enquetes...</div>';
+  try {
+    var response = await fetch('/api/v1/investigations?' + buildQuery(), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Chargement impossible');
+    investigations = data.items || [];
+    renderInvestigations();
+    if (activeInvestigationId) {
+      var refreshed = investigations.find(function(item) { return item.id === activeInvestigationId; });
+      if (refreshed) {
+        await openDetailModal(activeInvestigationId);
+      }
+    }
+  } catch (error) {
+    document.getElementById('investigation-grid').innerHTML = '<div class="state-card">Impossible de charger les enquetes.</div>';
+  }
+}
+
+function debouncedLoadInvestigations() {
+  clearTimeout(debounceHandle);
+  debounceHandle = setTimeout(loadInvestigations, 220);
+}
+
+function resetCreateForm() {
+  document.getElementById('create-title').value = '';
+  document.getElementById('create-summary').value = '';
+  document.getElementById('create-status').value = 'En cours';
+  setAssignedAgentState('create', []);
+}
+
+function resetFilters() {
+  document.getElementById('filter-q').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-assigned').value = '';
+  document.getElementById('filter-author').value = '';
+  loadInvestigations();
+}
+
+async function createInvestigation() {
+  var payload = {
+    title: document.getElementById('create-title').value.trim(),
+    status: document.getElementById('create-status').value.trim(),
+    assignedAgents: createAssignedAgents.slice(),
+    summary: document.getElementById('create-summary').value.trim()
+  };
+  if (!payload.title) {
+    alert('Merci de renseigner le nom de l enquete.');
+    return;
+  }
+  try {
+    var response = await fetch('/api/v1/investigations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify(payload)
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Creation impossible');
+    resetCreateForm();
+    await loadInvestigations();
+    await openDetailModal(data.investigation.id);
+  } catch (error) {
+    alert(error.message || 'Impossible de creer l enquete.');
+  }
+}
+
+function chooseDriTransferType() {
+  var answer = window.prompt('Transferer vers la DRI : tape "interne" ou "externe".', 'interne');
+  if (answer == null) return '';
+  var normalized = String(answer || '').trim().toLowerCase();
+  if (normalized === 'interne' || normalized === 'internal') return 'internal';
+  if (normalized === 'externe' || normalized === 'external') return 'external';
+  alert('Choix invalide. Tape uniquement "interne" ou "externe".');
+  return '';
+}
+
+function closeDetailModal() {
+  revokeAttachmentPreviewUrls();
+  activeInvestigationId = null;
+  document.getElementById('detail-overlay').classList.remove('active');
+}
+
+function buildMetaBar(item) {
+  return [
+    '<span class="meta-chip meta-chip-status meta-chip-' + escapeHtml(normalizeStatusClass(item.status || 'En cours')) + '"><strong>Statut :</strong> ' + escapeHtml(item.status || 'En cours') + '</span>',
+    '<span><strong>Agents :</strong> ' + escapeHtml(formatAssignedAgents(item.assignedAgents || [item.assignedAgent])) + '</span>',
+    '<span><strong>Reference :</strong> ' + escapeHtml(item.id) + '</span>',
+    '<span><strong>Ouverte :</strong> ' + escapeHtml(formatDateTime(item.createdAt)) + '</span>',
+    '<span><strong>Mise a jour :</strong> ' + escapeHtml(formatDateTime(item.updatedAt)) + '</span>',
+    item.closedAt ? '<span><strong>Bouclee :</strong> ' + escapeHtml(formatDateTime(item.closedAt)) + '</span>' : ''
+  ].join('');
+}
+
+function renderEntries(item) {
+  var list = item.updates || [];
+  document.getElementById('entry-list').innerHTML = list.length ? list.map(function(entry) {
+    return '<article class="timeline-entry"><div class="timeline-head"><span class="timeline-kind">' + escapeHtml(entry.kind) + '</span><span class="timeline-meta">' + escapeHtml(entry.author || '-') + ' • ' + escapeHtml(formatDateTime(entry.createdAt)) + '</span></div><div class="timeline-content">' + escapeHtml(entry.content || '') + '</div></article>';
+  }).join('') : '<div class="state-card compact">Aucun suivi ajoute pour le moment.</div>';
+}
+
+function renderLinks(item) {
+  var list = item.links || [];
+  document.getElementById('link-list').innerHTML = list.length ? list.map(function(link) {
+    return '<div class="linked-pill"><div class="linked-copy"><span class="linked-kind">' + escapeHtml(link.linkLabel) + '</span><strong class="linked-title">' + escapeHtml(link.linkedLabel || link.linkedId) + '</strong><span class="linked-ref">Reference : ' + escapeHtml(link.linkedId || '-') + '</span></div>' +
+      (currentCapabilities && currentCapabilities.canManageInvestigations ? '<button class="pill-delete" type="button" onclick="removeLink(\'' + escapeHtml(link.id) + '\')">&times;</button>' : '') +
+      '</div>';
+  }).join('') : '<div class="state-card compact">Aucun lien metier sur cette enquete.</div>';
+}
+
+function renderAttachments(item) {
+  revokeAttachmentPreviewUrls();
+  var list = item.attachments || [];
+  document.getElementById('attachment-grid').innerHTML = list.length ? list.map(function(file) {
+    return '<figure class="attachment-card"><img src="" data-attachment-url="' + escapeHtml(file.url) + '" alt="' + escapeHtml(file.filename) + '"><figcaption><strong>' + escapeHtml(file.filename) + '</strong>' +
+      (file.caption ? '<span>' + escapeHtml(file.caption) + '</span>' : '') +
+      '<span>' + escapeHtml(formatDateTime(file.uploadedAt)) + '</span>' +
+      (currentCapabilities && currentCapabilities.canManageInvestigations ? '<button class="btn-danger small" type="button" onclick="removeAttachment(\'' + escapeHtml(file.id) + '\')">Supprimer</button>' : '') +
+      '</figcaption></figure>';
+  }).join('') : '<div class="state-card compact">Aucune image jointe pour le moment.</div>';
+  hydrateAttachmentPreviews();
+}
+
+function revokeAttachmentPreviewUrls() {
+  attachmentPreviewUrls.forEach(function(url) {
+    try { URL.revokeObjectURL(url); } catch (error) {}
+  });
+  attachmentPreviewUrls = [];
+}
+
+async function hydrateAttachmentPreviews() {
+  var images = Array.prototype.slice.call(document.querySelectorAll('#attachment-grid img[data-attachment-url]'));
+  await Promise.all(images.map(async function(image) {
+    var url = image.getAttribute('data-attachment-url');
+    if (!url) return;
+    try {
+      var response = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
+      if (!response.ok) throw new Error('Image indisponible');
+      var blob = await response.blob();
+      var objectUrl = URL.createObjectURL(blob);
+      attachmentPreviewUrls.push(objectUrl);
+      image.src = objectUrl;
+    } catch (error) {
+      image.removeAttribute('data-attachment-url');
+      image.alt = 'Image indisponible';
+    }
+  }));
+}
+
+async function openDetailModal(id) {
+  activeInvestigationId = id;
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(id), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Chargement impossible');
+    var item = data.investigation;
+    document.getElementById('detail-title').textContent = item.title || 'Enquete';
+    document.getElementById('detail-status').value = item.status || 'En cours';
+    setAssignedAgentState('detail', pickDefaultAssignedAgents(item.assignedAgents || [item.assignedAgent]));
+    document.getElementById('detail-summary').value = item.summary || '';
+    document.getElementById('detail-modal').setAttribute('data-status', normalizeStatusClass(item.status || 'En cours'));
+    document.getElementById('detail-meta-bar').innerHTML = buildMetaBar(item);
+    var actions = ['<button class="btn-secondary" type="button" onclick="closeDetailModal()">Fermer</button>'];
+    if (currentCapabilities && currentCapabilities.canManageInvestigations) {
+      actions.push('<button class="btn-secondary" type="button" onclick="saveInvestigationMeta()">Sauvegarder les informations</button>');
+    }
+    if (currentCapabilities && currentCapabilities.canTransferInvestigationsAcrossDivisions) {
+      actions.push('<button class="btn-primary" type="button" onclick="transferInvestigationToDRI()">Transferer vers la DRI</button>');
+    }
+    if (currentCapabilities && currentCapabilities.canDeleteInvestigations) {
+      actions.push('<button class="btn-danger" type="button" onclick="deleteInvestigation()">Supprimer l enquete</button>');
+    }
+    document.getElementById('detail-actions').innerHTML = actions.join('');
+    renderEntries(item);
+    renderLinks(item);
+    renderAttachments(item);
+    document.getElementById('entry-form').style.display = currentCapabilities && currentCapabilities.canManageInvestigations ? '' : 'none';
+    document.getElementById('link-form').style.display = currentCapabilities && currentCapabilities.canManageInvestigations ? '' : 'none';
+    document.getElementById('attachment-form').style.display = currentCapabilities && currentCapabilities.canManageInvestigations ? '' : 'none';
+    document.getElementById('detail-status').disabled = !(currentCapabilities && currentCapabilities.canManageInvestigations);
+    document.getElementById('detail-assigned-source').disabled = !(currentCapabilities && currentCapabilities.canManageInvestigations);
+    document.getElementById('detail-summary').disabled = !(currentCapabilities && currentCapabilities.canManageInvestigations);
+    document.getElementById('detail-overlay').classList.add('active');
+  } catch (error) {
+    alert(error.message || 'Impossible de charger l enquete.');
+  }
+}
+
+async function saveInvestigationMeta() {
+  if (!activeInvestigationId) return;
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({
+        status: document.getElementById('detail-status').value.trim(),
+        assignedAgents: detailAssignedAgents.slice(),
+        summary: document.getElementById('detail-summary').value.trim()
+      })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Sauvegarde impossible');
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible de sauvegarder l enquete.');
+  }
+}
+
+async function addInvestigationEntry() {
+  if (!activeInvestigationId) return;
+  var content = document.getElementById('entry-content').value.trim();
+  if (!content) {
+    alert('Merci de renseigner le contenu du suivi.');
+    return;
+  }
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/updates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({
+        kind: document.getElementById('entry-kind').value,
+        content: content
+      })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Ajout impossible');
+    document.getElementById('entry-content').value = '';
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible d ajouter ce suivi.');
+  }
+}
+
+function refreshLinkTargetOptions() {
+  if (!meta) return;
+  var type = document.getElementById('link-type').value;
+  var source = [];
+  if (type === 'dossier') source = meta.dossierOptions || [];
+  else if (type === 'complaint') source = meta.complaintOptions || [];
+  else if (type === 'patrol_report') source = meta.patrolReportOptions || [];
+  document.getElementById('link-target').innerHTML = '<option value="">Selectionner une reference</option>' + source.map(function(item) {
+    return '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.label) + '</option>';
+  }).join('');
+}
+
+function findSelectedLinkMeta(type, id) {
+  var source = [];
+  if (type === 'dossier') source = meta.dossierOptions || [];
+  else if (type === 'complaint') source = meta.complaintOptions || [];
+  else if (type === 'patrol_report') source = meta.patrolReportOptions || [];
+  return source.find(function(item) { return item.id === id; }) || null;
+}
+
+async function addInvestigationLink() {
+  if (!activeInvestigationId) return;
+  var type = document.getElementById('link-type').value;
+  var id = document.getElementById('link-target').value;
+  var option = findSelectedLinkMeta(type, id);
+  if (!option) {
+    alert('Merci de selectionner un element a lier.');
+    return;
+  }
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/links', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({
+        linkType: type,
+        linkedId: option.id,
+        linkedLabel: option.label,
+        linkedMeta: option.meta || {}
+      })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Lien impossible');
+    document.getElementById('link-target').value = '';
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible de lier cet element.');
+  }
+}
+
+async function removeLink(linkId) {
+  if (!activeInvestigationId) return;
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/links/' + encodeURIComponent(linkId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Suppression impossible');
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible de retirer ce lien.');
+  }
+}
+
+function resizeImageToDataUrl(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      var image = new Image();
+      image.onload = function() {
+        var maxSize = 1600;
+        var width = image.width;
+        var height = image.height;
+        if (width > maxSize || height > maxSize) {
+          var ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, width, height);
+        var mime = file.type === 'image/png' ? 'image/png' : (file.type === 'image/webp' ? 'image/webp' : 'image/jpeg');
+        var quality = mime === 'image/png' ? undefined : 0.86;
+        resolve(canvas.toDataURL(mime, quality));
+      };
+      image.onerror = function() { reject(new Error('Image invalide')); };
+      image.src = reader.result;
+    };
+    reader.onerror = function() { reject(new Error('Lecture du fichier impossible')); };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadAttachment() {
+  if (!activeInvestigationId) return;
+  var fileInput = document.getElementById('attachment-file');
+  var file = fileInput.files && fileInput.files[0];
+  if (!file) {
+    alert('Selectionne une image a joindre.');
+    return;
+  }
+  try {
+    var dataUrl = await resizeImageToDataUrl(file);
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/attachments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({
+        filename: file.name.replace(/\.[^.]+$/, ''),
+        mimeType: file.type === 'image/png' ? 'image/png' : (file.type === 'image/webp' ? 'image/webp' : 'image/jpeg'),
+        dataUrl: dataUrl,
+        caption: document.getElementById('attachment-caption').value.trim()
+      })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Upload impossible');
+    fileInput.value = '';
+    document.getElementById('attachment-caption').value = '';
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible d ajouter cette photo.');
+  }
+}
+
+async function removeAttachment(attachmentId) {
+  if (!activeInvestigationId) return;
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/attachments/' + encodeURIComponent(attachmentId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Suppression impossible');
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible de supprimer cette photo.');
+  }
+}
+
+async function deleteInvestigation() {
+  if (!(currentCapabilities && currentCapabilities.canDeleteInvestigations)) return;
+  if (!activeInvestigationId || !window.confirm('Supprimer definitivement cette enquete ?')) return;
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Suppression impossible');
+    closeDetailModal();
+    await loadInvestigations();
+  } catch (error) {
+    alert(error.message || 'Impossible de supprimer cette enquete.');
+  }
+}
+
+async function transferInvestigationToDRI() {
+  if (!activeInvestigationId) return;
+  var targetType = chooseDriTransferType();
+  if (!targetType) return;
+  if (!window.confirm('Transferer cette enquete vers la DRI ? Elle disparaitra du panel police classique.')) return;
+
+  try {
+    var response = await fetch('/api/v1/investigations/' + encodeURIComponent(activeInvestigationId) + '/transfer-to-dri', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ targetType: targetType })
+    });
+    var data = await response.json();
+    if (!response.ok) throw new Error((data && data.error) || 'Transfert impossible');
+    closeDetailModal();
+    await loadInvestigations();
+    alert('Enquete transferee vers la DRI (' + (targetType === 'external' ? 'externe' : 'interne') + ').');
+  } catch (error) {
+    alert(error.message || 'Impossible de transferer cette enquete vers la DRI.');
+  }
+}
+
+document.addEventListener('click', function(event) {
+  if (!event.target.closest('#user-bar')) closeBurgerMenu();
+});
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  window.currentUser = currentUser;
+  window.UserShell.applyUserBar(currentUser);
+  currentCapabilities = currentUser.capabilities || null;
+  if (!currentCapabilities || !currentCapabilities.canViewInvestigations) {
+    window.location.replace('index.html');
+    return;
+  }
+
+  try {
+    var response = await fetch('/api/v1/investigations/meta', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!response.ok) throw new Error('Meta indisponible');
+    fillMeta(await response.json());
+    document.getElementById('create-shell').style.display = currentCapabilities.canCreateInvestigations ? '' : 'none';
+  } catch (error) {
+    document.getElementById('investigation-grid').innerHTML = '<div class="state-card">Impossible d initialiser le module d enquetes.</div>';
+    return;
+  }
+
+  await loadInvestigations();
+  pingPresence();
+  setInterval(pingPresence, 25000);
+})();
+</script>
+</body>
+</html>

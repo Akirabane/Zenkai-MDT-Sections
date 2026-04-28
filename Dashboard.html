@@ -1,0 +1,1718 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Section Police de Konoha</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+  <link rel="stylesheet" href="CSS/dashboard.css?v=20260412a">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    (function() {
+      var token = sessionStorage.getItem('policeToken');
+      if (!token) {
+        window.location.replace('login.html?redirect=Dashboard.html');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour &agrave; l&rsquo;accueil</span></a>
+
+  <div class="user-bar" id="user-bar">
+    <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+    <div class="user-bar-inner" id="user-bar-inner">
+      <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+      <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+      <button class="btn-user-action btn-logout" onclick="doLogout()">D&eacute;connexion</button>
+    </div>
+  </div>
+
+  <div class="profile-popup" id="profile-popup">
+    <div class="profile-popup-kicker">&#9674; Mon profil</div>
+    <div class="profile-popup-head">
+      <div>
+        <div class="profile-popup-title">Prise de service</div>
+        <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+      </div>
+      <div class="profile-state-pill dashboard-service-state" id="service-state-pill">Hors service</div>
+    </div>
+    <div class="profile-avatar-layout">
+      <div class="profile-avatar-preview" id="profile-avatar-preview">
+        <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+      </div>
+      <div class="profile-avatar-controls">
+        <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+        <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+        <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+        <div class="profile-save-status" id="profile-save-status"></div>
+      </div>
+    </div>
+    <div class="service-widget dashboard-service-widget" id="service-widget" style="display:none">
+      <div class="profile-service-panel dashboard-service-panel">
+        <div class="profile-service-label dashboard-service-panel-label">Statut actuel</div>
+        <div class="service-widget-status" id="service-status-text">Chargement...</div>
+      </div>
+      <button type="button" class="service-toggle-btn dashboard-service-toggle" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+      <div class="service-widget-title dashboard-service-history-title">Dernieres sessions</div>
+      <div class="service-history-list dashboard-service-history-list" id="service-history-list"></div>
+    </div>
+  </div>
+
+  <div class="presence-sidebar" id="presence-sidebar">
+    <button class="presence-toggle" onclick="togglePresenceMobile()">
+      <span class="presence-toggle-icon">&#9672;</span>
+      <span class="presence-toggle-text">EN LIGNE</span>
+    </button>
+    <div class="presence-body" id="presence-list">
+      <div class="presence-empty">&hellip;</div>
+    </div>
+  </div>
+
+  <div class="reports-modal-overlay" id="reports-modal-overlay" onclick="if(event.target === this) closeReportsModal()">
+    <div class="reports-modal">
+      <div class="reports-modal-header">
+        <div>
+          <div class="reports-modal-kicker">&#9674; Archive complete</div>
+          <h2 class="reports-modal-title" id="reports-modal-title">Tous les rapports</h2>
+        </div>
+        <button class="reports-modal-close" type="button" onclick="closeReportsModal()" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="reports-modal-body">
+        <div class="publication-list" id="reports-modal-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-modal-overlay" id="history-modal-overlay" onclick="if(event.target === this) closeHistoryModal()">
+    <div class="reports-modal history-modal">
+      <div class="reports-modal-header">
+        <div>
+          <div class="reports-modal-kicker">&#9674; Archives hebdomadaires</div>
+          <h2 class="reports-modal-title">Historique des donnees</h2>
+        </div>
+        <button class="reports-modal-close" type="button" onclick="closeHistoryModal()" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="reports-modal-body history-modal-body">
+        <div class="history-layout">
+          <div class="history-list" id="history-list"></div>
+          <div class="history-detail" id="history-detail">
+            <div class="publication-empty">Selectionne une periode pour afficher les statistiques archivees.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-outer">
+    <div class="header">
+      <h1>Dashboard Officiel</h1>
+      <div class="header-divider"></div>
+      <p class="header-subtitle">Statistiques des rapports d'incident et de patrouille - Section Police de Konoha</p>
+    </div>
+
+    <div id="content">
+      <div class="loading">Chargement des statistiques...</div>
+    </div>
+  </div>
+
+  <script>
+    var currentUser = null;
+    var token = sessionStorage.getItem('policeToken');
+    var chartWeekInstance = null;
+    var chartMonthInstance = null;
+    var chartServiceInstance = null;
+    var chartComplaintInstance = null;
+    var chartInvestigationInstance = null;
+    var chartVisitsInstance = null;
+    var currentCapabilities = null;
+    var latestStatsPayload = null;
+    var historySnapshots = [];
+
+    (function() {
+      if (!token) {
+        window.location.href = 'index.html';
+        return;
+      }
+      try {
+        currentUser = JSON.parse(sessionStorage.getItem('policeUser') || '{}');
+      } catch (error) {
+        currentUser = null;
+      }
+      if (!currentUser || (!currentUser.pseudo && currentUser.permission !== 'ADMIN')) {
+        currentUser = null;
+      }
+    })();
+
+    function setupUserBar(user) {
+      window.UserShell.applyUserBar(user);
+    }
+
+  function openAdminShortcut() {
+    window.UserShell.openAdminShortcut('Backoffice_Admin.html');
+  }
+
+    async function doLogout() {
+      await window.UserShell.logout({ redirectTo: 'login.html' });
+    }
+
+    function toggleBurgerMenu() {
+      window.UserShell.toggleBurgerMenu();
+    }
+
+    function closeBurgerMenu() {
+      window.UserShell.closeBurgerMenu();
+    }
+
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('#user-bar')) closeBurgerMenu();
+    });
+
+    function togglePresenceMobile() {
+      window.UserShell.togglePresenceMobile('presence-sidebar');
+    }
+
+    function currentPresenceStatus() {
+      if (document.hidden || !document.hasFocus()) return 'away';
+      return window.UserShell.currentPresenceStatus();
+    }
+
+    async function pingPresence() {
+      if (!token) return;
+      try {
+        var response = await fetch('/presence/ping', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ status: currentPresenceStatus() })
+        });
+        if (response.ok) {
+          renderPresence(await response.json());
+        }
+      } catch (error) {}
+    }
+
+    function renderPresence(data) {
+      window.UserShell.renderPresence('presence-list', data);
+    }
+
+    async function loadCapabilities() {
+      var response = await fetch('/auth/capabilities', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+      if (response.status === 401) {
+        sessionStorage.clear();
+        window.location.replace('login.html?redirect=Dashboard.html');
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error('Permissions indisponibles');
+      }
+
+      currentCapabilities = await response.json();
+      if (!currentCapabilities.canViewDashboard) {
+        window.location.replace('index.html');
+        return null;
+      }
+      return currentCapabilities;
+    }
+
+    async function loadStats() {
+      try {
+        var response = await fetch('/api/v1/casier/stats', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            sessionStorage.removeItem('policeToken');
+            sessionStorage.removeItem('policeUser');
+            window.location.replace('login.html?redirect=Dashboard.html');
+            return;
+          }
+          if (response.status === 403) {
+            document.getElementById('content').innerHTML = [
+              '<div class="access-denied">',
+              'Acces refuse<br><br>',
+              'Seuls les Inspecteurs, Tokubetsu-Inspecteurs, Lieutenant-Jonin, Commandants et Administrateurs',
+              '<br>peuvent acceder au Dashboard.',
+              '</div>'
+            ].join('');
+            return;
+          }
+          throw new Error('Erreur ' + response.status);
+        }
+
+        var stats = await response.json();
+        renderStats(stats);
+      } catch (error) {
+        document.getElementById('content').innerHTML = '<div class="error">Erreur lors du chargement des statistiques<br><small>' + error.message + '</small></div>';
+      }
+    }
+
+    function formatDateTime(value) {
+      if (!value) return 'Date inconnue';
+      var date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Date inconnue';
+      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+        date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatResetDate(iso) {
+      if (!iso) return 'Jamais';
+      var date = new Date(iso);
+      return date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' }) +
+        ' a ' + String(date.getHours()).padStart(2, '0') + 'h' + String(date.getMinutes()).padStart(2, '0');
+    }
+
+    function formatDurationHours(hours) {
+      var value = Number(hours || 0);
+      return value.toLocaleString('fr-FR', { minimumFractionDigits: value % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' h';
+    }
+
+    function formatDurationShort(seconds) {
+      var total = Math.max(0, Number(seconds) || 0);
+      var hours = Math.floor(total / 3600);
+      var minutes = Math.floor((total % 3600) / 60);
+      if (hours && minutes) return hours + 'h ' + String(minutes).padStart(2, '0');
+      if (hours) return hours + 'h';
+      return minutes + ' min';
+    }
+
+    function formatPeriodWindow(period) {
+      if (!period || !period.start || !period.end) return 'Periode inconnue';
+      var start = new Date(period.start);
+      var end = new Date(new Date(period.end).getTime() - 1);
+      return start.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' au ' +
+        end.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function buildDashboardActions() {
+      var buttons = [
+        '<button type="button" class="btn-view-all dashboard-history-btn" onclick="openHistoryModal()">Historique des donnees</button>'
+      ];
+
+      if (currentUser && currentUser.permission === 'ADMIN') {
+        buttons.push('<button type="button" class="btn-view-all dashboard-print-btn" onclick="printStatisticsReport()">Imprimer les statistiques</button>');
+      }
+
+      return '<div class="dashboard-actions">' + buttons.join('') + '</div>';
+    }
+
+    function buildReportTableRows(items, columns, emptyLabel) {
+      if (!items || !items.length) {
+        return '<tr><td colspan="' + columns.length + '" class="report-empty-cell">' + escapeHtml(emptyLabel) + '</td></tr>';
+      }
+
+      return items.map(function(item) {
+        return '<tr>' + columns.map(function(column) {
+          var rawValue = typeof column.value === 'function' ? column.value(item) : item[column.value];
+          return '<td>' + escapeHtml(rawValue == null ? '' : rawValue) + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+    }
+
+    function chartCanvasToDataUrl(canvasId) {
+      var canvas = document.getElementById(canvasId);
+      if (!canvas) return '';
+
+      var exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      var exportContext = exportCanvas.getContext('2d');
+      exportContext.fillStyle = '#fffaf0';
+      exportContext.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      exportContext.drawImage(canvas, 0, 0);
+      return exportCanvas.toDataURL('image/png');
+    }
+
+    function getPeakBy(items, key) {
+      var list = Array.isArray(items) ? items : [];
+      if (!list.length) return null;
+
+      return list.reduce(function(best, item) {
+        if (!best) return item;
+        return Number(item[key] || 0) > Number(best[key] || 0) ? item : best;
+      }, null);
+    }
+
+    function sumBy(items, key) {
+      return (Array.isArray(items) ? items : []).reduce(function(total, item) {
+        return total + Number(item[key] || 0);
+      }, 0);
+    }
+
+    function buildActivityChartNarrative(stats) {
+      var perDay = Array.isArray(stats.perDay) ? stats.perDay : [];
+      var peakReports = getPeakBy(perDay, 'reports');
+      var peakPatrols = getPeakBy(perDay, 'patrols');
+      var totalReports = sumBy(perDay, 'reports');
+      var totalPatrols = sumBy(perDay, 'patrols');
+
+      return {
+        intro: 'Ce graphique compare le volume quotidien de rapports saisis avec les patrouilles enregistrees sur la periode active. Il permet d identifier tres vite les jours de tension operationnelle et les moments ou l activite terrain a ete la plus forte.',
+        insights: [
+          'Volume total observe: ' + totalReports + ' rapports et ' + totalPatrols + ' patrouilles sur la periode.',
+          peakReports
+            ? 'Pic de redaction: ' + peakReports.label + ' avec ' + Number(peakReports.reports || 0) + ' rapports.'
+            : 'Aucun pic de redaction detecte sur cette periode.',
+          peakPatrols
+            ? 'Pic de terrain: ' + peakPatrols.label + ' avec ' + Number(peakPatrols.patrols || 0) + ' patrouilles.'
+            : 'Aucun pic de patrouille detecte sur cette periode.'
+        ]
+      };
+    }
+
+    function buildCumulativeChartNarrative(stats) {
+      var perDay = Array.isArray(stats.perDay) ? stats.perDay : [];
+      var cumulative = 0;
+      var strongestJump = null;
+
+      perDay.forEach(function(day) {
+        var reports = Number(day.reports || 0);
+        cumulative += reports;
+        if (!strongestJump || reports > strongestJump.value) {
+          strongestJump = { label: day.label, value: reports, total: cumulative };
+        }
+      });
+
+      return {
+        intro: 'La courbe cumulee raconte le rythme de croissance du dossier hebdomadaire. Elle montre si la charge arrive de facon reguliere ou si elle se concentre en quelques journees plus lourdes.',
+        insights: [
+          'Cumul final de la periode: ' + cumulative + ' rapports enregistres.',
+          strongestJump
+            ? 'Acceleration la plus nette: ' + strongestJump.label + ' avec +' + strongestJump.value + ' rapports, portant le cumul a ' + strongestJump.total + '.'
+            : 'Aucune acceleration marquee relevee sur la periode.',
+          cumulative > 0
+            ? 'Lecture commandement: une pente continue indique une activite stable, tandis que les marches plus brutales signalent des pics a surveiller.'
+            : 'Lecture commandement: aucune activite exploitable n a ete enregistree pour cette periode.'
+        ]
+      };
+    }
+
+    function buildServiceChartNarrative(stats) {
+      var serviceSeries = Array.isArray(stats.serviceSeries) ? stats.serviceSeries : [];
+      var peakSessions = getPeakBy(serviceSeries, 'sessions');
+      var peakHours = getPeakBy(serviceSeries, 'hours');
+      var totalSessions = sumBy(serviceSeries, 'sessions');
+      var totalHours = sumBy(serviceSeries, 'hours');
+
+      return {
+        intro: 'Cette page relie la frequence des prises de service au volume horaire declare. Elle aide a verifier si la mobilisation de l equipe suit bien les besoins reels du terrain.',
+        insights: [
+          'Total de la periode: ' + totalSessions + ' sessions ouvertes pour ' + formatDurationHours(totalHours) + ' cumulees.',
+          peakSessions
+            ? 'Jour le plus actif en nombre de prises: ' + peakSessions.label + ' avec ' + Number(peakSessions.sessions || 0) + ' sessions.'
+            : 'Aucune prise de service enregistree sur la periode.',
+          peakHours
+            ? 'Jour le plus dense en volume horaire: ' + peakHours.label + ' avec ' + formatDurationHours(peakHours.hours) + '.'
+            : 'Aucun volume horaire exploitable sur cette periode.'
+        ]
+      };
+    }
+
+    function buildComplaintChartNarrative(stats) {
+      var complaintSeries = Array.isArray(stats.complaintSeries) ? stats.complaintSeries : [];
+      var peakComplaints = getPeakBy(complaintSeries, 'complaints');
+      var totalComplaints = sumBy(complaintSeries, 'complaints');
+      var topObject = Array.isArray(stats.topComplaintObjects) && stats.topComplaintObjects.length
+        ? stats.topComplaintObjects[0]
+        : null;
+
+      return {
+        intro: 'Cette courbe suit le volume quotidien des plaintes deposees sur la periode active. Elle aide a reperer les journees de tension recurrentes et les natures de plainte les plus presentes dans la section.',
+        insights: [
+          'Total de la periode: ' + totalComplaints + ' plainte(s) enregistree(s).',
+          peakComplaints
+            ? 'Jour le plus charge: ' + peakComplaints.label + ' avec ' + Number(peakComplaints.complaints || 0) + ' plainte(s).'
+            : 'Aucune plainte n a ete enregistree sur cette periode.',
+          topObject
+            ? 'Objet dominant: ' + topObject.name + ' (' + topObject.count + ' occurrence(s)).'
+            : 'Aucun objet de plainte dominant n a pu etre isole sur cette periode.'
+        ]
+      };
+    }
+
+    function buildInvestigationChartNarrative(stats) {
+      var investigationSeries = Array.isArray(stats.investigationSeries) ? stats.investigationSeries : [];
+      var peakInvestigations = getPeakBy(investigationSeries, 'investigations');
+      var totalInvestigations = sumBy(investigationSeries, 'investigations');
+      var topStatus = Array.isArray(stats.topInvestigationStatuses) && stats.topInvestigationStatuses.length
+        ? stats.topInvestigationStatuses[0]
+        : null;
+
+      return {
+        intro: 'Cette courbe suit le rythme d ouverture des enquetes sur la periode active. Elle donne une lecture directe de la pression investigative, des jours ou les dossiers tombent en masse et des statuts qui dominent le travail de suivi.',
+        insights: [
+          'Total de la periode: ' + totalInvestigations + ' enquete(s) ouverte(s).',
+          peakInvestigations
+            ? 'Jour le plus charge: ' + peakInvestigations.label + ' avec ' + Number(peakInvestigations.investigations || 0) + ' ouverture(s).'
+            : 'Aucune enquete n a ete ouverte sur cette periode.',
+          topStatus
+            ? 'Statut dominant: ' + topStatus.name + ' (' + topStatus.count + ' occurrence(s)).'
+            : 'Aucun statut d enquete dominant n a pu etre isole sur cette periode.'
+        ]
+      };
+    }
+
+    function buildReportChartPage(title, canvasId, narrative, prefaceHtml) {
+      var dataUrl = chartCanvasToDataUrl(canvasId);
+      if (!dataUrl) return '';
+
+      var insights = (narrative && Array.isArray(narrative.insights) ? narrative.insights : []).map(function(item) {
+        return '<div class="report-analysis-pill">' + escapeHtml(item) + '</div>';
+      }).join('');
+
+      return [
+        '<section class="report-page report-page-break report-chart-page">',
+          '<div class="report-inner report-chart-inner">',
+            (prefaceHtml || ''),
+            '<div class="report-kicker">&#9674; Analyse graphique detaillee</div>',
+            '<h2 class="report-chart-title">' + escapeHtml(title) + '</h2>',
+            '<p class="report-chart-lead">' + escapeHtml((narrative && narrative.intro) || '') + '</p>',
+            '<div class="report-chart-stage">',
+              '<img src="' + dataUrl + '" alt="' + escapeHtml(title) + '">',
+            '</div>',
+            '<section class="report-chart-analysis">',
+              '<h3>Lecture des donnees</h3>',
+              '<div class="report-analysis-grid">' + insights + '</div>',
+            '</section>',
+          '</div>',
+        '</section>'
+      ].join('');
+    }
+
+    function buildReportPublicationCards(items, emptyLabel, mapper) {
+      if (!items || !items.length) {
+        return '<div class="report-empty-block">' + escapeHtml(emptyLabel) + '</div>';
+      }
+
+      return items.slice(0, 6).map(function(item) {
+        var content = mapper(item);
+        return [
+          '<article class="report-mini-card">',
+            '<div class="report-mini-title">' + escapeHtml(content.title) + '</div>',
+            '<div class="report-mini-meta">' + escapeHtml(content.meta) + '</div>',
+            '<div class="report-mini-submeta">' + escapeHtml(content.submeta) + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function buildStatisticsReportHtml(stats) {
+      var generatedAt = formatDateTime(new Date().toISOString());
+      var chartPrefaceHtml = [
+        '<section class="report-chart-note">',
+          '<strong>Annexes graphiques</strong>',
+          'Les pages suivantes presentent une lecture agrandie des graphiques utiles au commandement. Le graphe des visites du site n est pas integre au PDF afin de garder un document centre sur l activite police, les plaintes, les Police Academies et la mobilisation de service.',
+        '</section>'
+      ].join('');
+      var chartPagesHtml = [
+        buildReportChartPage('Activite de la periode', 'chart-perday', buildActivityChartNarrative(stats), chartPrefaceHtml),
+        buildReportChartPage('Evolution cumulee', 'chart-perday30', buildCumulativeChartNarrative(stats)),
+        buildReportChartPage('Courbe de prise de service', 'chart-service', buildServiceChartNarrative(stats)),
+        buildReportChartPage('Flux des plaintes', 'chart-complaints', buildComplaintChartNarrative(stats)),
+        buildReportChartPage('Flux des enquetes', 'chart-investigations', buildInvestigationChartNarrative(stats))
+      ].join('');
+
+      var topAgentsRows = buildReportTableRows(stats.topAgents, [
+        { value: function(item) { return item.name; } },
+        { value: function(item) { return item.count; } }
+      ], 'Aucune donnee');
+
+      var topDelitsRows = buildReportTableRows(stats.topDelits, [
+        { value: function(item) { return item.delit; } },
+        { value: function(item) { return item.count; } }
+      ], 'Aucun delit');
+
+      var divisionRows = buildReportTableRows(stats.activityByDivision, [
+        { value: function(item) { return item.name; } },
+        { value: function(item) { return item.count; } }
+      ], 'Aucune division active');
+
+      var serviceRows = buildReportTableRows(stats.serviceLeaderboard, [
+        { value: function(item) { return item.pseudo; } },
+        { value: function(item) { return item.sessions; } },
+        { value: function(item) { return formatDurationHours(item.hours); } }
+      ], 'Aucune prise de service enregistree');
+
+      var topComplaintObjectsRows = buildReportTableRows(stats.topComplaintObjects, [
+        { value: function(item) { return item.name; } },
+        { value: function(item) { return item.count; } }
+      ], 'Aucune plainte');
+
+      var topInvestigationStatusesRows = buildReportTableRows(stats.topInvestigationStatuses, [
+        { value: function(item) { return item.name; } },
+        { value: function(item) { return item.count; } }
+      ], 'Aucune enquete');
+
+      var recentReports = buildReportPublicationCards(stats.latestReports, 'Aucun rapport recent.', function(item) {
+        return {
+          title: item.title || 'Rapport',
+          meta: (item.reportType === 'patrol' ? 'Patrouille' : 'Incident') + ' - ' + formatDateTime(item.timestamp),
+          submeta: (item.author || 'Inconnu') + ' · ' + (item.agent || 'Agent inconnu')
+        };
+      });
+
+      var recentPublications = buildReportPublicationCards(stats.recentPublications, 'Aucune publication recente.', function(item) {
+        return {
+          title: item.suspect || 'Rapport publie',
+          meta: 'Publie le ' + formatDateTime(item.timestamp),
+          submeta: (item.actorPseudo || 'Inconnu') + ' · ' + (item.agent || 'Agent inconnu')
+        };
+      });
+
+      var recentComplaints = buildReportPublicationCards(stats.recentComplaints, 'Aucune plainte recente.', function(item) {
+        return {
+          title: item.title || 'Plainte',
+          meta: (item.objet || 'Objet non precise') + ' - ' + formatDateTime(item.timestamp),
+          submeta: 'Saisie par ' + (item.author || 'Inconnu')
+        };
+      });
+
+      var recentInvestigations = buildReportPublicationCards(stats.recentInvestigations, 'Aucune enquete recente.', function(item) {
+        return {
+          title: item.title || 'Enquete',
+          meta: (item.status || 'Statut non precise') + ' - ' + formatDateTime(item.updatedAt || item.createdAt),
+          submeta: (item.assignedAgent || 'soullera') + ' · ' + Number(item.updateCount || 0) + ' suivi(s)'
+        };
+      });
+
+      return [
+        '<!DOCTYPE html>',
+        '<html lang="fr">',
+        '<head>',
+          '<meta charset="UTF-8">',
+          '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+          '<title>Rapport PDF - Dashboard Police de Konoha</title>',
+          '<link rel="preconnect" href="https://fonts.googleapis.com">',
+          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+          '<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">',
+          '<style>',
+            '@page { size: A4 portrait; margin: 12mm; }',
+            'body { margin: 0; color: #2a1a0a; background: #efe5c7; font-family: "IM Fell English", serif; }',
+            '.report-shell { min-height: 100vh; padding: 18px; background: linear-gradient(180deg, #2b1c09 0%, #120b04 100%); }',
+            '.report-page { background: linear-gradient(180deg, #f6e2a4 0%, #ddb329 46%, #f0d687 100%); border: 3px solid #d5a128; border-radius: 22px; box-shadow: 0 0 0 2px #1d1307 inset; padding: 22px; margin-bottom: 18px; break-inside: avoid; page-break-inside: avoid; }',
+            '.report-inner { background: linear-gradient(180deg, rgba(255, 244, 211, 0.94), rgba(245, 223, 145, 0.96)); border: 1px solid rgba(135, 95, 18, 0.28); border-radius: 18px; padding: 26px; }',
+            '.report-header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 22px; }',
+            '.report-kicker { font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #946712; margin-bottom: 10px; }',
+            '.report-title { font-family: "Cinzel", serif; font-size: 38px; line-height: 1.05; margin: 0 0 10px; }',
+            '.report-subtitle { max-width: 720px; color: #5a3a10; font-size: 16px; line-height: 1.45; }',
+            '.report-badge { min-width: 240px; padding: 16px 18px; border-radius: 18px; background: rgba(52, 34, 10, 0.82); color: #f7e7b4; border: 1px solid rgba(212, 160, 23, 0.42); }',
+            '.report-badge strong { display: block; font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #d8b55c; margin-bottom: 8px; }',
+            '.report-badge span { display: block; margin-top: 6px; font-size: 16px; }',
+            '.report-summary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }',
+            '.report-summary-card { background: rgba(255, 248, 228, 0.74); border: 1px solid rgba(154, 110, 18, 0.2); border-radius: 14px; padding: 14px 16px; }',
+            '.report-summary-label { font-family: "Cinzel", serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #926716; margin-bottom: 10px; }',
+            '.report-summary-value { font-family: "Cinzel", serif; font-size: 28px; font-weight: 700; }',
+            '.report-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-bottom: 18px; }',
+            '.report-card { background: rgba(255, 248, 228, 0.74); border: 1px solid rgba(154, 110, 18, 0.2); border-radius: 16px; padding: 18px; break-inside: avoid; }',
+            '.report-card h3 { margin: 0 0 14px; font-family: "Cinzel", serif; font-size: 18px; }',
+            '.report-table { width: 100%; border-collapse: collapse; font-size: 15px; }',
+            '.report-table th { text-align: left; padding: 10px 12px; background: rgba(46, 61, 15, 0.96); color: #f1e0a6; font-family: "Cinzel", serif; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; }',
+            '.report-table td { padding: 10px 12px; border-bottom: 1px solid rgba(141, 104, 24, 0.18); }',
+            '.report-empty-cell { text-align: center; color: #7a5a1d; }',
+            '.report-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }',
+            '.report-mini-grid { display: grid; gap: 10px; }',
+            '.report-mini-card { border-radius: 12px; border: 1px solid rgba(154, 110, 18, 0.16); background: rgba(255,255,255,0.36); padding: 12px 14px; }',
+            '.report-mini-title { font-family: "Cinzel", serif; font-size: 15px; margin-bottom: 6px; }',
+            '.report-mini-meta, .report-mini-submeta, .report-empty-block { color: #6f4d18; font-size: 14px; line-height: 1.4; }',
+            '.report-chart-note { margin: 0 0 18px; padding: 18px 20px; border-radius: 16px; background: rgba(70, 43, 10, 0.84); color: #f4e2b0; border: 1px solid rgba(212, 160, 23, 0.3); }',
+            '.report-chart-note strong { display: block; margin-bottom: 8px; font-family: "Cinzel", serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #dfbe6a; }',
+            '.report-page-break { break-before: page; page-break-before: always; }',
+            '.report-chart-page { margin-bottom: 0; }',
+            '.report-chart-inner { display: flex; flex-direction: column; }',
+            '.report-chart-title { margin: 0; font-family: "Cinzel", serif; font-size: 30px; }',
+            '.report-chart-lead { margin: 10px 0 14px; color: #5b3d12; font-size: 16px; line-height: 1.5; }',
+            '.report-chart-stage { min-height: 350px; display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 18px; background: rgba(255, 249, 232, 0.84); border: 1px solid rgba(154, 110, 18, 0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45); }',
+            '.report-chart-stage img { width: 100%; max-height: 360px; object-fit: contain; display: block; border-radius: 14px; background: #fffaf0; }',
+            '.report-chart-analysis { margin-top: 14px; padding: 16px; border-radius: 18px; background: rgba(255, 248, 228, 0.74); border: 1px solid rgba(154, 110, 18, 0.2); }',
+            '.report-chart-analysis h3 { margin: 0 0 10px; font-family: "Cinzel", serif; font-size: 18px; }',
+            '.report-analysis-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }',
+            '.report-analysis-pill { min-height: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.48); color: #56370e; font-size: 14px; line-height: 1.45; border: 1px solid rgba(154, 110, 18, 0.14); }',
+            '.report-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding-top: 16px; border-top: 1px solid rgba(123, 86, 15, 0.22); color: #6f4d18; font-size: 14px; }',
+            '@media print { .report-shell { padding: 0; background: none; } .report-page { box-shadow: none; margin: 0; } .report-page + .report-page { margin-top: 0; } }',
+          '</style>',
+        '</head>',
+        '<body>',
+          '<div class="report-shell">',
+            '<div class="report-page">',
+              '<div class="report-inner">',
+                '<header class="report-header">',
+                  '<div>',
+                    '<div class="report-kicker">&#9674; Briefing hebdomadaire</div>',
+                    '<h1 class="report-title">Statistiques Officielles</h1>',
+                    '<div class="report-subtitle">Synthese PDF du dashboard Police de Konoha, avec les chiffres de la periode active, les graphiques d activite et les rapports les plus recents.</div>',
+                  '</div>',
+                  '<div class="report-badge">',
+                    '<strong>Periode active</strong>',
+                    '<span>' + escapeHtml(formatPeriodWindow(stats.period)) + '</span>',
+                    '<strong style="margin-top:12px;">Genere le</strong>',
+                    '<span>' + escapeHtml(generatedAt) + '</span>',
+                    '<strong style="margin-top:12px;">Prochain reset</strong>',
+                    '<span>' + escapeHtml(formatDateTime(stats.period && stats.period.nextResetAt)) + '</span>',
+                  '</div>',
+                '</header>',
+                '<section class="report-summary">',
+                  '<div class="report-summary-card"><div class="report-summary-label">Rapports</div><div class="report-summary-value">' + escapeHtml(stats.totalReports) + '</div></div>',
+                  '<div class="report-summary-card"><div class="report-summary-label">Incidents</div><div class="report-summary-value">' + escapeHtml(stats.totalIncidents) + '</div></div>',
+                  '<div class="report-summary-card"><div class="report-summary-label">Patrouilles</div><div class="report-summary-value">' + escapeHtml(stats.totalPatrols) + '</div></div>',
+                  '<div class="report-summary-card"><div class="report-summary-label">Plaintes</div><div class="report-summary-value">' + escapeHtml(stats.totalComplaints || 0) + '</div></div>',
+                  '<div class="report-summary-card"><div class="report-summary-label">Enquetes</div><div class="report-summary-value">' + escapeHtml(stats.totalInvestigations || 0) + '</div></div>',
+                  '<div class="report-summary-card"><div class="report-summary-label">Dossiers actifs</div><div class="report-summary-value">' + escapeHtml(stats.dossiersCount) + '</div></div>',
+                '</section>',
+                '<section class="report-grid">',
+                  '<article class="report-card">',
+                    '<h3>Top agents</h3>',
+                    '<table class="report-table"><thead><tr><th>Agent</th><th>Rapports</th></tr></thead><tbody>' + topAgentsRows + '</tbody></table>',
+                  '</article>',
+                  '<article class="report-card">',
+                    '<h3>Activite par division</h3>',
+                    '<table class="report-table"><thead><tr><th>Division</th><th>Volume</th></tr></thead><tbody>' + divisionRows + '</tbody></table>',
+                  '</article>',
+                '</section>',
+                '<section class="report-grid">',
+                  '<article class="report-card">',
+                    '<h3>Delits les plus frequents</h3>',
+                    '<table class="report-table"><thead><tr><th>Delit</th><th>Nb</th></tr></thead><tbody>' + topDelitsRows + '</tbody></table>',
+                  '</article>',
+                  '<article class="report-card">',
+                    '<h3>Objets de plainte</h3>',
+                    '<table class="report-table"><thead><tr><th>Objet</th><th>Nb</th></tr></thead><tbody>' + topComplaintObjectsRows + '</tbody></table>',
+                  '</article>',
+                  '<article class="report-card">',
+                    '<h3>Statuts d enquete</h3>',
+                    '<table class="report-table"><thead><tr><th>Statut</th><th>Nb</th></tr></thead><tbody>' + topInvestigationStatusesRows + '</tbody></table>',
+                  '</article>',
+                '</section>',
+                '<section class="report-grid">',
+                  '<article class="report-card">',
+                    '<h3>Dernieres enquetes</h3>',
+                    '<div class="report-mini-grid">' + recentInvestigations + '</div>',
+                  '</article>',
+                '</section>',
+                '<section class="report-grid">',
+                  '<article class="report-card">',
+                    '<h3>Prises de service</h3>',
+                    '<table class="report-table"><thead><tr><th>Agent</th><th>Sessions</th><th>Heures</th></tr></thead><tbody>' + serviceRows + '</tbody></table>',
+                  '</article>',
+                  '<article class="report-card">',
+                    '<h3>Dernieres plaintes</h3>',
+                    '<div class="report-mini-grid">' + recentComplaints + '</div>',
+                  '</article>',
+                '</section>',
+                '<section class="report-columns">',
+                  '<article class="report-card">',
+                    '<h3>Derniers rapports generes</h3>',
+                    '<div class="report-mini-grid">' + recentReports + '</div>',
+                  '</article>',
+                  '<article class="report-card">',
+                    '<h3>Dernieres publications Discord</h3>',
+                    '<div class="report-mini-grid">' + recentPublications + '</div>',
+                  '</article>',
+                '</section>',
+                '<footer class="report-footer">',
+                  '<div>Dashboard Police de Konoha · Document d administration interne</div>',
+                  '<div>Export PDF via impression navigateur</div>',
+                '</footer>',
+              '</div>',
+            '</div>',
+          '</div>' + chartPagesHtml,
+        '</body>',
+        '</html>'
+      ].join('');
+    }
+
+    function printStatisticsReport() {
+      if (!latestStatsPayload) {
+        alert('Les statistiques ne sont pas encore chargees.');
+        return;
+      }
+
+      if (!currentUser || currentUser.permission !== 'ADMIN') {
+        alert('Action reservee aux administrateurs.');
+        return;
+      }
+
+      var reportHtml;
+      try {
+        reportHtml = buildStatisticsReportHtml(latestStatsPayload);
+      } catch (error) {
+        alert('Impossible de generer le rapport : ' + (error.message || 'erreur inconnue'));
+        return;
+      }
+
+      var reportBlob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+      var reportUrl = URL.createObjectURL(reportBlob);
+      var reportWindow = window.open(reportUrl, '_blank', 'width=1200,height=900');
+      if (!reportWindow) {
+        URL.revokeObjectURL(reportUrl);
+        alert('Le navigateur a bloque l ouverture du rapport. Autorise les popups pour continuer.');
+        return;
+      }
+
+      var releaseUrl = function() {
+        try {
+          URL.revokeObjectURL(reportUrl);
+        } catch (error) {}
+      };
+
+      var triggerPrint = function() {
+        try {
+          reportWindow.focus();
+          reportWindow.print();
+        } catch (error) {}
+        setTimeout(releaseUrl, 60000);
+      };
+
+      try {
+        reportWindow.addEventListener('load', function() {
+          setTimeout(triggerPrint, 350);
+        }, { once: true });
+      } catch (error) {
+        setTimeout(triggerPrint, 900);
+      }
+    }
+
+    function nextDailyReset() {
+      var now = new Date();
+      var reset = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0);
+      if (now >= reset) reset.setDate(reset.getDate() + 1);
+      return reset.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' a 10h00';
+    }
+
+    function nextWeeklyReset() {
+      var now = new Date();
+      var day = now.getDay();
+      var daysToMonday = (day === 0) ? 1 : (8 - day) % 7 || 7;
+      var reset = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday, 10, 0, 0);
+      return reset.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' a 10h00';
+    }
+
+    function renderRows(items, mapper, emptyLabel) {
+      if (!items || !items.length) {
+        return '<tr><td colspan="2" style="text-align:center;color:var(--ink-brown);padding:14px">' + escapeHtml(emptyLabel) + '</td></tr>';
+      }
+      return items.map(mapper).join('');
+    }
+
+    function buildPublicationItems(items, limit) {
+      var source = Array.isArray(items) ? items : [];
+      var list = typeof limit === 'number' ? source.slice(0, limit) : source;
+      if (!list.length) {
+        return '<div class="publication-empty">Aucune publication recente.</div>';
+      }
+      return list.map(function(item) {
+        return [
+          '<article class="publication-item">',
+            '<div class="publication-title">' + escapeHtml(item.suspect || 'Rapport d incident') + '</div>',
+            '<div class="publication-meta">Publie par ' + escapeHtml(item.actorPseudo || 'inconnu') + ' le ' + escapeHtml(formatDateTime(item.timestamp)) + '</div>',
+            '<div class="publication-submeta">' + escapeHtml(item.agent || 'Agent inconnu') + ' - ' + escapeHtml(item.updateNotice ? 'Version mise a jour' : 'Version initiale') + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function buildLatestReportItems(items, limit) {
+      var source = Array.isArray(items) ? items : [];
+      var list = typeof limit === 'number' ? source.slice(0, limit) : source;
+      if (!list.length) {
+        return '<div class="publication-empty">Aucun rapport recent.</div>';
+      }
+      return list.map(function(item) {
+        var typeLabel = item.reportType === 'patrol' ? 'Patrouille' : 'Incident';
+        return [
+          '<article class="publication-item">',
+            '<div class="publication-title">' + escapeHtml(item.title || 'Rapport') + '</div>',
+            '<div class="publication-meta">' + escapeHtml(typeLabel) + ' - cree par ' + escapeHtml(item.author || 'inconnu') + ' le ' + escapeHtml(formatDateTime(item.timestamp)) + '</div>',
+            '<div class="publication-submeta">' + escapeHtml(item.agent || 'Agent inconnu') + escapeHtml(item.graveEvent ? ' - Evenement grave' : '') + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function buildServiceHistoryItems(items, limit) {
+      var source = Array.isArray(items) ? items : [];
+      var maxItems = typeof limit === 'number' ? Math.max(0, Math.min(limit, 5)) : source.length;
+      var list = source.slice(0, maxItems);
+      if (!list.length) {
+        return '<div class="publication-empty">Aucune session recente.</div>';
+      }
+
+      return list.map(function(item) {
+        return [
+          '<article class="publication-item service-recent-item">',
+            '<div class="service-recent-topline">',
+              '<div class="publication-title">' + escapeHtml(item.pseudo) + '</div>',
+              '<div class="service-recent-state ' + (item.status === 'active' ? 'is-active' : 'is-closed') + '">' + (item.status === 'active' ? 'En service' : 'Termine') + '</div>',
+            '</div>',
+            '<div class="publication-meta">Debut ' + escapeHtml(formatDateTime(item.startedAt)) + (item.endedAt ? ' - Fin ' + escapeHtml(formatDateTime(item.endedAt)) : '') + '</div>',
+            '<div class="publication-submeta">' + escapeHtml(item.status === 'active' ? 'Session actuellement ouverte' : ('Duree : ' + formatDurationHours((item.durationSeconds || 0) / 3600))) + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function buildServiceHistoryViewAll(count) {
+      if (!count || count <= 5) return '';
+      return [
+        '<div class="service-history-actions">',
+          '<button type="button" class="btn-view-all service-history-view-all" onclick="openReportsModal(\'service\')">Voir tout l historique de service (' + count + ')</button>',
+        '</div>'
+      ].join('');
+    }
+
+    function buildViewAllButton(kind, count) {
+      if (!count || count <= 5) return '';
+      var label = kind === 'service'
+        ? 'Voir tout l historique de service'
+        : kind === 'complaints'
+          ? 'Voir toutes les plaintes'
+        : kind === 'investigations'
+          ? 'Voir toutes les enquetes'
+        : 'Voir tous les rapports';
+      return '<button type="button" class="btn-view-all" onclick="openReportsModal(\'' + kind + '\')">' + label + ' (' + count + ')</button>';
+    }
+
+    function buildPublications(items) {
+      if (!items || !items.length) {
+        return '<div class="publication-empty">Aucune publication recente.</div>';
+      }
+      return buildPublicationItems(items, 5);
+    }
+
+    function buildLatestReports(items) {
+      if (!items || !items.length) {
+        return '<div class="publication-empty">Aucun rapport recent.</div>';
+      }
+      return buildLatestReportItems(items, 5);
+    }
+
+    function buildComplaints(items) {
+      if (!items || !items.length) {
+        return '<div class="publication-empty">Aucune plainte recente.</div>';
+      }
+      return buildLatestComplaintItems(items, 5);
+    }
+
+    function buildInvestigations(items) {
+      if (!items || !items.length) {
+        return '<div class="publication-empty">Aucune enquete recente.</div>';
+      }
+      return buildLatestInvestigationItems(items, 5);
+    }
+
+    function buildLatestComplaintItems(items, limit) {
+      var source = Array.isArray(items) ? items : [];
+      var list = typeof limit === 'number' ? source.slice(0, limit) : source;
+      if (!list.length) {
+        return '<div class="publication-empty">Aucune plainte recente.</div>';
+      }
+      return list.map(function(item) {
+        return [
+          '<article class="publication-item">',
+            '<div class="publication-title">' + escapeHtml(item.title || 'Plainte') + '</div>',
+            '<div class="publication-meta">' + escapeHtml(item.objet || 'Objet non precise') + ' - ' + escapeHtml(formatDateTime(item.timestamp)) + '</div>',
+            '<div class="publication-submeta">Saisie par ' + escapeHtml(item.author || 'inconnu') + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function buildLatestInvestigationItems(items, limit) {
+      var source = Array.isArray(items) ? items : [];
+      var list = typeof limit === 'number' ? source.slice(0, limit) : source;
+      if (!list.length) {
+        return '<div class="publication-empty">Aucune enquete recente.</div>';
+      }
+      return list.map(function(item) {
+        return [
+          '<article class="publication-item">',
+            '<div class="publication-title">' + escapeHtml(item.title || 'Enquete') + '</div>',
+            '<div class="publication-meta">' + escapeHtml(item.status || 'Statut non precise') + ' - ' + escapeHtml(formatDateTime(item.updatedAt || item.createdAt)) + '</div>',
+            '<div class="publication-submeta">Assignee a ' + escapeHtml(item.assignedAgent || 'soullera') + ' · ' + escapeHtml(Number(item.updateCount || 0) + ' suivi(s)') + '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+    }
+
+    function openReportsModal(kind) {
+      if (!latestStatsPayload) return;
+      var title = 'Tous les rapports';
+      var html = '<div class="publication-empty">Aucun rapport recent.</div>';
+
+      if (kind === 'generated') {
+        title = 'Tous les rapports generes';
+        html = buildLatestReportItems(latestStatsPayload.latestReports);
+      } else if (kind === 'published') {
+        title = 'Tous les rapports publies sur Discord';
+        html = buildPublicationItems(latestStatsPayload.recentPublications);
+      } else if (kind === 'complaints') {
+        title = 'Toutes les plaintes recentes';
+        html = buildLatestComplaintItems(latestStatsPayload.recentComplaints);
+      } else if (kind === 'investigations') {
+        title = 'Toutes les enquetes recentes';
+        html = buildLatestInvestigationItems(latestStatsPayload.recentInvestigations);
+      } else if (kind === 'service') {
+        title = 'Tout l historique de service';
+        html = buildServiceHistoryItems(latestStatsPayload.recentServiceHistory);
+      }
+
+      document.getElementById('reports-modal-title').textContent = title;
+      document.getElementById('reports-modal-list').innerHTML = html;
+      document.getElementById('reports-modal-overlay').classList.add('active');
+      document.body.classList.add('modal-open');
+    }
+
+    function closeReportsModal() {
+      document.getElementById('reports-modal-overlay').classList.remove('active');
+      document.body.classList.remove('modal-open');
+    }
+
+    async function loadStatsHistory() {
+      var response = await fetch('/api/v1/casier/stats/history', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+      if (!response.ok) {
+        throw new Error('Historique des donnees indisponible');
+      }
+
+      var payload = await response.json();
+      historySnapshots = Array.isArray(payload.snapshots) ? payload.snapshots : [];
+      return historySnapshots;
+    }
+
+    function renderHistorySnapshotList(items) {
+      if (!items.length) {
+        return '<div class="publication-empty">Aucune archive hebdomadaire disponible.</div>';
+      }
+
+      return items.map(function(item) {
+        return [
+          '<button type="button" class="history-card" onclick="openHistorySnapshot(\'' + item.id.replace(/'/g, '\\\'') + '\')">',
+            '<div class="history-card-title">' + (item.label || 'Periode archivee') + '</div>',
+            '<div class="history-card-meta">Archivee le ' + formatDateTime(item.createdAt) + '</div>',
+            '<div class="history-card-stats">',
+              '<span>' + ((item.totals && item.totals.totalReports) || 0) + ' rapports</span>',
+              '<span>' + ((item.totals && item.totals.totalIncidents) || 0) + ' incidents</span>',
+              '<span>' + ((item.totals && item.totals.totalPatrols) || 0) + ' patrouilles</span>',
+            '</div>',
+          '</button>'
+        ].join('');
+      }).join('');
+    }
+
+    function renderHistorySnapshotDetail(stats) {
+      if (!stats) {
+        return '<div class="publication-empty">Selectionne une periode pour afficher les statistiques archivees.</div>';
+      }
+
+      return [
+        '<div class="history-detail-header">',
+          '<div>',
+            '<div class="reports-modal-kicker">&#9674; Periode archivee</div>',
+            '<h3 class="history-detail-title">' + formatPeriodWindow(stats.period) + '</h3>',
+          '</div>',
+          '<div class="history-detail-reset">Reset suivant : ' + (stats.period && stats.period.end ? formatDateTime(stats.period.end) : 'inconnu') + '</div>',
+        '</div>',
+        '<div class="summary-stats history-summary-stats">',
+          '<div class="summary-item"><div class="label">Rapports</div><div class="value">' + (stats.totalReports || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Incidents</div><div class="value">' + (stats.totalIncidents || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Patrouilles</div><div class="value">' + (stats.totalPatrols || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Plaintes</div><div class="value">' + (stats.totalComplaints || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Enquetes</div><div class="value">' + (stats.totalInvestigations || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Police Academies</div><div class="value">' + (stats.totalPoliceAcademies || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Dossiers</div><div class="value">' + (stats.dossiersCount || 0) + '</div></div>',
+        '</div>',
+        '<div class="history-detail-grid">',
+          '<div class="history-mini-card">',
+            '<h4>Top Agents</h4>',
+            '<div class="table-wrapper"><table><thead><tr><th>Agent</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+              renderRows(stats.topAgents, function(agent) {
+                return '<tr><td>' + escapeHtml(agent.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(agent.count) + '</td></tr>';
+              }, 'Aucune donnee'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="history-mini-card">',
+            '<h4>Delits frequents</h4>',
+            '<div class="table-wrapper"><table><thead><tr><th>Delit</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+              renderRows(stats.topDelits, function(delit) {
+                return '<tr><td>' + escapeHtml(delit.delit) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(delit.count) + '</td></tr>';
+              }, 'Aucun delit'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="history-mini-card">',
+            '<h4>Divisions</h4>',
+            '<div class="table-wrapper"><table><thead><tr><th>Division</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+              renderRows(stats.activityByDivision, function(item) {
+                return '<tr><td>' + escapeHtml(item.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.count) + '</td></tr>';
+              }, 'Aucune activite'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="history-mini-card">',
+            '<h4>Objets de plainte</h4>',
+            '<div class="table-wrapper"><table><thead><tr><th>Objet</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+              renderRows(stats.topComplaintObjects, function(item) {
+                return '<tr><td>' + escapeHtml(item.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.count) + '</td></tr>';
+              }, 'Aucune plainte'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="history-mini-card">',
+            '<h4>Statuts d enquete</h4>',
+            '<div class="table-wrapper"><table><thead><tr><th>Statut</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+              renderRows(stats.topInvestigationStatuses, function(item) {
+                return '<tr><td>' + escapeHtml(item.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.count) + '</td></tr>';
+              }, 'Aucune enquete'),
+            '</tbody></table></div>',
+          '</div>',
+        '</div>'
+      ].join('');
+    }
+
+    async function openHistorySnapshot(snapshotId) {
+      var detail = document.getElementById('history-detail');
+      detail.innerHTML = '<div class="loading">Chargement de l archive...</div>';
+
+      try {
+        var response = await fetch('/api/v1/casier/stats/history/' + encodeURIComponent(snapshotId), {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!response.ok) throw new Error('Archive introuvable');
+        var payload = await response.json();
+        detail.innerHTML = renderHistorySnapshotDetail(payload.stats || payload);
+      } catch (error) {
+        detail.innerHTML = '<div class="error">Impossible de charger cette archive</div>';
+      }
+    }
+
+    async function openHistoryModal() {
+      var overlay = document.getElementById('history-modal-overlay');
+      document.body.classList.add('modal-open');
+      overlay.classList.add('active');
+      document.getElementById('history-list').innerHTML = '<div class="loading">Chargement des archives...</div>';
+      document.getElementById('history-detail').innerHTML = '<div class="publication-empty">Selectionne une periode pour afficher les statistiques archivees.</div>';
+
+      try {
+        var items = await loadStatsHistory();
+        document.getElementById('history-list').innerHTML = renderHistorySnapshotList(items);
+        if (items.length) {
+          openHistorySnapshot(items[0].id);
+        }
+      } catch (error) {
+        document.getElementById('history-list').innerHTML = '<div class="error">Impossible de charger les archives.</div>';
+      }
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('history-modal-overlay').classList.remove('active');
+      document.body.classList.remove('modal-open');
+    }
+
+    function renderStats(stats) {
+      latestStatsPayload = stats;
+      var html = [
+        '<div class="dashboard-toolbar">',
+          '<div class="dashboard-period-banner">',
+            '<div class="dashboard-period-kicker">&#9674; Periode active</div>',
+            '<div class="dashboard-period-title">' + formatPeriodWindow(stats.period) + '</div>',
+            '<div class="dashboard-period-subtitle">Reset complet du dashboard chaque lundi a 15h00. Prochain reset : ' + formatDateTime(stats.period && stats.period.nextResetAt) + '</div>',
+          '</div>',
+          buildDashboardActions(),
+        '</div>',
+        '<div class="summary-stats">',
+          '<div class="summary-item"><div class="label">Rapports sur la periode</div><div class="value">' + stats.totalReports + '</div></div>',
+          '<div class="summary-item"><div class="label">Incidents</div><div class="value">' + stats.totalIncidents + '</div></div>',
+          '<div class="summary-item"><div class="label">Patrouilles</div><div class="value">' + stats.totalPatrols + '</div></div>',
+          '<div class="summary-item"><div class="label">Plaintes</div><div class="value">' + (stats.totalComplaints || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Enquetes</div><div class="value">' + (stats.totalInvestigations || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Police Academies</div><div class="value">' + (stats.totalPoliceAcademies || 0) + '</div></div>',
+          '<div class="summary-item"><div class="label">Dossiers actifs</div><div class="value">' + stats.dossiersCount + '</div></div>',
+        '</div>',
+
+        '<div class="stats-grid">',
+          '<div class="stat-card">',
+            '<h2>Top Agents de la Periode</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Agent</th><th style="text-align:right">Rapports</th></tr></thead><tbody>',
+            renderRows(stats.topAgents, function(agent) {
+              return '<tr><td>' + escapeHtml(agent.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(agent.count) + '</td></tr>';
+            }, 'Aucune donnee'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="stat-card">',
+            '<h2>Volumes de la Periode</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Type</th><th style="text-align:right">Nb</th></tr></thead><tbody>' +
+              '<tr><td>Rapports</td><td style="text-align:right;font-weight:bold">' + stats.totalReports + '</td></tr>' +
+              '<tr><td>Incidents</td><td style="text-align:right;font-weight:bold">' + stats.totalIncidents + '</td></tr>' +
+              '<tr><td>Patrouilles</td><td style="text-align:right;font-weight:bold">' + stats.totalPatrols + '</td></tr>' +
+              '<tr><td>Plaintes</td><td style="text-align:right;font-weight:bold">' + (stats.totalComplaints || 0) + '</td></tr>' +
+              '<tr><td>Enquetes</td><td style="text-align:right;font-weight:bold">' + (stats.totalInvestigations || 0) + '</td></tr>' +
+            '</tbody></table></div>',
+          '</div>',
+        '</div>',
+
+        '<div class="stats-grid">',
+          '<div class="stat-card">',
+            '<h2>Delits les plus frequents</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Delit</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+            renderRows(stats.topDelits, function(delit) {
+              return '<tr><td>' + escapeHtml(delit.delit) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(delit.count) + '</td></tr>';
+            }, 'Aucun delit sur la periode'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="stat-card">',
+            '<h2>Objets de plainte les plus frequents</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Objet</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+            renderRows(stats.topComplaintObjects, function(item) {
+              return '<tr><td>' + escapeHtml(item.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.count) + '</td></tr>';
+            }, 'Aucune plainte sur la periode'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="stat-card">',
+            '<h2>Statuts d enquete les plus frequents</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Statut</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+            renderRows(stats.topInvestigationStatuses, function(item) {
+              return '<tr><td>' + escapeHtml(item.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.count) + '</td></tr>';
+            }, 'Aucune enquete sur la periode'),
+            '</tbody></table></div>',
+          '</div>',
+        '</div>',
+
+        '<div class="stats-grid">',
+          '<div class="stat-card">',
+            '<h2>Activite par Division</h2>',
+            '<div class="table-wrapper"><table><thead><tr><th>Division</th><th style="text-align:right">Nb</th></tr></thead><tbody>',
+            renderRows(stats.activityByDivision, function(division) {
+              return '<tr><td>' + escapeHtml(division.name) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(division.count) + '</td></tr>';
+            }, 'Aucune division active'),
+            '</tbody></table></div>',
+          '</div>',
+        '</div>',
+
+        '<div class="stats-grid service-stats-grid">',
+          '<div class="stat-card stat-card-wide service-overview-card">',
+            '<h2>Prises de Service</h2>',
+            '<div class="table-wrapper service-table-wrapper"><table class="service-table"><thead><tr><th>Agent</th><th style="text-align:right">Sessions</th><th style="text-align:right">Heures</th></tr></thead><tbody>',
+            renderRows(stats.serviceLeaderboard, function(item) {
+              return '<tr><td>' + escapeHtml(item.pseudo) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(item.sessions) + '</td><td style="text-align:right;font-weight:bold">' + escapeHtml(formatDurationHours(item.hours)) + '</td></tr>';
+            }, 'Aucune prise de service enregistree'),
+            '</tbody></table></div>',
+          '</div>',
+          '<div class="stat-card stat-card-wide service-history-card">',
+            '<h2>Historique Recent de Service</h2>',
+            '<div class="publication-list service-recent-list">' + buildServiceHistoryItems(stats.recentServiceHistory, 5) + '</div>',
+            buildServiceHistoryViewAll((stats.recentServiceHistory || []).length),
+          '</div>',
+        '</div>',
+
+        '<div class="chart-grid">',
+          '<div class="chart-card">',
+            '<h2>Activite de la Periode</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-perday"></canvas></div>',
+          '</div>',
+          '<div class="chart-card">',
+            '<h2>Evolution cumulee</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-perday30"></canvas></div>',
+          '</div>',
+          '<div class="chart-card">',
+            '<h2>Courbe de Prise de Service</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-service"></canvas></div>',
+          '</div>',
+          '<div class="chart-card">',
+            '<h2>Flux des Plaintes</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-complaints"></canvas></div>',
+          '</div>',
+          '<div class="chart-card">',
+            '<h2>Flux des Enquetes</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-investigations"></canvas></div>',
+          '</div>',
+          '<div class="chart-card">',
+            '<h2>Visites du Site - 30 Derniers Jours</h2>',
+            '<div class="chart-canvas-wrap"><canvas id="chart-visits"></canvas></div>',
+          '</div>',
+        '</div>',
+
+        '<div class="stats-grid">',
+          '<div class="stat-card stat-card-wide">',
+            '<h2>Derniers Rapports Generes</h2>',
+            '<div class="publication-list">' + buildLatestReports(stats.latestReports) + '</div>',
+            buildViewAllButton('generated', (stats.latestReports || []).length),
+          '</div>',
+          '<div class="stat-card stat-card-wide">',
+            '<h2>Dernieres Plaintes</h2>',
+            '<div class="publication-list">' + buildComplaints(stats.recentComplaints) + '</div>',
+            buildViewAllButton('complaints', (stats.recentComplaints || []).length),
+          '</div>',
+          '<div class="stat-card stat-card-wide">',
+            '<h2>Dernieres Enquetes</h2>',
+            '<div class="publication-list">' + buildInvestigations(stats.recentInvestigations) + '</div>',
+            buildViewAllButton('investigations', (stats.recentInvestigations || []).length),
+          '</div>',
+        '</div>',
+
+        '<div class="stats-grid">',
+          '<div class="stat-card stat-card-wide">',
+            '<h2>Derniers Rapports Publies sur Discord</h2>',
+            '<div class="publication-list">' + buildPublications(stats.recentPublications) + '</div>',
+            buildViewAllButton('published', (stats.recentPublications || []).length),
+          '</div>',
+          '<div class="stat-card stat-card-wide">',
+            '<h2>Cycle de Reset Unifie</h2>',
+            '<div class="reset-info">',
+              '<div class="reset-badge"><strong>Periode active</strong>' + formatPeriodWindow(stats.period) + '<br><span style="opacity:.7">Snapshot archive au reset hebdomadaire</span></div>',
+              '<div class="reset-badge"><strong>Prochain reset complet</strong>' + formatDateTime(stats.period && stats.period.nextResetAt) + '<br><span style="opacity:.7">Chaque lundi a 15h00</span></div>',
+            '</div>',
+          '</div>',
+        '</div>',
+
+        '<div class="dashboard-note">',
+          'Toutes les statistiques du dashboard sont unifiees sur une seule periode active. ',
+          'Chaque lundi a 15h00, le serveur archive automatiquement la periode terminee puis remet a zero le dashboard. ',
+          'L historique des donnees te permet ensuite de revisiter chaque tranche hebdomadaire.',
+        '</div>'
+      ].join('');
+
+      document.getElementById('content').innerHTML = html;
+      renderWeekChart(stats.perDay || []);
+      renderMonthChart(stats.perDay || []);
+      renderServiceChart(stats.serviceSeries || []);
+      renderComplaintChart(stats.complaintSeries || []);
+      renderInvestigationChart(stats.investigationSeries || []);
+      renderVisitsChart(stats.visitSeries30d || []);
+    }
+
+    function renderWeekChart(perDay) {
+      if (!perDay.length) return;
+      var ctx = document.getElementById('chart-perday').getContext('2d');
+      if (chartWeekInstance) chartWeekInstance.destroy();
+      chartWeekInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: perDay.map(function(day) { return day.label; }),
+          datasets: [
+            {
+              label: 'Rapports',
+              data: perDay.map(function(day) { return day.reports; }),
+              backgroundColor: 'rgba(139, 26, 26, 0.75)',
+              borderColor: 'rgba(139, 26, 26, 1)',
+              borderWidth: 2,
+              borderRadius: 4
+            },
+            {
+              label: 'Patrouilles',
+              data: perDay.map(function(day) { return day.patrols; }),
+              backgroundColor: 'rgba(66, 123, 143, 0.65)',
+              borderColor: 'rgba(66, 123, 143, 1)',
+              borderWidth: 2,
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#3d2b0a', font: { family: "'IM Fell English', serif", size: 12 } },
+              grid: { color: 'rgba(122, 92, 30, 0.2)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 12 },
+                stepSize: 1
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.2)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderMonthChart(perDay30) {
+      if (!perDay30.length) return;
+      var cumulative = [];
+      var running = 0;
+      perDay30.forEach(function(day) {
+        running += Number(day.reports || 0);
+        cumulative.push(running);
+      });
+      var ctx = document.getElementById('chart-perday30').getContext('2d');
+      if (chartMonthInstance) chartMonthInstance.destroy();
+      chartMonthInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: perDay30.map(function(day) { return day.label; }),
+          datasets: [{
+            label: 'Rapports cumules',
+            data: cumulative,
+            borderColor: 'rgba(139, 26, 26, 1)',
+            backgroundColor: 'rgba(139, 26, 26, 0.18)',
+            fill: true,
+            tension: 0.28,
+            pointRadius: 3,
+            pointBackgroundColor: 'rgba(139, 26, 26, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#3d2b0a',
+                autoSkip: true,
+                maxTicksLimit: 8,
+                font: { family: "'IM Fell English', serif", size: 11 }
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.12)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 12 },
+                stepSize: 1
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.2)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderServiceChart(serviceSeries) {
+      if (!serviceSeries.length) return;
+      var ctx = document.getElementById('chart-service').getContext('2d');
+      if (chartServiceInstance) chartServiceInstance.destroy();
+      chartServiceInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: serviceSeries.map(function(item) { return item.label; }),
+          datasets: [
+            {
+              label: 'Sessions',
+              data: serviceSeries.map(function(item) { return item.sessions; }),
+              borderColor: 'rgba(58, 112, 156, 1)',
+              backgroundColor: 'rgba(58, 112, 156, 0.16)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 3,
+              pointBackgroundColor: 'rgba(58, 112, 156, 1)',
+              yAxisID: 'y'
+            },
+            {
+              label: 'Heures',
+              data: serviceSeries.map(function(item) { return item.hours; }),
+              borderColor: 'rgba(184, 134, 11, 1)',
+              backgroundColor: 'rgba(184, 134, 11, 0.16)',
+              fill: false,
+              tension: 0.28,
+              pointRadius: 3,
+              pointBackgroundColor: 'rgba(184, 134, 11, 1)',
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#3d2b0a', font: { family: "'IM Fell English', serif", size: 11 } },
+              grid: { color: 'rgba(122, 92, 30, 0.12)' }
+            },
+            y: {
+              beginAtZero: true,
+              position: 'left',
+              ticks: { color: '#3d2b0a', stepSize: 1, font: { family: "'IM Fell English', serif", size: 12 } },
+              grid: { color: 'rgba(122, 92, 30, 0.16)' }
+            },
+            y1: {
+              beginAtZero: true,
+              position: 'right',
+              ticks: { color: '#7b5b12', font: { family: "'IM Fell English', serif", size: 12 } },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+    }
+
+    function renderComplaintChart(complaintSeries) {
+      if (!complaintSeries.length) return;
+      var canvas = document.getElementById('chart-complaints');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      if (chartComplaintInstance) chartComplaintInstance.destroy();
+      chartComplaintInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: complaintSeries.map(function(item) { return item.label; }),
+          datasets: [{
+            label: 'Plaintes',
+            data: complaintSeries.map(function(item) { return item.complaints; }),
+            borderColor: 'rgba(124, 34, 88, 1)',
+            backgroundColor: 'rgba(124, 34, 88, 0.16)',
+            fill: true,
+            tension: 0.28,
+            borderWidth: 3,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: 'rgba(124, 34, 88, 1)',
+            pointBorderColor: 'rgba(245, 232, 200, 0.9)',
+            pointBorderWidth: 1.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#3d2b0a',
+                autoSkip: true,
+                maxTicksLimit: 8,
+                font: { family: "'IM Fell English', serif", size: 11 }
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.12)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#3d2b0a',
+                precision: 0,
+                stepSize: 1,
+                font: { family: "'IM Fell English', serif", size: 12 }
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.16)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderInvestigationChart(investigationSeries) {
+      if (!investigationSeries.length) return;
+      var canvas = document.getElementById('chart-investigations');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      if (chartInvestigationInstance) chartInvestigationInstance.destroy();
+      chartInvestigationInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: investigationSeries.map(function(day) { return day.label; }),
+          datasets: [{
+            label: 'Enquetes',
+            data: investigationSeries.map(function(day) { return day.investigations; }),
+            borderColor: 'rgba(105, 76, 166, 1)',
+            backgroundColor: 'rgba(105, 76, 166, 0.16)',
+            fill: true,
+            tension: 0.28,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#3d2b0a', font: { family: "'IM Fell English', serif", size: 12 } },
+              grid: { color: 'rgba(122, 92, 30, 0.2)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0, color: '#3d2b0a', font: { family: "'IM Fell English', serif", size: 12 } },
+              grid: { color: 'rgba(122, 92, 30, 0.16)' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderVisitsChart(visitSeries) {
+      if (!visitSeries.length) return;
+      var ctx = document.getElementById('chart-visits').getContext('2d');
+      if (chartVisitsInstance) chartVisitsInstance.destroy();
+      chartVisitsInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: visitSeries.map(function(item) { return item.label; }),
+          datasets: [
+            {
+              label: 'Police',
+              data: visitSeries.map(function(item) { return item.police; }),
+              borderColor: 'rgba(58, 112, 156, 1)',
+              backgroundColor: 'rgba(58, 112, 156, 0.14)',
+              tension: 0.28,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 2.5,
+              pointHoverRadius: 4,
+              pointBackgroundColor: 'rgba(58, 112, 156, 1)',
+              pointBorderColor: 'rgba(245, 232, 200, 0.9)',
+              pointBorderWidth: 1.5
+            },
+            {
+              label: 'Justice',
+              data: visitSeries.map(function(item) { return item.justice; }),
+              borderColor: 'rgba(139, 26, 26, 1)',
+              backgroundColor: 'rgba(139, 26, 26, 0.12)',
+              tension: 0.28,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 2.5,
+              pointHoverRadius: 4,
+              pointBackgroundColor: 'rgba(139, 26, 26, 1)',
+              pointBorderColor: 'rgba(245, 232, 200, 0.9)',
+              pointBorderWidth: 1.5
+            },
+            {
+              label: 'Visiteurs',
+              data: visitSeries.map(function(item) { return item.visitors; }),
+              borderColor: 'rgba(112, 104, 92, 1)',
+              backgroundColor: 'rgba(112, 104, 92, 0.12)',
+              tension: 0.24,
+              fill: true,
+              borderWidth: 3,
+              pointRadius: 2.5,
+              pointHoverRadius: 4,
+              pointBackgroundColor: 'rgba(112, 104, 92, 1)',
+              pointBorderColor: 'rgba(245, 232, 200, 0.9)',
+              pointBorderWidth: 1.5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#3d2b0a',
+                font: { family: "'IM Fell English', serif", size: 13 }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#3d2b0a',
+                autoSkip: true,
+                maxTicksLimit: 8,
+                font: { family: "'IM Fell English', serif", size: 11 }
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.12)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#3d2b0a',
+                precision: 0,
+                stepSize: 1,
+                font: { family: "'IM Fell English', serif", size: 12 }
+              },
+              grid: { color: 'rgba(122, 92, 30, 0.16)' }
+            }
+          }
+        }
+      });
+    }
+
+    window.addEventListener('load', function() {
+      (async function() {
+        if (currentUser) {
+          setupUserBar(currentUser);
+        }
+        var capabilities = await loadCapabilities();
+        if (!capabilities) return;
+        loadStats();
+        pingPresence();
+        setInterval(pingPresence, 8000);
+      })();
+    });
+
+    window.openReportsModal = openReportsModal;
+    window.closeReportsModal = closeReportsModal;
+    window.openHistoryModal = openHistoryModal;
+    window.closeHistoryModal = closeHistoryModal;
+    window.openHistorySnapshot = openHistorySnapshot;
+    window.onServiceSessionChanged = function() {
+      loadStats();
+    };
+  </script>
+
+</body>
+</html>

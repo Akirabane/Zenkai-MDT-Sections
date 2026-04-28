@@ -1,0 +1,570 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historique Staff - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="CSS/history.css?v=20260408e">
+<link rel="stylesheet" href="CSS/user-chrome.css?v=20260409b">
+<link rel="stylesheet" href="CSS/profile-panel.css?v=20260411c">
+<link rel="stylesheet" href="CSS/presence-sidebar.css?v=20260410e">
+<link rel="stylesheet" href="CSS/service-widget.css?v=20260409b">
+<link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
+<link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
+<link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/user-shell.js?v=20260411b"></script>
+<script src="JS/presence-ui.js?v=20260409d"></script>
+<script src="JS/service-widget.js?v=20260414c"></script>
+<script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-motion.js?v=20260411b" defer></script>
+<script src="JS/background-interaction.js?v=20260410c" defer></script>
+<script src="JS/page-transitions.js?v=20260409c" defer></script>
+<script>
+  (function() {
+    var token = sessionStorage.getItem('policeToken');
+    if (!token) {
+      window.location.replace('login.html?redirect=Historique.html');
+    }
+  })();
+</script>
+</head>
+<body>
+<a href="index.html" class="btn-back">&#8592;<span class="btn-back-text"> Retour a l'accueil</span></a>
+
+<div class="user-bar" id="user-bar">
+  <button class="btn-burger" id="btn-burger" onclick="toggleBurgerMenu()" aria-label="Menu">&#9776;</button>
+  <div class="user-bar-inner" id="user-bar-inner">
+    <button class="btn-user-action btn-admin-panel" id="btn-admin-panel" onclick="openAdminShortcut();closeBurgerMenu()" style="display:none">&#9674; Admin</button>
+    <span class="user-badge" id="user-badge" onclick="toggleProfilePopup()" style="cursor:pointer" title="Modifier mon profil">&#9670; Chargement</span>
+    <button class="btn-user-action btn-logout" onclick="doLogout()">Deconnexion</button>
+  </div>
+</div>
+
+<div class="profile-popup" id="profile-popup">
+  <div class="profile-popup-kicker">&#9674; Mon profil</div>
+  <div class="profile-popup-head">
+    <div>
+      <div class="profile-popup-title">Prise de service</div>
+      <div class="profile-popup-subtitle">Photo de profil, statut personnel et historique recent.</div>
+    </div>
+    <div class="profile-state-pill" id="service-state-pill">Hors service</div>
+  </div>
+  <div class="profile-avatar-layout">
+    <div class="profile-avatar-preview" id="profile-avatar-preview">
+      <span class="profile-avatar-placeholder" id="profile-avatar-ph">&#128100;</span>
+    </div>
+    <div class="profile-avatar-controls">
+      <label class="profile-upload-label" for="profile-img-input">&#128247; Choisir une photo</label>
+      <input type="file" accept="image/*" id="profile-img-input" class="profile-upload-input" onchange="handleAvatarSelect(event)">
+      <button class="profile-save-btn" id="profile-save-btn" onclick="saveAvatar()" disabled>Sauvegarder</button>
+      <div class="profile-save-status" id="profile-save-status"></div>
+    </div>
+  </div>
+  <div class="service-widget" id="service-widget" style="display:none">
+    <div class="profile-service-panel">
+      <div class="profile-service-label">Statut actuel</div>
+      <div class="service-widget-status" id="service-status-text">Chargement...</div>
+    </div>
+    <button type="button" class="service-toggle-btn" id="service-toggle-btn" onclick="window.ServiceWidget.toggle(currentUser)">Prise de service</button>
+    <div class="service-widget-title">Dernieres sessions</div>
+    <div class="service-history-list" id="service-history-list"></div>
+  </div>
+</div>
+
+<div class="presence-sidebar" id="presence-sidebar">
+  <button class="presence-toggle" onclick="togglePresenceMobile()">
+    <span class="presence-toggle-icon">&#9672;</span>
+    <span class="presence-toggle-text">EN LIGNE</span>
+  </button>
+  <div class="presence-body" id="presence-list">
+    <div class="presence-empty">&hellip;</div>
+  </div>
+</div>
+
+<div class="frame">
+  <span class="frame-corner tl">&#10022;</span>
+  <span class="frame-corner tr">&#10022;</span>
+  <span class="frame-corner bl">&#10022;</span>
+  <span class="frame-corner br">&#10022;</span>
+
+  <div class="frame-inner">
+    <div class="watermark">HISTORIQUE</div>
+    <div class="doc-header">
+      <div class="kanji-line">Police Militaire de Konoha</div>
+      <h1 class="page-title">Historique des Modifications</h1>
+      <div class="sub-title">Reserve au commandement, a la justice et a l'administration</div>
+      <div class="header-divider"></div>
+    </div>
+
+    <div class="summary-row" id="summary-row">
+      <div class="summary-card">
+        <div class="summary-label">Entrees chargees</div>
+        <div class="summary-value" id="summary-total">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Grades modifies</div>
+        <div class="summary-value" id="summary-grades">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Rapports / plaintes</div>
+        <div class="summary-value" id="summary-casiers">0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Publications</div>
+        <div class="summary-value" id="summary-publications">0</div>
+      </div>
+    </div>
+
+    <div class="filter-shell">
+      <div class="filter-grid">
+        <div class="filter-group grow">
+          <label for="filter-q">Recherche</label>
+          <input id="filter-q" class="filter-input" type="text" placeholder="acteur, cible, grade, suspect, plaignant..." oninput="debouncedLoadHistory()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-action">Action</label>
+          <select id="filter-action" class="filter-select" onchange="loadHistory()">
+            <option value="">Toutes</option>
+            <option value="grade_change">Changement de grade</option>
+            <option value="rang_change">Changement de rang</option>
+            <option value="report_create">Creation de rapport</option>
+            <option value="report_update">Modification de rapport</option>
+            <option value="report_delete">Suppression de rapport</option>
+            <option value="report_publish">Publication de rapport</option>
+            <option value="complaint_create">Creation de plainte</option>
+            <option value="complaint_update">Modification de plainte</option>
+            <option value="complaint_delete">Suppression de plainte</option>
+            <option value="investigation_create">Creation d'enquete</option>
+            <option value="investigation_update">Modification d'enquete</option>
+            <option value="investigation_delete">Suppression d'enquete</option>
+            <option value="investigation_entry_add">Ajout de suivi d'enquete</option>
+            <option value="investigation_link_add">Ajout de liaison d'enquete</option>
+            <option value="investigation_link_remove">Suppression de liaison d'enquete</option>
+            <option value="investigation_attachment_add">Ajout de piece jointe d'enquete</option>
+            <option value="investigation_attachment_remove">Suppression de piece jointe d'enquete</option>
+            <option value="dossier_delete">Suppression compl&egrave;te de dossier</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-actor">Acteur</label>
+          <input id="filter-actor" class="filter-input" type="text" placeholder="Akirabane" oninput="debouncedLoadHistory()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-date-from">Depuis</label>
+          <input id="filter-date-from" class="filter-input" type="date" onchange="loadHistory()">
+        </div>
+        <div class="filter-group">
+          <label for="filter-date-to">Jusqu'a</label>
+          <input id="filter-date-to" class="filter-input" type="date" onchange="loadHistory()">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-secondary btn-danger" id="btn-clear-history" onclick="clearHistory()" style="display:none">Effacer l'historique</button>
+        <button class="btn-secondary" onclick="resetFilters()">Reinitialiser</button>
+        <button class="btn-primary" onclick="loadHistory()">Actualiser</button>
+      </div>
+    </div>
+
+    <div class="history-list" id="history-list">
+      <div class="state-card">Chargement de l'historique...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentUser = null;
+var historyItems = [];
+var debounceHandle = null;
+
+function getToken() { return window.UserShell.getToken(); }
+function getCachedUser() { return window.UserShell.getCachedUser(); }
+
+async function checkAuth() {
+  var token = getToken();
+  if (!token) {
+    window.location.href = 'login.html?redirect=Historique.html';
+    return null;
+  }
+
+  try {
+    var response = await fetch('/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!response.ok) {
+      sessionStorage.clear();
+      window.location.href = 'login.html?redirect=Historique.html';
+      return null;
+    }
+    var user = await response.json();
+    window.UserShell.saveUser(user);
+    return user;
+  } catch (error) {
+    return getCachedUser();
+  }
+}
+
+async function ensureHistoryAccess() {
+  var response = await fetch('/auth/can-view-history', {
+    headers: { 'Authorization': 'Bearer ' + getToken() }
+  });
+  if (!response.ok) throw new Error('Permission impossible a verifier');
+  var payload = await response.json();
+  if (!payload.canView) {
+    window.location.replace('index.html');
+    return false;
+  }
+  return true;
+}
+
+function setupUserBar(user) {
+  window.UserShell.applyUserBar(user);
+  if (user.permission === 'ADMIN') {
+    document.getElementById('btn-clear-history').style.display = '';
+  }
+}
+
+  function openAdminShortcut() {
+    window.UserShell.openAdminShortcut('Backoffice_Admin.html');
+  }
+
+function toggleBurgerMenu() { window.UserShell.toggleBurgerMenu(); }
+function closeBurgerMenu() { window.UserShell.closeBurgerMenu(); }
+document.addEventListener('click', function(event) { if (!event.target.closest('#user-bar')) closeBurgerMenu(); });
+
+async function doLogout() {
+  await window.UserShell.logout({ redirectTo: 'login.html' });
+}
+
+function togglePresenceMobile() {
+  window.UserShell.togglePresenceMobile('presence-sidebar');
+}
+
+function currentPresenceStatus() {
+  if (document.hidden || !document.hasFocus()) return 'away';
+  return window.UserShell.currentPresenceStatus();
+}
+
+async function pingPresence() {
+  if (!getToken()) return;
+  try {
+    var response = await fetch('/presence/ping', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken()
+      },
+      body: JSON.stringify({ status: currentPresenceStatus() })
+    });
+    if (response.ok) {
+      renderPresence(await response.json());
+    }
+  } catch (error) {}
+}
+
+function renderPresence(data) {
+  window.UserShell.renderPresence('presence-list', data);
+}
+
+function debouncedLoadHistory() {
+  clearTimeout(debounceHandle);
+  debounceHandle = setTimeout(loadHistory, 260);
+}
+
+function buildHistoryQuery() {
+  var params = new URLSearchParams();
+  var q = document.getElementById('filter-q').value.trim();
+  var action = document.getElementById('filter-action').value;
+  var actor = document.getElementById('filter-actor').value.trim();
+  var dateFrom = document.getElementById('filter-date-from').value;
+  var dateTo = document.getElementById('filter-date-to').value;
+
+  if (q) params.set('q', q);
+  if (action) params.set('action', action);
+  if (actor) params.set('actor', actor);
+  if (dateFrom) params.set('dateFrom', new Date(dateFrom).toISOString());
+  if (dateTo) {
+    var end = new Date(dateTo);
+    end.setHours(23, 59, 59, 999);
+    params.set('dateTo', end.toISOString());
+  }
+  params.set('limit', '250');
+  return params.toString();
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatDateTime(value) {
+  var date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Date inconnue';
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' a ' +
+    date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDuration(seconds) {
+  var total = Math.max(0, Number(seconds) || 0);
+  var hours = Math.floor(total / 3600);
+  var minutes = Math.floor((total % 3600) / 60);
+  var secs = total % 60;
+  if (hours) return hours + 'h ' + String(minutes).padStart(2, '0');
+  if (minutes) return minutes + ' min ' + String(secs).padStart(2, '0');
+  return secs + ' s';
+}
+
+function actionLabel(action) {
+  return {
+    grade_change: 'Changement de grade',
+    rang_change: 'Changement de rang',
+    casier_create: 'Creation de dossier',
+    casier_update: 'Modification de dossier',
+    casier_delete: 'Suppression de dossier',
+    casier_publish: 'Publication de dossier',
+    report_create: 'Creation de rapport',
+    report_update: 'Modification de rapport',
+    report_delete: 'Suppression de rapport',
+    report_publish: 'Publication de rapport',
+    complaint_create: 'Creation de plainte',
+    complaint_update: 'Modification de plainte',
+    complaint_delete: 'Suppression de plainte',
+    investigation_create: 'Creation d enquete',
+    investigation_update: 'Modification d enquete',
+    investigation_delete: 'Suppression d enquete',
+    investigation_entry_add: 'Ajout de suivi d enquete',
+    investigation_link_add: 'Ajout de liaison d enquete',
+    investigation_link_remove: 'Suppression de liaison d enquete',
+    investigation_attachment_add: 'Ajout de piece jointe d enquete',
+    investigation_attachment_remove: 'Suppression de piece jointe d enquete',
+    dossier_delete: 'Suppression complete de dossier'
+  }[action] || action;
+}
+
+function actionClass(action) {
+  return {
+    grade_change: 'action-grade',
+    rang_change: 'action-grade',
+    casier_create: 'action-create',
+    casier_update: 'action-update',
+    casier_delete: 'action-delete',
+    casier_publish: 'action-publish',
+    report_create: 'action-create',
+    report_update: 'action-update',
+    report_delete: 'action-delete',
+    report_publish: 'action-publish',
+    complaint_create: 'action-create',
+    complaint_update: 'action-update',
+    complaint_delete: 'action-delete',
+    investigation_create: 'action-create',
+    investigation_update: 'action-update',
+    investigation_delete: 'action-delete',
+    investigation_entry_add: 'action-update',
+    investigation_link_add: 'action-update',
+    investigation_link_remove: 'action-update',
+    investigation_attachment_add: 'action-update',
+    investigation_attachment_remove: 'action-update',
+    dossier_delete: 'action-delete'
+  }[action] || 'action-neutral';
+}
+
+function historyReportType(item) {
+  var metadata = item.metadata || {};
+  if (metadata.after && metadata.after.reportType) return metadata.after.reportType;
+  if (metadata.before && metadata.before.reportType) return metadata.before.reportType;
+  if (metadata.record && metadata.record.reportType) return metadata.record.reportType;
+  return 'incident';
+}
+
+function buildMetadataSummary(item) {
+  var metadata = item.metadata || {};
+
+  if (item.action === 'grade_change') {
+    var oldGrade = metadata.oldValue && metadata.oldValue.grade ? metadata.oldValue.grade : 'Non renseigne';
+    var newGrade = metadata.newValue && metadata.newValue.grade ? metadata.newValue.grade : 'Non renseigne';
+    return '<div class="history-detail"><strong>Grade :</strong> ' + escapeHtml(oldGrade) + ' &rarr; ' + escapeHtml(newGrade) + '</div>' +
+      '<div class="history-detail"><strong>Correspondance :</strong> ' + escapeHtml(metadata.matchType || 'inconnue') + ' (' + escapeHtml(metadata.score) + ')</div>';
+  }
+
+  if (item.action === 'rang_change') {
+    var oldRang = metadata.oldValue && metadata.oldValue.rang ? metadata.oldValue.rang : 'Non renseigne';
+    var newRang = metadata.newValue && metadata.newValue.rang ? metadata.newValue.rang : 'Non renseigne';
+    return '<div class="history-detail"><strong>Rang :</strong> ' + escapeHtml(oldRang) + ' &rarr; ' + escapeHtml(newRang) + '</div>';
+  }
+
+  if (item.action === 'casier_publish' || item.action === 'report_publish') {
+    return '<div class="history-detail"><strong>Type :</strong> ' + escapeHtml(historyReportType(item) === 'patrol' ? 'Rapport de patrouille' : 'Rapport d incident') + '</div>' +
+      '<div class="history-detail"><strong>Publication :</strong> ' + (metadata.updateNotice ? 'rapport mis a jour' : 'publication initiale') + '</div>' +
+      '<div class="history-detail"><strong>Chunks Discord :</strong> ' + escapeHtml(metadata.chunks || 1) + '</div>';
+  }
+
+  if (item.action === 'casier_update' || item.action === 'report_update') {
+    var before = metadata.before || {};
+    var after = metadata.after || {};
+    if (historyReportType(item) === 'patrol') {
+      return '<div class="history-detail"><strong>Type :</strong> Rapport de patrouille</div>' +
+        '<div class="history-detail"><strong>Evenement grave :</strong> ' + (after.graveEvent ? escapeHtml(after.graveEventDetails || 'Oui') : 'Aucun') + '</div>';
+    }
+    return '<div class="history-detail"><strong>Type :</strong> Rapport d incident</div>' +
+      '<div class="history-detail"><strong>Peine :</strong> ' + escapeHtml(before.peine || 'Non precisee') + ' &rarr; ' + escapeHtml(after.peine || 'Non precisee') + '</div>' +
+      '<div class="history-detail"><strong>Delits :</strong> ' + escapeHtml((after.delits || []).join(', ') || 'Aucun') + '</div>';
+  }
+
+  if (item.action === 'casier_create' || item.action === 'casier_delete' || item.action === 'report_create' || item.action === 'report_delete') {
+    var snapshot = metadata.after || metadata.before || {};
+    var output = '<div class="history-detail"><strong>Type :</strong> ' + escapeHtml((snapshot.reportType || 'incident') === 'patrol' ? 'Rapport de patrouille' : 'Rapport d incident') + '</div>' +
+      '<div class="history-detail"><strong>Agent :</strong> ' + escapeHtml([snapshot.agentPrenom, snapshot.agentNom].filter(Boolean).join(' ') || 'Non renseigne') + '</div>';
+    if ((snapshot.reportType || 'incident') === 'patrol') {
+      output += '<div class="history-detail"><strong>Evenement grave :</strong> ' + (snapshot.graveEvent ? escapeHtml(snapshot.graveEventDetails || 'Oui') : 'Aucun') + '</div>';
+    } else {
+      output += '<div class="history-detail"><strong>Peine :</strong> ' + escapeHtml(snapshot.peine || 'Non precisee') + '</div>';
+    }
+    return output;
+  }
+
+  if (item.action === 'dossier_delete') {
+    return '<div class="history-detail"><strong>Rapports supprimes :</strong> ' + escapeHtml((metadata.deletedReports || 0)) + '</div>' +
+      '<div class="history-detail"><strong>Sanctions cumulees :</strong> ' + escapeHtml((metadata.totals && metadata.totals.signalements ? metadata.totals.signalements + ' signalement(s)' : 'Aucun signalement')) + '</div>';
+  }
+
+  if (item.action === 'complaint_create' || item.action === 'complaint_update' || item.action === 'complaint_delete') {
+    var complaint = metadata.after || metadata.before || {};
+    return '<div class="history-detail"><strong>Objet :</strong> ' + escapeHtml(complaint.objet || 'Non precise') + '</div>' +
+      '<div class="history-detail"><strong>Plaignant :</strong> ' + escapeHtml([complaint.plaintiffPrenom, complaint.plaintiffNom].filter(Boolean).join(' ') || 'Non renseigne') + '</div>' +
+      '<div class="history-detail"><strong>Accuse :</strong> ' + escapeHtml([complaint.accusedPrenom, complaint.accusedNom].filter(Boolean).join(' ') || 'Non renseigne') + '</div>' +
+      '<div class="history-detail"><strong>Grade armee :</strong> ' + escapeHtml(complaint.plaintiffGrade || 'Non renseigne') + '</div>';
+  }
+
+  if (String(item.action || '').indexOf('investigation_') === 0) {
+    var investigation = metadata.after || metadata.before || {};
+    if (item.action === 'investigation_entry_add') {
+      return '<div class="history-detail"><strong>Type de suivi :</strong> ' + escapeHtml(metadata.kind || 'Suivi') + '</div>' +
+        '<div class="history-detail"><strong>Extrait :</strong> ' + escapeHtml(metadata.contentPreview || 'Aucun extrait') + '</div>';
+    }
+    if (item.action === 'investigation_link_add' || item.action === 'investigation_link_remove') {
+      return '<div class="history-detail"><strong>Liaison :</strong> ' + escapeHtml(metadata.linkType || 'Lien') + '</div>' +
+        '<div class="history-detail"><strong>Cible :</strong> ' + escapeHtml(metadata.linkedLabel || metadata.linkedId || 'Non renseignee') + '</div>';
+    }
+    if (item.action === 'investigation_attachment_add' || item.action === 'investigation_attachment_remove') {
+      return '<div class="history-detail"><strong>Piece jointe :</strong> ' + escapeHtml(metadata.filename || 'Fichier') + '</div>' +
+        '<div class="history-detail"><strong>Legende :</strong> ' + escapeHtml(metadata.caption || 'Aucune') + '</div>';
+    }
+    return '<div class="history-detail"><strong>Titre :</strong> ' + escapeHtml(investigation.title || item.targetLabel || 'Enquete') + '</div>' +
+      '<div class="history-detail"><strong>Statut :</strong> ' + escapeHtml(investigation.status || 'Non precise') + '</div>' +
+      '<div class="history-detail"><strong>Agent assigne :</strong> ' + escapeHtml(investigation.assignedAgent || 'soullera') + '</div>';
+  }
+
+  return '';
+}
+
+function renderSummary() {
+  document.getElementById('summary-total').textContent = historyItems.length;
+  document.getElementById('summary-grades').textContent = historyItems.filter(function(item) {
+    return item.action === 'grade_change' || item.action === 'rang_change';
+  }).length;
+  document.getElementById('summary-casiers').textContent = historyItems.filter(function(item) {
+    return item.action === 'casier_create' || item.action === 'casier_update' || item.action === 'casier_delete' ||
+      item.action === 'report_create' || item.action === 'report_update' || item.action === 'report_delete' ||
+      item.action === 'complaint_create' || item.action === 'complaint_update' || item.action === 'complaint_delete' ||
+      item.action === 'investigation_create' || item.action === 'investigation_update' || item.action === 'investigation_delete' ||
+      item.action === 'investigation_entry_add' || item.action === 'investigation_link_add' || item.action === 'investigation_link_remove' ||
+      item.action === 'investigation_attachment_add' || item.action === 'investigation_attachment_remove' ||
+      item.action === 'dossier_delete';
+  }).length;
+  document.getElementById('summary-publications').textContent = historyItems.filter(function(item) { return item.action === 'casier_publish' || item.action === 'report_publish'; }).length;
+}
+
+function renderHistory() {
+  var list = document.getElementById('history-list');
+  renderSummary();
+
+  if (!historyItems.length) {
+    list.innerHTML = '<div class="state-card">Aucune entree ne correspond aux filtres actuels.</div>';
+    return;
+  }
+
+  list.innerHTML = historyItems.map(function(item) {
+    return [
+      '<article class="history-card">',
+        '<div class="history-topline">',
+          '<span class="history-chip ' + actionClass(item.action) + '">' + escapeHtml(actionLabel(item.action)) + '</span>',
+          '<span class="history-date">' + escapeHtml(formatDateTime(item.timestamp)) + '</span>',
+        '</div>',
+        '<h2 class="history-title">' + escapeHtml(item.targetLabel || item.entityId || 'Cible non precisee') + '</h2>',
+        '<div class="history-meta">Par ' + escapeHtml(item.actorPseudo) + ' - ' + escapeHtml(item.actorPermission || 'Aucune permission') + '</div>',
+        buildMetadataSummary(item),
+        '<div class="history-footer">Reference : ' + escapeHtml(item.entityType) + (item.entityId ? ' #' + escapeHtml(item.entityId) : '') + '</div>',
+      '</article>'
+    ].join('');
+  }).join('');
+}
+
+async function loadHistory() {
+  var list = document.getElementById('history-list');
+  list.innerHTML = '<div class="state-card">Chargement de l\'historique...</div>';
+  try {
+    var query = buildHistoryQuery();
+    var response = await fetch('/api/v1/history' + (query ? '?' + query : ''), {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+
+    if (response.status === 401) {
+      sessionStorage.clear();
+      window.location.replace('login.html?redirect=Historique.html');
+      return;
+    }
+    if (response.status === 403) {
+      window.location.replace('index.html');
+      return;
+    }
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+    var payload = await response.json();
+    historyItems = payload.items || [];
+    renderHistory();
+  } catch (error) {
+    list.innerHTML = '<div class="state-card state-error">Impossible de charger l\'historique.</div>';
+  }
+}
+
+function resetFilters() {
+  document.getElementById('filter-q').value = '';
+  document.getElementById('filter-action').value = '';
+  document.getElementById('filter-actor').value = '';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value = '';
+  loadHistory();
+}
+
+async function clearHistory() {
+  if (!currentUser || currentUser.permission !== 'ADMIN') return;
+  if (!window.confirm('Effacer tout l historique  Cette action est irreversible.')) return;
+
+  try {
+    var response = await fetch('/api/v1/history', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    var payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Suppression impossible');
+    historyItems = [];
+    renderHistory();
+  } catch (error) {
+    document.getElementById('history-list').innerHTML = '<div class="state-card state-error">' + escapeHtml(error.message || 'Impossible d effacer l historique.') + '</div>';
+  }
+}
+
+(async function boot() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+  setupUserBar(currentUser);
+  if (!await ensureHistoryAccess()) return;
+  await loadHistory();
+  pingPresence();
+  setInterval(pingPresence, 8000);
+})();
+</script>
+</body>
+</html>
