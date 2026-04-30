@@ -1,0 +1,19 @@
+[Unit]
+Description=PM2 Watchdog for Police Konoha services
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/html
+Environment=PM2_HOME=/root/.pm2
+Environment=PM2_WATCHDOG_INTERVAL=2
+Environment=PM2_WATCHDOG_RESTART_COOLDOWN=15
+Environment="PM2_WATCHDOG_SERVICES=police-status police-konoha data-guard police-backup"
+ExecStart=/bin/bash /var/www/html/scripts/pm2-watchdog.sh
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

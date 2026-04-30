@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status Systeme - Police Militaire de Konoha</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/status-systeme.css?v=20260411b">
+<script src="JS/status-systeme.js?v=20260411b" defer></script>
+</head>
+<body class="status-page">
+
+<header class="status-header">
+  <div class="status-header-brand">
+    <svg width="42" height="42" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#427b8f" d="M100,0 L66.667,66.667 L0,100 L66.667,133.333 L100,200 L133.333,133.333 L200,100 L133.333,66.667 Z"/>
+      <circle fill="#427b8f" cx="39" cy="39" r="12"/><circle fill="#427b8f" cx="161" cy="39" r="12"/>
+      <circle fill="#427b8f" cx="39" cy="161" r="12"/><circle fill="#427b8f" cx="161" cy="161" r="12"/>
+      <path fill="#e10000" d="M100,63.93 C80.09,63.93 63.93,79.70 63.93,99.13 C63.93,102.06 64.33,104.90 65.08,107.99 C73.31,99.81 85.90,94.71 100,94.71 C114.10,94.71 126.69,99.81 134.92,107.99 C135.67,104.90 136.07,102.06 136.07,99.13 C136.07,79.70 119.91,63.93 100,63.93 Z"/>
+      <path fill="#ffffff" d="M100,100.99 C86.40,100.99 74.52,106.97 68.13,115.58 C73.43,125.35 83.29,132.38 94.95,133.97 L94.95,160.07 L105.05,160.07 L105.05,133.97 C116.71,132.38 126.57,125.35 131.88,115.58 C125.49,106.97 113.60,100.99 100,100.99 Z"/>
+    </svg>
+    <div class="status-header-copy">
+      <div class="status-header-title">Police Militaire de Konoha</div>
+      <div class="status-header-sub">Supervision publique du MDT, des backups et des services d infrastructure</div>
+    </div>
+  </div>
+  <div class="status-header-meta">
+    <div class="status-header-badge" id="monitor-badge">&#9679; Monitor public actif</div>
+    <div class="status-header-version" id="status-generated-at">Generation en cours</div>
+  </div>
+</header>
+
+<main class="status-shell">
+  <section class="status-hero">
+    <div>
+      <div class="status-kicker">&#9674; Watchtower</div>
+      <h1 class="status-title">La page de statut reste disponible meme si le MDT general tombe</h1>
+      <p class="status-subtitle">Cette console vit sur un service dedie. Elle observe PM2, l API locale de <strong>police-konoha</strong>, les snapshots de backup et les donnees persistantes de la base pour garder une vue fiable meme en cas de crash.</p>
+    </div>
+    <div class="status-hero-actions">
+      <a href="api-docs.html" class="status-action-link">API Docs</a>
+      <button class="status-action-btn" id="refresh-status-btn" type="button">Rafraichir</button>
+    </div>
+  </section>
+
+  <section class="status-state-grid">
+    <article class="status-state-card" id="state-monitor">
+      <div class="status-state-label">Monitor</div>
+      <div class="status-state-value">...</div>
+      <div class="status-state-note">Initialisation</div>
+    </article>
+    <article class="status-state-card" id="state-server">
+      <div class="status-state-label">Server</div>
+      <div class="status-state-value">...</div>
+      <div class="status-state-note">Initialisation</div>
+    </article>
+    <article class="status-state-card" id="state-api">
+      <div class="status-state-label">API MDT</div>
+      <div class="status-state-value">...</div>
+      <div class="status-state-note">Initialisation</div>
+    </article>
+    <article class="status-state-card" id="state-database">
+      <div class="status-state-label">SQLite</div>
+      <div class="status-state-value">...</div>
+      <div class="status-state-note">Initialisation</div>
+    </article>
+    <article class="status-state-card" id="state-backups">
+      <div class="status-state-label">Backups</div>
+      <div class="status-state-value">...</div>
+      <div class="status-state-note">Initialisation</div>
+    </article>
+  </section>
+
+  <section class="status-services-panel">
+    <div class="status-panel-head">
+      <div>
+        <h2 class="status-panel-title">Etat des services PM2</h2>
+        <p class="status-panel-copy">Le monitor suit les services critiques exposes par PM2, y compris ceux qui ne sont pas dans l API MDT.</p>
+      </div>
+      <div class="status-legend" id="services-meta"></div>
+    </div>
+    <div class="status-service-grid" id="status-service-grid">
+      <div class="status-empty-state">Chargement des services...</div>
+    </div>
+  </section>
+
+  <section class="status-metrics-grid">
+    <article class="status-metric-card">
+      <div class="status-metric-label">Uptime monitor</div>
+      <div class="status-metric-value" id="metric-uptime">--</div>
+      <div class="status-metric-note" id="metric-started-at">--</div>
+    </article>
+    <article class="status-metric-card">
+      <div class="status-metric-label">Services online</div>
+      <div class="status-metric-value" id="metric-services-online">--</div>
+      <div class="status-metric-note" id="metric-services-note">--</div>
+    </article>
+    <article class="status-metric-card">
+      <div class="status-metric-label">Connexions 7j</div>
+      <div class="status-metric-value" id="metric-logins">--</div>
+      <div class="status-metric-note" id="metric-logouts">--</div>
+    </article>
+    <article class="status-metric-card">
+      <div class="status-metric-label">Restarts PM2</div>
+      <div class="status-metric-value" id="metric-restarts">--</div>
+      <div class="status-metric-note">Total monitor des services</div>
+    </article>
+    <article class="status-metric-card">
+      <div class="status-metric-label">Erreurs 30j</div>
+      <div class="status-metric-value" id="metric-errors">--</div>
+      <div class="status-metric-note">Processus + HTTP 500 traces</div>
+    </article>
+    <article class="status-metric-card">
+      <div class="status-metric-label">Sauvegardes</div>
+      <div class="status-metric-value" id="metric-backups">--</div>
+      <div class="status-metric-note" id="metric-backups-note">--</div>
+    </article>
+  </section>
+
+  <section class="status-runtime-grid">
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Runtime du monitor</h2>
+          <p class="status-panel-copy">Le service autonome qui sert cette page et interroge le reste de la plateforme.</p>
+        </div>
+      </div>
+      <div class="status-runtime-list" id="runtime-list"></div>
+    </article>
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Charge persistante</h2>
+          <p class="status-panel-copy">Compteurs bases sur SQLite, disponibles meme si le front principal ne repond plus.</p>
+        </div>
+      </div>
+      <div class="status-runtime-list" id="population-list"></div>
+    </article>
+  </section>
+
+  <section class="status-chart-grid">
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Visites uniques</h2>
+          <p class="status-panel-copy">Police, Justice et visiteurs sur 14 jours.</p>
+        </div>
+        <div class="status-legend" id="legend-visits"></div>
+      </div>
+      <div class="status-chart" id="chart-visits"></div>
+    </article>
+
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Connexions et deconnexions</h2>
+          <p class="status-panel-copy">Activite d authentification recuperee depuis la base d audit.</p>
+        </div>
+        <div class="status-legend" id="legend-auth"></div>
+      </div>
+      <div class="status-chart" id="chart-auth"></div>
+    </article>
+
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Redemarrages et erreurs</h2>
+          <p class="status-panel-copy">Demarrages, arrets et erreurs observes sur l application principale.</p>
+        </div>
+        <div class="status-legend" id="legend-system"></div>
+      </div>
+      <div class="status-chart" id="chart-system"></div>
+    </article>
+
+    <article class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <h2 class="status-panel-title">Prises de service</h2>
+          <p class="status-panel-copy">Sessions terrain enregistrees par jour.</p>
+        </div>
+      </div>
+      <div class="status-chart" id="chart-service"></div>
+    </article>
+  </section>
+
+  <section class="status-panel status-events-panel">
+    <div class="status-panel-head">
+      <div>
+        <h2 class="status-panel-title">Evenements recents</h2>
+        <p class="status-panel-copy">Une timeline utile pour comprendre un crash, un redemarrage ou une vague de deconnexions.</p>
+      </div>
+    </div>
+    <div class="status-events-list" id="status-events-list">
+      <div class="status-empty-state">Chargement du journal de statut...</div>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
