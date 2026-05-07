@@ -1,7 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { getLexique } = require('../../sections/police/services/lexique');
-const { DEFAULT_GLOBAL_COLUMNS, generateRowUid } = require('../../sections/police/services/code-penal');
 
 function readJson(filePath, fallback) {
   try {
@@ -295,10 +293,7 @@ function bootstrapDatabase(db, env) {
   }
 
   if (!getState(db, 'codepenal')) {
-    setState(db, 'codepenal', {
-      sections: (legacyCodePenal && Array.isArray(legacyCodePenal.sections)) ? legacyCodePenal.sections : [],
-      lexique: getLexique(legacyCodePenal || {})
-    });
+    setState(db, 'codepenal', { sections: [], schemaVersion: 2, columns: [] });
   }
 
   if (!getState(db, 'meta')) {
@@ -324,60 +319,6 @@ function bootstrapDatabase(db, env) {
     }
   }
 
-  // Phase 1b — run after all legacy data is in place so the codepenal key exists.
-  ensureCodePenalV2Migration(db);
-}
-
-// ── Code Pénal schema v1 → v2 migration ────────────────────────────────────────
-// Safe to run every startup: bails out immediately if already at v2.
-// Before touching anything it writes a full snapshot to codepenal_history so
-// the previous state is always recoverable.
-function ensureCodePenalV2Migration(db) {
-  const stored = getState(db, 'codepenal');
-  if (!stored) return;
-
-  const currentVersion = Number(stored.schemaVersion) || 1;
-  if (currentVersion >= 2) return;
-
-  // 1 ── Backup: push the untouched v1 data into history BEFORE any mutation.
-  const historyBefore = getState(db, 'codepenal_history') || [];
-  const totalRowsBefore = (stored.sections || []).reduce((sum, s) => sum + (s.rows || []).length, 0);
-  historyBefore.unshift({
-    savedAt: new Date().toISOString(),
-    savedBy: 'migration_v1_to_v2',
-    schemaVersion: 1,
-    totalRows: totalRowsBefore,
-    sections: (stored.sections || []).map((s) => ({
-      id: s.id,
-      title: s.title,
-      rowCount: (s.rows || []).length
-    })),
-    _migrationBackup: true,
-    snapshot: JSON.parse(JSON.stringify(stored))
-  });
-  setState(db, 'codepenal_history', historyBefore.slice(0, 25));
-
-  // 2 ── Assign a stable uid to every row that doesn't already have one.
-  //      UIDs are generated once here and never changed again.
-  const migratedSections = (stored.sections || []).map((section) => {
-    const rows = (section.rows || []).map((row) => {
-      if (row.uid && String(row.uid).trim()) return row;
-      return Object.assign({}, row, { uid: generateRowUid() });
-    });
-    return Object.assign({}, section, { rows });
-  });
-
-  // 3 ── Add global column definitions if the stored data has none.
-  const existingColumns = Array.isArray(stored.columns) && stored.columns.length
-    ? stored.columns
-    : DEFAULT_GLOBAL_COLUMNS;
-
-  // 4 ── Persist the migrated Code Pénal.
-  setState(db, 'codepenal', Object.assign({}, stored, {
-    schemaVersion: 2,
-    columns: existingColumns,
-    sections: migratedSections
-  }));
 }
 
 module.exports = {

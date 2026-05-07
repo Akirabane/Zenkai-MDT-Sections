@@ -8,7 +8,6 @@ const { globalRateLimit } = require('./core/middleware/globalRateLimit');
 const authRoutes = require('./core/routes/auth');
 const notificationRoutes = require('./core/routes/notifications');
 const presenceRoutes = require('./core/routes/presence');
-const serviceRoutes = require('./core/routes/service');
 
 const policeSection = require('./sections/police');
 
@@ -80,7 +79,6 @@ app.use((req, res, next) => {
 app.use(authRoutes);
 app.use(presenceRoutes);
 app.use(notificationRoutes);
-app.use(serviceRoutes);
 
 // Sections
 loadSections(app, [policeSection]);
