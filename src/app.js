@@ -2,23 +2,15 @@ const express = require('express');
 
 const env = require('./config/env');
 const logger = require('./core/utils/logger');
-const authRoutes = require('./core/routes/auth');
-const adminRoutes = require('./sections/police/routes/admin');
-const casierRoutes = require('./sections/police/routes/casier');
-const complaintRoutes = require('./sections/police/routes/complaints');
-const driRoutes = require('./sections/police/routes/dri');
-const historyRoutes = require('./sections/police/routes/history');
-const investigationRoutes = require('./sections/police/routes/investigations');
-const loginHallRoutes = require('./sections/police/routes/loginHall');
-const notificationRoutes = require('./core/routes/notifications');
-const presenceRoutes = require('./core/routes/presence');
-const publicRoutes = require('./sections/police/routes/public');
-const registreRoutes = require('./sections/police/routes/registre');
-const serviceRoutes = require('./core/routes/service');
-const statusPublicRoutes = require('./sections/police/routes/status-public');
-const statusRoutes = require('./sections/police/routes/status');
+const { loadSections } = require('./core/loader');
 const { markHttpError } = require('./core/services/runtime-status');
 const { globalRateLimit } = require('./core/middleware/globalRateLimit');
+const authRoutes = require('./core/routes/auth');
+const notificationRoutes = require('./core/routes/notifications');
+const presenceRoutes = require('./core/routes/presence');
+const serviceRoutes = require('./core/routes/service');
+
+const policeSection = require('./sections/police');
 
 const app = express();
 app.set('trust proxy', env.trustProxy ? 1 : false);
@@ -89,21 +81,14 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use(publicRoutes);
-app.use(statusPublicRoutes);
-app.use(loginHallRoutes);
+// Routes core
 app.use(authRoutes);
-app.use(adminRoutes);
 app.use(presenceRoutes);
-app.use(registreRoutes);
-app.use(casierRoutes);
-app.use(complaintRoutes);
-app.use(driRoutes);
-app.use(investigationRoutes);
 app.use(notificationRoutes);
-app.use(historyRoutes);
 app.use(serviceRoutes);
-app.use(statusRoutes);
+
+// Sections
+loadSections(app, [policeSection]);
 
 app.use(staticGuard);
 app.use(express.static(env.rootDir, {

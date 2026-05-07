@@ -1,9 +1,9 @@
 const env = require('./config/env');
-require('./db');
+require('./core/db');
 
 const app = require('./app');
-const { startResetScheduler } = require('./services/reset');
-const { startRegistrySyncScheduler } = require('./services/registry-sync');
+const { startResetScheduler } = require('./sections/police/services/reset');
+const { startRegistrySyncScheduler } = require('./sections/police/services/registry-sync');
 const { installProcessHooks, markStart } = require('./core/services/runtime-status');
 const logger = require('./core/utils/logger');
 

@@ -4,6 +4,8 @@ node_modules/
 # Base de données & données sensibles
 DB/police.db
 DB/police.db.*
+DB/*.db-shm
+DB/*.db-wal
 DB/data.json
 DB/users.json
 DB/backups/
