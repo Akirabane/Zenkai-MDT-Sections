@@ -5,7 +5,7 @@ function loadSections(app, sections) {
     for (const router of section.routes) {
       app.use(router);
     }
-    logger.info(`Section chargée : ${section.name}`);
+    logger.info(`Section chargée : ${section.displayName || section.name}`);
   }
 }
 
