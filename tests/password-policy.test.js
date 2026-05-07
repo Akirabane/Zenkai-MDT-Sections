@@ -1,10 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { MIN_PASSWORD_LENGTH, getPasswordPolicyError, isStrongPassword } = require('../src/services/password-policy');
+const { MIN_PASSWORD_LENGTH, getPasswordPolicyError, isStrongPassword } = require('../src/core/services/password-policy');
 
 test('accepts a strong password', () => {
-  const password = 'KonohaSecure42';
+  const password = 'KonohaSecure42!';
   assert.equal(getPasswordPolicyError(password), null);
   assert.equal(isStrongPassword(password), true);
 });

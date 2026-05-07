@@ -21,8 +21,8 @@ function loadArrestsRepoWithTempDb() {
 
   clearProjectModules();
 
-  const db = require('../src/db');
-  const arrestsRepo = require('../src/repositories/arrests');
+  const db = require('../src/core/db');
+  const arrestsRepo = require('../src/sections/police/repositories/arrests');
 
   db.exec(`
     DELETE FROM arrest_delits;
