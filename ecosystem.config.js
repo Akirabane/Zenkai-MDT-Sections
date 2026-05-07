@@ -18,7 +18,7 @@ module.exports = {
     {
       name: 'police-backup',
       cwd: __dirname,
-      script: 'JS/backup.js',
+      script: 'scripts/backup.js',
       instances: 1,
       autorestart: true,
       max_restarts: 10,
