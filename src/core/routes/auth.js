@@ -11,7 +11,7 @@ const { issueAuthPayload, revokeUserTokens } = require('../services/auth');
 const { buildLoginRateLimitKey, getState: getLoginRateLimitState, registerFailure, resetAttempts } = require('../services/login-rate-limit');
 const { makePassword, verifyPassword } = require('../services/passwords');
 const { avatarSchema, loginSchema, registerSchema } = require('../../validation/schemas');
-const { canAddRegisterMembers, canCreateComplaints, canCreateInvestigations, canCreateReports, canDeleteComplaints, canDeleteDossiers, canDeleteInvestigations, canDeleteRegisterMembers, canEditCP, canManageCasierRecords, canManageComplaints, canManageInvestigations, canManagePoliceRanks, canViewCasierRecords, canViewComplaints, canViewHistory, canViewInvestigations, canViewPatrolReports, getUserCapabilities } = require('../../services/permissions');
+const { canAddRegisterMembers, canCreateComplaints, canCreateInvestigations, canCreateReports, canDeleteComplaints, canDeleteDossiers, canDeleteInvestigations, canDeleteRegisterMembers, canEditCP, canManageCasierRecords, canManageComplaints, canManageInvestigations, canManagePoliceRanks, canViewCasierRecords, canViewComplaints, canViewHistory, canViewInvestigations, canViewPatrolReports, getUserCapabilities } = require('../../sections/police/services/permissions');
 const presenceService = require('../services/presence');
 const { getClientIp } = require('../utils/network');
 

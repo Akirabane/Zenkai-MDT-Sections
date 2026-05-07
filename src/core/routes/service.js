@@ -3,7 +3,7 @@ const express = require('express');
 const { authRequired } = require('../middleware/auth');
 const historyRepo = require('../repositories/history');
 const serviceSessionsRepo = require('../repositories/serviceSessions');
-const { getUserCapabilities } = require('../../services/permissions');
+const { getUserCapabilities } = require('../../sections/police/services/permissions');
 
 const router = express.Router();
 

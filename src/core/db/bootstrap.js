@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { getLexique } = require('../../services/lexique');
-const { DEFAULT_GLOBAL_COLUMNS, generateRowUid } = require('../../services/code-penal');
+const { getLexique } = require('../../sections/police/services/lexique');
+const { DEFAULT_GLOBAL_COLUMNS, generateRowUid } = require('../../sections/police/services/code-penal');
 
 function readJson(filePath, fallback) {
   try {
