@@ -7,7 +7,7 @@ const {
   getState,
   registerFailure,
   resetAttempts
-} = require('../src/services/login-rate-limit');
+} = require('../src/core/services/login-rate-limit');
 
 const config = {
   maxAttempts: 3,
