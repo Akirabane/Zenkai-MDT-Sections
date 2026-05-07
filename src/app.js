@@ -16,14 +16,9 @@ const app = express();
 app.set('trust proxy', env.trustProxy ? 1 : false);
 
 function staticGuard(req, res, next) {
-  const blockedPrefixes = ['/DB/', '/src/', '/node_modules/', '/uploads/'];
-  const blockedFiles = ['/package.json', '/package-lock.json', '/default'];
-  const isDotfilePath = /(^|\/)\.[^/]+/.test(req.path);
-
-  if (isDotfilePath || blockedPrefixes.some((prefix) => req.path.startsWith(prefix)) || blockedFiles.includes(req.path)) {
+  if (/(^|\/)\.[^/]+/.test(req.path)) {
     return res.status(404).end();
   }
-
   return next();
 }
 
@@ -91,7 +86,7 @@ app.use(serviceRoutes);
 loadSections(app, [policeSection]);
 
 app.use(staticGuard);
-app.use(express.static(env.rootDir, {
+app.use(express.static(require('path').join(env.rootDir, 'vues'), {
   index: false,
   extensions: ['html']
 }));
