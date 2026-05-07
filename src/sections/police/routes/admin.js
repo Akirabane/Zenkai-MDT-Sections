@@ -9,6 +9,7 @@ const { canEditCP, getUserCapabilities } = require('../services/permissions');
 const presenceService = require('../../../core/services/presence');
 const { applyColumnSoftDelete, buildCodePenalSchemaSummary, buildPreviewImpact, promoteColumnToGlobal } = require('../services/column-impact');
 const { codePenalPreviewSchema, codePenalPromoteColumnSchema, codePenalSchema, driRoleSchema, linkUserSchema, permissionSchema, policeRoleSchema } = require('../../../validation/schemas');
+const { getLoadedSections } = require('../../../core/loader');
 
 const router = express.Router();
 
@@ -233,6 +234,10 @@ router.post('/api/v1/codepenal/restore/:index', authRequired, (req, res) => {
   }
   stateRepo.saveCodePenal(snapshot, `restore_by_${req.user.pseudo}`);
   return res.json({ ok: true, restoredAt: new Date().toISOString() });
+});
+
+router.get('/admin/sections', adminRequired, (req, res) => {
+  return res.json(getLoadedSections());
 });
 
 module.exports = router;

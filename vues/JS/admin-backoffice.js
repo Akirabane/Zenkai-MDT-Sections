@@ -11,6 +11,7 @@
       link: 'all'
     },
     registerLastUpdated: null,
+    sections: [],
     saving: false,
     toastTimer: null
   };
@@ -211,6 +212,8 @@
     $('summary-register-note').textContent = state.registerLastUpdated
       ? 'maj ' + formatDateTime(state.registerLastUpdated)
       : 'maj inconnue';
+    $('summary-sections').textContent = String(state.sections.length);
+    $('summary-sections-note').textContent = state.sections.map(function(s) { return s.displayName; }).join(', ') || 'aucune';
   }
 
   function renderRoster() {
@@ -510,12 +513,14 @@
 
     var responses = await Promise.all([
       fetchJson('/admin/users', { headers: headers }),
-      fetchJson('/api/v1/membres')
+      fetchJson('/api/v1/membres'),
+      fetchJson('/admin/sections', { headers: headers })
     ]);
 
     state.users = Array.isArray(responses[0]) ? responses[0] : [];
     state.membres = Array.isArray(responses[1].membres) ? responses[1].membres : [];
     state.registerLastUpdated = responses[1].lastUpdated || null;
+    state.sections = Array.isArray(responses[2]) ? responses[2] : [];
     state.selectedPseudo = keepPseudo;
 
     if (!state.selectedPseudo && state.users.length) {
