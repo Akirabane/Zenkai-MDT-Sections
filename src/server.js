@@ -1,5 +1,7 @@
 const env = require('./config/env');
-require('./core/db');
+const db = require('./core/db');
+const { bootstrapPoliceSection } = require('./sections/police/db/bootstrap');
+bootstrapPoliceSection(db, env);
 
 const app = require('./app');
 const { startResetScheduler } = require('./sections/police/services/reset');
