@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { getPasswordPolicyError } = require('../services/password-policy');
+const { getPasswordPolicyError } = require('../core/services/password-policy');
 
 const pseudoSchema = z.string().trim().min(2, 'Le pseudo doit faire au moins 2 caracteres').max(30, 'Le pseudo doit faire au plus 30 caracteres');
 const optionalTrimmed = z.string().optional().transform((value) => (value || '').trim());

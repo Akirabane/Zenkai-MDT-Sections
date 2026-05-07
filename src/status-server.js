@@ -3,9 +3,9 @@ const path = require('path');
 const express = require('express');
 
 const env = require('./config/env');
-const statusPublicRoutes = require('./routes/status-public');
-const logger = require('./utils/logger');
-const { getHeartbeatPayload } = require('./services/status-monitor-report');
+const statusPublicRoutes = require('./sections/police/routes/status-public');
+const logger = require('./core/utils/logger');
+const { getHeartbeatPayload } = require('./sections/police/services/status-monitor-report');
 
 const app = express();
 
