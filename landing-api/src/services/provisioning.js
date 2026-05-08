@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { applyThemeToInstance } = require('./themeGenerator');
 
-const SOURCE = process.env.MDT_SOURCE || '/var/www/html';
+const SOURCE = process.env.MDT_SOURCE || '/opt/zenkai-mdt-base';
 const INSTANCES_DIR = process.env.MDT_INSTANCES_DIR || '/var/www/instances';
 const SERVER_IP = process.env.SERVER_IP || '51.77.59.56';
 
@@ -167,8 +167,26 @@ function provision(instance, db) {
 
   const theme = typeof instance.theme === 'object' ? instance.theme : JSON.parse(instance.theme || '{}');
 
-  // 1. Copier le codebase
-  execSync(`rsync -a --exclude='.env' --exclude='node_modules' --exclude='DB' --exclude='uploads' --exclude='*.db' ${SOURCE}/ ${instanceDir}/`);
+  // 1. Copier le codebase depuis le template de base
+  execSync(`rsync -a \
+    --exclude='.env' \
+    --exclude='node_modules' \
+    --exclude='DB' \
+    --exclude='uploads' \
+    --exclude='*.db' \
+    --exclude='.git' \
+    --exclude='ecosystem*.js' \
+    --exclude='landing' \
+    --exclude='landing-api' \
+    ${SOURCE}/ ${instanceDir}/`);
+
+  // Patch package.json avec le nom de l'instance
+  const pkgPath = path.join(instanceDir, 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    pkg.name = `zenkai-mdt-${instance.id}`;
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+  }
 
   // 2. Appliquer le thème (génère theme-vars.css + injection dans les HTML)
   applyThemeToInstance(instanceDir, theme);
