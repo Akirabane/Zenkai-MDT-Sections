@@ -69,6 +69,8 @@ function bootstrap(db) {
     "ALTER TABLE instances ADD COLUMN status_service_name TEXT",
     "ALTER TABLE instances ADD COLUMN status_monitored_services TEXT DEFAULT '[]'",
     "ALTER TABLE instances ADD COLUMN grade_bot_token TEXT",
+    "ALTER TABLE instances ADD COLUMN pm2_name TEXT",
+    "ALTER TABLE instances ADD COLUMN pm2_associated TEXT DEFAULT '[]'",
   ];
 
   for (const sql of migrations) {
