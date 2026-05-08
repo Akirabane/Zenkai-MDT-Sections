@@ -206,8 +206,8 @@ function provision(instance, db) {
   execSync('pm2 save');
 
   // 7. Mettre à jour le statut en DB
-  db.prepare('UPDATE instances SET status = ?, dir = ?, nginx_conf = ? WHERE id = ?')
-    .run('running', instanceDir, nginxConf, instance.id);
+  db.prepare('UPDATE instances SET status = ?, dir = ?, nginx_conf = ?, pm2_name = ? WHERE id = ?')
+    .run('running', instanceDir, nginxConf, pm2Name, instance.id);
 
   return {
     pm2Name,
@@ -229,7 +229,11 @@ function stopInstance(pm2Name, db, id) {
 }
 
 function deleteInstance(instance, db) {
-  const pm2Name = `mdt-${instance.id}`;
+  const pm2Name = instance.pm2_name || `mdt-${instance.id}`;
+  const associated = Array.isArray(instance.pm2_associated) ? instance.pm2_associated : [];
+  for (const proc of associated) {
+    try { execSync(`pm2 delete ${proc}`); } catch {}
+  }
   try { execSync(`pm2 delete ${pm2Name}`); } catch {}
   try { execSync(`rm -f /etc/nginx/sites-enabled/${instance.subdomain}.zenkai-police.tech`); } catch {}
   try { execSync(`rm -f /etc/nginx/sites-available/${instance.subdomain}.zenkai-police.tech`); } catch {}

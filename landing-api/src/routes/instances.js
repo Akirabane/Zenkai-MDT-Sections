@@ -130,9 +130,10 @@ router.patch('/:id', (req, res) => {
     'log_level', 'jwt_expires_in', 'login_rate_limit_max', 'login_rate_limit_window', 'login_rate_limit_lock',
     'backup_interval', 'backup_max_snapshots', 'backup_timezone',
     'cors_origin', 'status_service_name', 'status_monitored_services', 'grade_bot_token',
+    'pm2_name', 'pm2_associated',
   ];
 
-  const JSON_FIELDS = new Set(['sections', 'theme', 'categories', 'bootstrap_admins', 'status_monitored_services']);
+  const JSON_FIELDS = new Set(['sections', 'theme', 'categories', 'bootstrap_admins', 'status_monitored_services', 'pm2_associated']);
   const BOOL_FIELDS = new Set(['registry_sync_enabled', 'registry_sync_bypass_canonicalize']);
 
   const updates = {};
@@ -174,9 +175,16 @@ router.post('/:id/restart', (req, res) => {
   const row = db.prepare('SELECT * FROM instances WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Instance introuvable' });
 
+  const pm2Name = row.pm2_name || `mdt-${row.id}`;
+  const associated = JSON.parse(row.pm2_associated || '[]');
+
   try {
-    execSync(`pm2 restart mdt-${row.id}`);
+    execSync(`pm2 restart ${pm2Name}`, { stdio: 'pipe' });
+    for (const proc of associated) {
+      try { execSync(`pm2 restart ${proc}`, { stdio: 'pipe' }); } catch {}
+    }
     db.prepare('UPDATE instances SET status = ? WHERE id = ?').run('running', row.id);
+    db.prepare('INSERT INTO audit_log (action, instance_id, details) VALUES (?, ?, ?)').run('restart', row.id, JSON.stringify({ pm2Name, associated }));
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -184,12 +192,21 @@ router.post('/:id/restart', (req, res) => {
 });
 
 router.post('/:id/stop', (req, res) => {
+  const { execSync } = require('child_process');
   const db = getDb();
   const row = db.prepare('SELECT * FROM instances WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Instance introuvable' });
 
+  const pm2Name = row.pm2_name || `mdt-${row.id}`;
+  const associated = JSON.parse(row.pm2_associated || '[]');
+
   try {
-    stopInstance(`mdt-${row.id}`, db, row.id);
+    execSync(`pm2 stop ${pm2Name}`, { stdio: 'pipe' });
+    for (const proc of associated) {
+      try { execSync(`pm2 stop ${proc}`, { stdio: 'pipe' }); } catch {}
+    }
+    db.prepare('UPDATE instances SET status = ? WHERE id = ?').run('stopped', row.id);
+    db.prepare('INSERT INTO audit_log (action, instance_id, details) VALUES (?, ?, ?)').run('stop', row.id, JSON.stringify({ pm2Name, associated }));
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -218,6 +235,7 @@ function parseInstance(row) {
     categories: JSON.parse(row.categories || '[]'),
     bootstrap_admins: JSON.parse(row.bootstrap_admins || '[]'),
     status_monitored_services: JSON.parse(row.status_monitored_services || '[]'),
+    pm2_associated: JSON.parse(row.pm2_associated || '[]'),
     registry_sync_enabled: Boolean(row.registry_sync_enabled),
     registry_sync_bypass_canonicalize: Boolean(row.registry_sync_bypass_canonicalize),
   };
