@@ -16,7 +16,7 @@ const resolvedEnvFile = envFileCandidates
   .map((candidate) => (path.isAbsolute(candidate) ? candidate : path.join(rootDir, candidate)))
   .find((candidate) => fs.existsSync(candidate));
 
-dotenv.config({ path: resolvedEnvFile || path.join(rootDir, '.env') });
+dotenv.config({ path: resolvedEnvFile || path.join(rootDir, '.env'), override: true });
 
 function resolveFromRoot(filePath, fallback) {
   const value = filePath || fallback;
