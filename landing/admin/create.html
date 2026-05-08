@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenkai Admin — Créer un MDT</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3d;
+  --accent:#7c5cfc;
+  --accent-glow:rgba(124,92,252,0.25);
+  --text:#e8e8f0;
+  --text-muted:#6b6b8a;
+  --success:#22c55e;
+  --danger:#ef4444;
+}
+body{min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 30% at 50% 0%,rgba(124,92,252,0.08),transparent);pointer-events:none;z-index:0}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;height:60px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.nav-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.back-link{color:var(--text-muted);text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px;transition:color .15s}
+.back-link:hover{color:var(--text)}
+.nav-spacer{flex:1}
+
+/* WIZARD LAYOUT */
+main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 32px}
+.wizard-header{margin-bottom:40px;text-align:center}
+.wizard-title{font-size:30px;font-weight:700;letter-spacing:-0.04em;margin-bottom:8px}
+.wizard-sub{font-size:15px;color:var(--text-muted)}
+
+/* STEPPER */
+.stepper{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:48px}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:140px;position:relative}
+.step::before{content:'';position:absolute;top:18px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
+.step:last-child::before{display:none}
+.step-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;position:relative;z-index:1;transition:all .25s}
+.step.active .step-circle{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 0 16px var(--accent-glow)}
+.step.done .step-circle{border-color:var(--success);background:var(--success);color:#fff}
+.step-label{font-size:11px;font-weight:500;color:var(--text-muted);text-align:center;line-height:1.3}
+.step.active .step-label{color:var(--text)}
+
+/* PANELS */
+.panel{display:none;animation:fadeIn .2s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px}
+.card-title{font-size:20px;font-weight:700;margin-bottom:6px;letter-spacing:-0.02em}
+.card-sub{font-size:14px;color:var(--text-muted);margin-bottom:32px}
+
+/* FORM ELEMENTS */
+.field{margin-bottom:24px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.04em;text-transform:uppercase}
+input[type=text],input[type=url],textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+.field-hint{font-size:12px;color:var(--text-muted);margin-top:6px}
+.field-prefix{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.field-prefix-text{padding:12px 14px;font-size:13px;color:var(--text-muted);border-right:1px solid var(--border);white-space:nowrap;background:var(--bg)}
+.field-prefix input{border:none;border-radius:0;background:transparent;box-shadow:none}
+.field-prefix input:focus{border:none;box-shadow:none}
+
+/* SECTIONS GRID */
+.sections-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.section-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;user-select:none}
+.section-card:hover{border-color:var(--accent);background:rgba(124,92,252,0.05)}
+.section-card.selected{border-color:var(--accent);background:rgba(124,92,252,0.12)}
+.section-card.disabled{opacity:0.4;cursor:not-allowed}
+.section-icon{font-size:28px;margin-bottom:10px}
+.section-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.section-desc{font-size:12px;color:var(--text-muted)}
+.section-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:8px;background:rgba(124,92,252,0.2);color:#c4b5fd}
+.section-badge.soon{background:rgba(245,158,11,0.15);color:#fcd34d}
+
+/* THEME */
+.presets{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+.preset{width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s;position:relative}
+.preset.active{border-color:var(--text) !important;transform:scale(1.1)}
+.preset-custom{background:linear-gradient(135deg,#f00,#0f0,#00f);font-size:18px;display:flex;align-items:center;justify-content:center}
+
+.color-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.color-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.color-swatch{width:36px;height:36px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);cursor:pointer;flex-shrink:0}
+input[type=color]{position:absolute;opacity:0;width:0;height:0}
+.color-info{flex:1;min-width:0}
+.color-name{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px;letter-spacing:0.04em;text-transform:uppercase}
+.color-value{font-size:13px;font-family:monospace;color:var(--text)}
+
+/* PREVIEW */
+.theme-preview{border-radius:12px;overflow:hidden;border:1px solid var(--border);height:180px;display:flex;margin-top:24px}
+.preview-sidebar{width:50px;padding:12px 8px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.preview-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3)}
+.preview-dot.active{background:rgba(255,255,255,0.9)}
+.preview-main{flex:1;padding:16px}
+.preview-topbar{height:24px;border-radius:6px;margin-bottom:12px;width:60%;opacity:0.5}
+.preview-card{height:40px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.preview-card-dot{width:8px;height:8px;border-radius:50%}
+.preview-card-line{height:8px;border-radius:4px;opacity:0.4}
+
+/* CATEGORIES */
+.categories-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:40px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.cat-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.3);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;color:#c4b5fd}
+.cat-tag .remove{cursor:pointer;opacity:0.6;font-size:15px;line-height:1}
+.cat-tag .remove:hover{opacity:1;color:var(--danger)}
+.cat-add-row{display:flex;gap:10px}
+.cat-add-row input{flex:1}
+.btn-add{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.btn-add:hover{border-color:var(--accent);color:var(--accent)}
+.cat-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cat-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.cat-preset:hover{border-color:var(--accent);color:var(--accent)}
+
+/* DISCORD */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;cursor:pointer}
+.toggle-info{display:flex;align-items:center;gap:14px}
+.toggle-icon{font-size:24px}
+.toggle-title{font-size:15px;font-weight:600}
+.toggle-desc{font-size:13px;color:var(--text-muted)}
+.toggle{width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle.on::after{transform:translateX(20px)}
+.discord-options{display:none}
+.discord-options.show{display:block}
+.events-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.event-chip{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);transition:all .15s;user-select:none}
+.event-chip.selected{border-color:rgba(88,101,242,0.6);background:rgba(88,101,242,0.15);color:#a5b4fc}
+
+/* REVIEW */
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.review-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.review-block-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px}
+.review-value{font-size:14px;font-weight:500}
+.review-value small{color:var(--text-muted);font-weight:400;font-size:12px;display:block;margin-top:2px}
+.review-sections{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.review-section-tag{background:rgba(124,92,252,0.15);color:#c4b5fd;border-radius:4px;padding:3px 10px;font-size:12px;font-weight:500}
+.review-colors{display:flex;gap:8px;margin-top:8px}
+.review-color-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
+.review-dot{width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.1)}
+.review-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.review-cat{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:12px}
+
+/* NAV BUTTONS */
+.wizard-nav{display:flex;align-items:center;justify-content:space-between;margin-top:32px}
+.btn-back{background:transparent;border:1px solid var(--border);border-radius:10px;padding:12px 22px;font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-back:hover{border-color:var(--text);color:var(--text)}
+.btn-next{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s,box-shadow .15s}
+.btn-next:hover{opacity:.9;box-shadow:0 4px 20px var(--accent-glow)}
+.btn-next:disabled{opacity:.4;cursor:not-allowed}
+.btn-create{background:linear-gradient(135deg,var(--accent),#a78bfa);border:none;border-radius:10px;padding:14px 28px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s,transform .1s}
+.btn-create:hover{opacity:.9}
+.btn-create:disabled{opacity:.4;cursor:not-allowed}
+
+/* SPINNER & RESULT */
+.provisioning-screen{text-align:center;padding:48px 24px}
+.prov-spinner{width:64px;height:64px;border:4px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prov-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.prov-sub{font-size:14px;color:var(--text-muted)}
+.prov-log{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:#86efac;text-align:left;margin-top:24px;line-height:2}
+.result-screen{text-align:center;padding:48px 24px}
+.result-icon{font-size:56px;margin-bottom:20px}
+.result-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.result-sub{font-size:14px;color:var(--text-muted);margin-bottom:32px}
+.dns-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;font-family:monospace;font-size:13px;text-align:left;line-height:2.2;margin:0 auto 24px;max-width:500px}
+.dns-box .key{color:var(--text-muted)}
+.dns-box .val{color:var(--accent)}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 22px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;font-family:inherit;text-decoration:none;transition:all .15s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">⚡</div>
+    Zenkai MDT Builder
+  </div>
+  <div class="nav-spacer"></div>
+  <a href="/admin/" class="back-link">← Retour au dashboard</a>
+</nav>
+
+<main>
+  <div class="wizard-header">
+    <div class="wizard-title">Créer un nouveau MDT</div>
+    <div class="wizard-sub">Configurez votre instance en 5 étapes, puis on s'occupe du reste.</div>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper" id="stepper">
+    <div class="step active" data-step="1"><div class="step-circle">1</div><div class="step-label">Identité</div></div>
+    <div class="step" data-step="2"><div class="step-circle">2</div><div class="step-label">Sections</div></div>
+    <div class="step" data-step="3"><div class="step-circle">3</div><div class="step-label">Thème</div></div>
+    <div class="step" data-step="4"><div class="step-circle">4</div><div class="step-label">Catégories</div></div>
+    <div class="step" data-step="5"><div class="step-circle">5</div><div class="step-label">Discord & Recap</div></div>
+  </div>
+
+  <!-- STEP 1 — IDENTITÉ -->
+  <div class="panel active" id="panel1">
+    <div class="card">
+      <div class="card-title">Identité du MDT</div>
+      <div class="card-sub">Définissez le nom et l'URL de votre instance.</div>
+      <div class="field">
+        <label>Nom de l'instance</label>
+        <input type="text" id="name" placeholder="MDT Konoha — Police" maxlength="60">
+        <div class="field-hint">Nom affiché dans le dashboard et dans l'interface MDT.</div>
+      </div>
+      <div class="field">
+        <label>Sous-domaine</label>
+        <div class="field-prefix">
+          <span class="field-prefix-text">zenkai-police.tech/</span>
+          <input type="text" id="subdomain" placeholder="konoha-police" pattern="[a-z0-9-]+" maxlength="40">
+        </div>
+        <div class="field-hint">Uniquement des lettres minuscules, chiffres et tirets. Ex: <code style="color:var(--accent)">medical-suna</code></div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <div></div>
+      <button class="btn-next" onclick="goTo(2)">Sections →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 — SECTIONS -->
+  <div class="panel" id="panel2">
+    <div class="card">
+      <div class="card-title">Sections</div>
+      <div class="card-sub">Choisissez les modules à activer dans ce MDT. Vous devrez avoir développé les sections non-police pour les utiliser.</div>
+      <div class="sections-grid" id="sectionsGrid">
+        <div class="section-card selected" data-section="police">
+          <div class="section-icon">🚔</div>
+          <div class="section-name">Police</div>
+          <div class="section-desc">Casier, arrestations, plaintes, DRI, investigations, registre.</div>
+          <span class="section-badge">Disponible</span>
+        </div>
+        <div class="section-card disabled" data-section="medical" title="En développement">
+          <div class="section-icon">🏥</div>
+          <div class="section-name">Médical</div>
+          <div class="section-desc">Dossiers patients, urgences, chirurgie, pharmacie.</div>
+          <span class="section-badge soon">Bientôt</span>
+        </div>
+        <div class="section-card disabled" data-section="pompiers" title="En développement">
+          <div class="section-icon">🚒</div>
+          <div class="section-name">Pompiers</div>
+          <div class="section-desc">Interventions, rapports d'incendie, équipements.</div>
+          <span class="section-badge soon">Bientôt</span>
+        </div>
+        <div class="section-card disabled" data-section="justice" title="En développement">
+          <div class="section-icon">⚖️</div>
+          <div class="section-name">Justice</div>
+          <div class="section-desc">Audiences, verdicts, registre juridique.</div>
+          <span class="section-badge soon">Bientôt</span>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goTo(1)">← Retour</button>
+      <button class="btn-next" onclick="goTo(3)">Thème →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 — THÈME -->
+  <div class="panel" id="panel3">
+    <div class="card">
+      <div class="card-title">Thème de couleurs</div>
+      <div class="card-sub">Personnalisez l'apparence visuelle du MDT. Choisissez un preset ou définissez vos couleurs.</div>
+      <label style="margin-bottom:12px;display:block">Presets</label>
+      <div class="presets" id="presets">
+        <div class="preset active" data-preset="konoha" style="background:linear-gradient(135deg,#2e7d32,#76c442)" title="Konoha — Vert"></div>
+        <div class="preset" data-preset="suna" style="background:linear-gradient(135deg,#b85c20,#e8a050)" title="Suna — Orange"></div>
+        <div class="preset" data-preset="cloud" style="background:linear-gradient(135deg,#1565c0,#42a5f5)" title="Nuée — Bleu"></div>
+        <div class="preset" data-preset="mist" style="background:linear-gradient(135deg,#00695c,#4db6ac)" title="Brume — Cyan"></div>
+        <div class="preset" data-preset="stone" style="background:linear-gradient(135deg,#4a148c,#9c27b0)" title="Pierre — Violet"></div>
+        <div class="preset" data-preset="blood" style="background:linear-gradient(135deg,#b71c1c,#ef5350)" title="Sang — Rouge"></div>
+        <div class="preset" data-preset="void" style="background:linear-gradient(135deg,#263238,#546e7a)" title="Vide — Ardoise"></div>
+      </div>
+
+      <label style="margin-bottom:12px;display:block">Couleurs personnalisées</label>
+      <div class="color-row">
+        <div class="color-field">
+          <div class="color-swatch" id="swatchPrimary" onclick="document.getElementById('cpPrimary').click()"></div>
+          <input type="color" id="cpPrimary" value="#2e7d32">
+          <div class="color-info">
+            <div class="color-name">Primaire</div>
+            <div class="color-value" id="valPrimary">#2e7d32</div>
+          </div>
+        </div>
+        <div class="color-field">
+          <div class="color-swatch" id="swatchAccent" onclick="document.getElementById('cpAccent').click()"></div>
+          <input type="color" id="cpAccent" value="#76c442">
+          <div class="color-info">
+            <div class="color-name">Accent</div>
+            <div class="color-value" id="valAccent">#76c442</div>
+          </div>
+        </div>
+        <div class="color-field">
+          <div class="color-swatch" id="swatchDark" onclick="document.getElementById('cpDark').click()"></div>
+          <input type="color" id="cpDark" value="#081508">
+          <div class="color-info">
+            <div class="color-name">Fond sombre</div>
+            <div class="color-value" id="valDark">#081508</div>
+          </div>
+        </div>
+        <div class="color-field">
+          <div class="color-swatch" id="swatchBorder" onclick="document.getElementById('cpBorder').click()"></div>
+          <input type="color" id="cpBorder" value="#2a5e1e">
+          <div class="color-info">
+            <div class="color-name">Bordures</div>
+            <div class="color-value" id="valBorder">#2a5e1e</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme-preview" id="themePreview">
+        <div class="preview-sidebar" id="pvSidebar">
+          <div class="preview-dot"></div>
+          <div class="preview-dot active"></div>
+          <div class="preview-dot"></div>
+          <div class="preview-dot"></div>
+        </div>
+        <div class="preview-main" id="pvMain">
+          <div class="preview-topbar" id="pvTopbar"></div>
+          <div class="preview-card" id="pvCard1"><div class="preview-card-dot" id="pvDot1"></div><div class="preview-card-line" id="pvLine1" style="width:45%;height:8px"></div></div>
+          <div class="preview-card" id="pvCard2"><div class="preview-card-dot" id="pvDot2"></div><div class="preview-card-line" id="pvLine2" style="width:60%;height:8px"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goTo(2)">← Retour</button>
+      <button class="btn-next" onclick="goTo(4)">Catégories →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 — CATÉGORIES -->
+  <div class="panel" id="panel4">
+    <div class="card">
+      <div class="card-title">Catégories</div>
+      <div class="card-sub">Définissez les catégories disponibles dans votre MDT (dossiers, incidents, etc.).</div>
+      <div class="field">
+        <label>Catégories actives</label>
+        <div class="categories-list" id="catList"></div>
+        <div class="cat-add-row">
+          <input type="text" id="catInput" placeholder="Ajouter une catégorie…" maxlength="40">
+          <button class="btn-add" onclick="addCat()">Ajouter</button>
+        </div>
+        <div style="margin-top:12px">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Suggestions :</div>
+          <div class="cat-presets" id="catPresets"></div>
+        </div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goTo(3)">← Retour</button>
+      <button class="btn-next" onclick="goTo(5)">Discord & Récap →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5 — DISCORD + RECAP -->
+  <div class="panel" id="panel5">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Intégration Discord</div>
+      <div class="card-sub">Recevez des notifications dans Discord lors d'événements MDT.</div>
+
+      <div class="toggle-row" onclick="toggleDiscord()">
+        <div class="toggle-info">
+          <div class="toggle-icon">🔔</div>
+          <div>
+            <div class="toggle-title">Activer les notifications Discord</div>
+            <div class="toggle-desc">Envoie des messages via webhook à chaque événement sélectionné.</div>
+          </div>
+        </div>
+        <div class="toggle" id="discordToggle"></div>
+      </div>
+
+      <div class="discord-options" id="discordOptions">
+        <div class="field">
+          <label>URL du Webhook Discord</label>
+          <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/…">
+          <div class="field-hint">Créez un webhook dans les paramètres de votre canal Discord (Intégrations → Webhooks).</div>
+        </div>
+        <div class="field">
+          <label>Événements à notifier</label>
+          <div class="events-grid" id="eventsGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Récapitulatif</div>
+      <div class="card-sub">Vérifiez votre configuration avant de lancer le provisioning.</div>
+      <div class="review-grid" id="reviewGrid"></div>
+    </div>
+
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goTo(4)">← Retour</button>
+      <button class="btn-create" id="createBtn" onclick="createMDT()">🚀 Créer et provisionner</button>
+    </div>
+  </div>
+
+  <!-- PROVISIONING -->
+  <div class="panel" id="panelProvisioning">
+    <div class="card">
+      <div class="provisioning-screen">
+        <div class="prov-spinner"></div>
+        <div class="prov-title">Provisioning en cours…</div>
+        <div class="prov-sub">Copie du codebase, configuration, démarrage PM2, nginx…</div>
+        <div class="prov-log" id="provLog">
+          ✦ Initialisation…<br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="panel" id="panelResult">
+    <div class="card">
+      <div class="result-screen" id="resultScreen"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  step: 1,
+  name: '',
+  subdomain: '',
+  sections: ['police'],
+  theme: { primary: '#2e7d32', accent: '#76c442', dark: '#081508', border: '#2a5e1e' },
+  categories: [],
+  discordEnabled: false,
+  discordWebhook: '',
+  discordEvents: [],
+};
+
+const PRESETS = {
+  konoha: { primary: '#2e7d32', accent: '#76c442', dark: '#081508', border: '#2a5e1e' },
+  suna:   { primary: '#b85c20', accent: '#e8a050', dark: '#120a04', border: '#7a4c1a' },
+  cloud:  { primary: '#1565c0', accent: '#42a5f5', dark: '#04080f', border: '#0d3b7a' },
+  mist:   { primary: '#00695c', accent: '#4db6ac', dark: '#020f0d', border: '#004d40' },
+  stone:  { primary: '#4a148c', accent: '#9c27b0', dark: '#0a0312', border: '#2e0060' },
+  blood:  { primary: '#b71c1c', accent: '#ef5350', dark: '#0f0203', border: '#7a0c0c' },
+  void:   { primary: '#263238', accent: '#546e7a', dark: '#050a0c', border: '#1c2b30' },
+};
+
+const DISCORD_EVENTS = [
+  { id: 'arrest', label: '🔒 Arrestation' },
+  { id: 'complaint', label: '📋 Plainte' },
+  { id: 'investigation', label: '🔍 Investigation' },
+  { id: 'casier', label: '📁 Casier modifié' },
+  { id: 'dri', label: '⚡ DRI' },
+  { id: 'login', label: '🔑 Connexion' },
+  { id: 'register', label: '👤 Inscription' },
+];
+
+const CAT_SUGGESTIONS_BY_SECTION = {
+  police: ['Arrestation', 'Contrôle', 'Verbalisation', 'Flagrant délit', 'Garde à vue', 'Patrouille', 'Intervention'],
+  medical: ['Urgence', 'Consultation', 'Chirurgie', 'Pharmacie', 'Traumatologie'],
+  pompiers: ['Incendie', 'Sauvetage', 'Accident', 'Fuite de gaz'],
+  justice: ['Audience', 'Jugement', 'Appel', 'Mandat'],
+};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goTo(step) {
+  if (step === 2 && !validateStep1()) return;
+  if (step === 5) buildReview();
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + step).classList.add('active');
+  document.querySelectorAll('.step').forEach(s => {
+    const n = +s.dataset.step;
+    s.classList.toggle('active', n === step);
+    s.classList.toggle('done', n < step);
+    s.querySelector('.step-circle').textContent = n < step ? '✓' : n;
+  });
+  state.step = step;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// STEP 1 VALIDATION
+// ============================================================
+function validateStep1() {
+  const name = document.getElementById('name').value.trim();
+  const sub = document.getElementById('subdomain').value.trim().toLowerCase();
+  if (!name) { alert('Veuillez entrer un nom pour le MDT.'); return false; }
+  if (!sub || !/^[a-z0-9-]+$/.test(sub)) { alert('Le sous-domaine ne doit contenir que des lettres minuscules, chiffres et tirets.'); return false; }
+  state.name = name;
+  state.subdomain = sub;
+  return true;
+}
+
+// ============================================================
+// STEP 2 — SECTIONS
+// ============================================================
+document.getElementById('sectionsGrid').addEventListener('click', e => {
+  const card = e.target.closest('.section-card');
+  if (!card || card.classList.contains('disabled')) return;
+  const sec = card.dataset.section;
+  if (state.sections.includes(sec)) {
+    if (state.sections.length === 1) return; // au moins une section
+    state.sections = state.sections.filter(s => s !== sec);
+    card.classList.remove('selected');
+  } else {
+    state.sections.push(sec);
+    card.classList.add('selected');
+  }
+});
+
+// ============================================================
+// STEP 3 — THEME
+// ============================================================
+function applyTheme(theme) {
+  state.theme = { ...theme };
+  document.getElementById('cpPrimary').value = theme.primary;
+  document.getElementById('cpAccent').value = theme.accent;
+  document.getElementById('cpDark').value = theme.dark;
+  document.getElementById('cpBorder').value = theme.border;
+  ['Primary', 'Accent', 'Dark', 'Border'].forEach(k => {
+    const val = theme[k.toLowerCase()];
+    document.getElementById('swatch' + k).style.background = val;
+    document.getElementById('val' + k).textContent = val;
+  });
+  updatePreview();
+}
+
+document.getElementById('presets').addEventListener('click', e => {
+  const preset = e.target.closest('.preset');
+  if (!preset || !preset.dataset.preset) return;
+  document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+  preset.classList.add('active');
+  applyTheme(PRESETS[preset.dataset.preset]);
+});
+
+['Primary','Accent','Dark','Border'].forEach(k => {
+  document.getElementById('cp' + k).addEventListener('input', e => {
+    const val = e.target.value;
+    state.theme[k.toLowerCase()] = val;
+    document.getElementById('swatch' + k).style.background = val;
+    document.getElementById('val' + k).textContent = val;
+    document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+    updatePreview();
+  });
+});
+
+function updatePreview() {
+  const t = state.theme;
+  document.getElementById('pvSidebar').style.background = t.dark;
+  document.getElementById('pvMain').style.background = t.dark + 'cc';
+  document.getElementById('pvTopbar').style.background = t.primary;
+  document.getElementById('pvCard1').style.borderColor = t.border;
+  document.getElementById('pvCard2').style.borderColor = t.border;
+  document.getElementById('pvDot1').style.background = t.accent;
+  document.getElementById('pvDot2').style.background = t.primary;
+  document.getElementById('pvLine1').style.background = t.primary;
+  document.getElementById('pvLine2').style.background = t.border;
+}
+
+applyTheme(PRESETS.konoha);
+
+// ============================================================
+// STEP 4 — CATEGORIES
+// ============================================================
+function renderCats() {
+  const list = document.getElementById('catList');
+  list.innerHTML = state.categories.map((c, i) =>
+    `<span class="cat-tag">${c}<span class="remove" onclick="removeCat(${i})">×</span></span>`
+  ).join('') || '<span style="color:var(--text-muted);font-size:13px;padding:4px 8px">Aucune catégorie — ajoutez-en ci-dessous</span>';
+}
+
+function renderCatPresets() {
+  const suggestions = [...new Set(state.sections.flatMap(s => CAT_SUGGESTIONS_BY_SECTION[s] || []))];
+  document.getElementById('catPresets').innerHTML = suggestions
+    .filter(s => !state.categories.includes(s))
+    .map(s => `<span class="cat-preset" onclick="addCatByName('${s}')">${s}</span>`).join('');
+}
+
+function addCat() {
+  const input = document.getElementById('catInput');
+  const val = input.value.trim();
+  if (!val || state.categories.includes(val)) { input.value = ''; return; }
+  state.categories.push(val);
+  input.value = '';
+  renderCats();
+  renderCatPresets();
+}
+
+function addCatByName(name) {
+  if (!state.categories.includes(name)) {
+    state.categories.push(name);
+    renderCats();
+    renderCatPresets();
+  }
+}
+
+function removeCat(i) {
+  state.categories.splice(i, 1);
+  renderCats();
+  renderCatPresets();
+}
+
+document.getElementById('catInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addCat(); }
+});
+
+// ============================================================
+// STEP 5 — DISCORD
+// ============================================================
+function toggleDiscord() {
+  state.discordEnabled = !state.discordEnabled;
+  document.getElementById('discordToggle').classList.toggle('on', state.discordEnabled);
+  document.getElementById('discordOptions').classList.toggle('show', state.discordEnabled);
+}
+
+function renderEvents() {
+  document.getElementById('eventsGrid').innerHTML = DISCORD_EVENTS.map(ev =>
+    `<div class="event-chip${state.discordEvents.includes(ev.id)?' selected':''}" onclick="toggleEvent('${ev.id}')">${ev.label}</div>`
+  ).join('');
+}
+
+function toggleEvent(id) {
+  if (state.discordEvents.includes(id)) state.discordEvents = state.discordEvents.filter(e => e !== id);
+  else state.discordEvents.push(id);
+  renderEvents();
+}
+
+renderEvents();
+
+function buildReview() {
+  const t = state.theme;
+  const sections = state.sections.map(s => `<span class="review-section-tag">${s}</span>`).join('');
+  const cats = state.categories.length
+    ? state.categories.map(c => `<span class="review-cat">${c}</span>`).join('')
+    : '<span style="color:var(--text-muted);font-size:12px">Aucune</span>';
+  const discord = state.discordEnabled && state.discordWebhook
+    ? `<span style="color:#86efac">✓ Activé</span><small>${state.discordEvents.length} événement(s)</small>`
+    : `<span style="color:var(--text-muted)">Désactivé</span>`;
+
+  document.getElementById('reviewGrid').innerHTML = `
+    <div class="review-block">
+      <div class="review-block-title">Identité</div>
+      <div class="review-value">${state.name}<small>${state.subdomain}.zenkai-police.tech</small></div>
+    </div>
+    <div class="review-block">
+      <div class="review-block-title">Sections</div>
+      <div class="review-sections">${sections}</div>
+    </div>
+    <div class="review-block">
+      <div class="review-block-title">Thème</div>
+      <div class="review-colors">
+        <div class="review-color-item"><div class="review-dot" style="background:${t.primary}"></div>${t.primary}</div>
+        <div class="review-color-item"><div class="review-dot" style="background:${t.accent}"></div>${t.accent}</div>
+        <div class="review-color-item"><div class="review-dot" style="background:${t.dark}"></div>${t.dark}</div>
+      </div>
+    </div>
+    <div class="review-block">
+      <div class="review-block-title">Discord</div>
+      <div class="review-value">${discord}</div>
+    </div>
+    <div class="review-block" style="grid-column:1/-1">
+      <div class="review-block-title">Catégories (${state.categories.length})</div>
+      <div class="review-cats">${cats}</div>
+    </div>
+  `;
+}
+
+// ============================================================
+// CREATION
+// ============================================================
+async function createMDT() {
+  state.name = document.getElementById('name').value.trim();
+  state.subdomain = document.getElementById('subdomain').value.trim().toLowerCase();
+  state.discordWebhook = document.getElementById('webhookUrl').value.trim();
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('stepper').style.display = 'none';
+  document.getElementById('panelProvisioning').classList.add('active');
+
+  const log = document.getElementById('provLog');
+  const steps = [
+    '📁 Copie du codebase MDT…',
+    '📦 Installation des dépendances…',
+    '🔑 Génération des secrets et variables…',
+    '🌐 Configuration nginx…',
+    '⚡ Démarrage du process PM2…',
+    '💾 Enregistrement dans le registry…',
+  ];
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < steps.length) { log.innerHTML += steps[i++] + '<br>'; }
+  }, 800);
+
+  const payload = {
+    name: state.name,
+    subdomain: state.subdomain,
+    sections: state.sections,
+    theme: state.theme,
+    categories: state.categories,
+    discord_webhook: state.discordEnabled ? state.discordWebhook : null,
+    discord_events: state.discordEnabled ? state.discordEvents : [],
+  };
+
+  try {
+    const res = await fetch('/admin-api/instances', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    clearInterval(interval);
+    const data = await res.json();
+
+    document.getElementById('panelProvisioning').classList.remove('active');
+    document.getElementById('panelResult').classList.add('active');
+
+    if (res.ok) {
+      document.getElementById('resultScreen').innerHTML = `
+        <div class="result-icon">🎉</div>
+        <div class="result-title">MDT créé avec succès !</div>
+        <div class="result-sub">L'instance <strong>${state.name}</strong> tourne sur le port <strong>${data.instance.port}</strong>.<br>Ajoutez le DNS chez OVH puis activez le SSL depuis le dashboard.</div>
+        <div class="dns-box">
+          <span class="key">TYPE &nbsp;&nbsp;</span><span class="val">A</span><br>
+          <span class="key">NOM &nbsp;&nbsp;&nbsp;</span><span class="val">${state.subdomain}.zenkai-police.tech.</span><br>
+          <span class="key">VALEUR </span><span class="val">51.77.59.56</span><br>
+          <span class="key">TTL &nbsp;&nbsp;&nbsp;</span><span class="val">300 secondes</span>
+        </div>
+        <div class="result-actions">
+          <a href="/admin/" class="btn-secondary">← Dashboard</a>
+          <a href="/admin/" class="btn-next">Voir l'instance →</a>
+        </div>
+      `;
+    } else {
+      document.getElementById('resultScreen').innerHTML = `
+        <div class="result-icon">❌</div>
+        <div class="result-title">Provisioning échoué</div>
+        <div class="result-sub" style="color:#fca5a5">${data.detail || data.error}</div>
+        <div class="result-actions"><a href="/admin/" class="btn-secondary">← Dashboard</a></div>
+      `;
+    }
+  } catch (err) {
+    clearInterval(interval);
+    document.getElementById('panelProvisioning').classList.remove('active');
+    document.getElementById('panelResult').classList.add('active');
+    document.getElementById('resultScreen').innerHTML = `
+      <div class="result-icon">❌</div>
+      <div class="result-title">Erreur réseau</div>
+      <div class="result-sub" style="color:#fca5a5">${err.message}</div>
+      <div class="result-actions"><a href="/admin/" class="btn-secondary">← Dashboard</a></div>
+    `;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderCats();
+renderCatPresets();
+
+fetch('/admin-api/auth/me').then(r => { if (!r.ok) window.location.href = '/admin/login.html'; });
+</script>
+</body>
+</html>

@@ -9,7 +9,12 @@ const authRoutes = require('./core/routes/auth');
 const notificationRoutes = require('./core/routes/notifications');
 const presenceRoutes = require('./core/routes/presence');
 
-const policeSection = require('./sections/police');
+const AVAILABLE_SECTIONS = { police: () => require('./sections/police') };
+
+function getEnabledSections() {
+  const raw = process.env.ENABLED_SECTIONS || 'police';
+  return raw.split(',').map(s => s.trim()).filter(s => s && AVAILABLE_SECTIONS[s]);
+}
 
 const app = express();
 app.set('trust proxy', env.trustProxy ? 1 : false);
@@ -81,7 +86,8 @@ app.use(presenceRoutes);
 app.use(notificationRoutes);
 
 // Sections
-loadSections(app, [policeSection]);
+const activeSections = getEnabledSections().map(name => AVAILABLE_SECTIONS[name]());
+loadSections(app, activeSections);
 
 app.use(staticGuard);
 app.use(express.static(require('path').join(env.rootDir, 'vues'), {
