@@ -1,0 +1,16 @@
+const jwt = require('jsonwebtoken');
+
+function requireAdmin(req, res, next) {
+  const token = req.cookies?.admin_token;
+  if (!token) return res.status(401).json({ error: 'Non authentifié' });
+
+  try {
+    req.admin = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    res.clearCookie('admin_token');
+    res.status(401).json({ error: 'Session expirée' });
+  }
+}
+
+module.exports = { requireAdmin };

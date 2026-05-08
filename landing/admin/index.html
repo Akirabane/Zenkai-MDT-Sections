@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenkai Admin — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3d;
+  --accent:#7c5cfc;
+  --accent-glow:rgba(124,92,252,0.25);
+  --text:#e8e8f0;
+  --text-muted:#6b6b8a;
+  --success:#22c55e;
+  --warning:#f59e0b;
+  --danger:#ef4444;
+}
+body{min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 30% at 50% 0%,rgba(124,92,252,0.08),transparent);pointer-events:none;z-index:0}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;height:60px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.nav-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nav-spacer{flex:1}
+.nav-user{font-size:13px;color:var(--text-muted)}
+.btn-logout{background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* LAYOUT */
+main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:40px 32px}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap}
+.page-title{font-size:28px;font-weight:700;letter-spacing:-0.04em}
+.page-subtitle{font-size:14px;color:var(--text-muted);margin-top:4px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s,box-shadow .15s;text-decoration:none;white-space:nowrap}
+.btn-primary:hover{opacity:.9;box-shadow:0 4px 20px var(--accent-glow)}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px}
+.stat-value{font-size:32px;font-weight:700;letter-spacing:-0.04em}
+.stat-label{font-size:13px;color:var(--text-muted);margin-top:4px}
+.stat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.dot-green{background:var(--success)}
+.dot-orange{background:var(--warning)}
+.dot-red{background:var(--danger)}
+.dot-blue{background:var(--accent)}
+
+/* TABLE */
+.instances-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.instances-title{font-size:16px;font-weight:600}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;width:240px;transition:border-color .2s}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--text-muted)}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 20px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);border-bottom:1px solid var(--border)}
+td{padding:14px 20px;font-size:14px;border-bottom:1px solid rgba(42,42,61,0.5)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500}
+.badge-running{background:rgba(34,197,94,0.15);color:#86efac}
+.badge-stopped{background:rgba(239,68,68,0.12);color:#fca5a5}
+.badge-provisioning{background:rgba(245,158,11,0.15);color:#fcd34d}
+.badge-error{background:rgba(239,68,68,0.15);color:#fca5a5}
+
+.section-tags{display:flex;flex-wrap:wrap;gap:4px}
+.section-tag{background:rgba(124,92,252,0.15);color:#c4b5fd;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:500}
+
+.theme-dot{display:inline-block;width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);vertical-align:middle}
+
+.actions{display:flex;gap:8px}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:all .15s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm.danger:hover{border-color:var(--danger);color:var(--danger)}
+.btn-sm.success:hover{border-color:var(--success);color:var(--success)}
+
+.empty-state{text-align:center;padding:64px 32px;color:var(--text-muted)}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:8px}
+
+/* MODAL CONFIRM */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:400px;width:100%;margin:16px}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.6}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end}
+.btn-cancel{background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:14px;color:var(--text-muted);cursor:pointer;font-family:inherit}
+.btn-confirm-danger{background:var(--danger);border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit}
+
+/* DNS MODAL */
+.dns-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:monospace;font-size:13px;margin:16px 0;line-height:1.8}
+.dns-box span{color:var(--accent)}
+.copy-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:inherit;margin-left:8px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:14px;font-weight:500;z-index:300;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:360px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-color:rgba(34,197,94,0.4);color:#86efac}
+.toast.error{border-color:rgba(239,68,68,0.4);color:#fca5a5}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">⚡</div>
+    Zenkai MDT Builder
+  </div>
+  <div class="nav-spacer"></div>
+  <span class="nav-user" id="navUser"></span>
+  <button class="btn-logout" id="logoutBtn">Déconnexion</button>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="page-title">Instances MDT</div>
+      <div class="page-subtitle">Gérez et provisionnez vos instances MDT.</div>
+    </div>
+    <a href="/admin/create.html" class="btn-primary">+ Nouveau MDT</a>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total instances</div></div>
+    <div class="stat"><div class="stat-value"><span class="stat-dot dot-green"></span><span id="statRunning">—</span></div><div class="stat-label">En ligne</div></div>
+    <div class="stat"><div class="stat-value"><span class="stat-dot dot-orange"></span><span id="statProvisioning">—</span></div><div class="stat-label">En cours</div></div>
+    <div class="stat"><div class="stat-value"><span class="stat-dot dot-red"></span><span id="statStopped">—</span></div><div class="stat-label">Arrêtées</div></div>
+  </div>
+
+  <div class="instances-header">
+    <div class="instances-title">Toutes les instances</div>
+    <input class="search-input" type="text" id="searchInput" placeholder="Rechercher…">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Sous-domaine</th>
+          <th>Port</th>
+          <th>Sections</th>
+          <th>Thème</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Confirm delete modal -->
+<div class="overlay" id="deleteOverlay">
+  <div class="modal">
+    <h3>Supprimer l'instance ?</h3>
+    <p>Cette action supprime le processus PM2, la base de données, le vhost nginx et tous les fichiers. <strong>Irréversible.</strong></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelDelete">Annuler</button>
+      <button class="btn-confirm-danger" id="confirmDelete">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- DNS instructions modal -->
+<div class="overlay" id="dnsOverlay">
+  <div class="modal" style="max-width:520px">
+    <h3>Instance créée — Configurer le DNS</h3>
+    <p>Ajoutez l'enregistrement suivant chez votre registrar (OVH), puis cliquez sur "Générer SSL" pour activer HTTPS.</p>
+    <div class="dns-box" id="dnsBox"></div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <button class="btn-cancel" id="closeDns">Fermer</button>
+      <button class="btn-primary" id="sslBtn">Générer SSL</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let instances = [];
+let pendingDeleteId = null;
+let pendingSslId = null;
+
+async function checkAuth() {
+  const res = await fetch('/admin-api/auth/me');
+  if (!res.ok) window.location.href = '/admin/login.html';
+  const data = await res.json();
+  document.getElementById('navUser').textContent = data.username;
+}
+
+async function loadInstances() {
+  const res = await fetch('/admin-api/instances');
+  if (res.status === 401) { window.location.href = '/admin/login.html'; return; }
+  instances = await res.json();
+  renderTable(instances);
+  renderStats(instances);
+}
+
+function renderStats(list) {
+  document.getElementById('statTotal').textContent = list.length;
+  document.getElementById('statRunning').textContent = list.filter(i => i.status === 'running').length;
+  document.getElementById('statProvisioning').textContent = list.filter(i => i.status === 'provisioning').length;
+  document.getElementById('statStopped').textContent = list.filter(i => i.status === 'stopped' || i.status === 'error').length;
+}
+
+function statusBadge(s) {
+  const map = { running:'running', stopped:'stopped', provisioning:'provisioning', error:'error' };
+  const label = { running:'En ligne', stopped:'Arrêtée', provisioning:'Provisioning…', error:'Erreur' };
+  const dot = { running:'🟢', stopped:'🔴', provisioning:'🟡', error:'🔴' };
+  return `<span class="badge badge-${map[s]||'stopped'}">${dot[s]||'⚪'} ${label[s]||s}</span>`;
+}
+
+function renderTable(list) {
+  const tbody = document.getElementById('tableBody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏗️</div><div class="empty-title">Aucune instance</div><div>Créez votre premier MDT en cliquant sur "+ Nouveau MDT"</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(inst => {
+    const theme = typeof inst.theme === 'object' ? inst.theme : JSON.parse(inst.theme||'{}');
+    const sections = Array.isArray(inst.sections) ? inst.sections : JSON.parse(inst.sections||'[]');
+    const domain = `${inst.subdomain}.zenkai-police.tech`;
+    return `<tr>
+      <td><strong>${inst.name}</strong><br><small style="color:var(--text-muted);font-size:11px">${inst.id}</small></td>
+      <td><a href="https://${domain}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13px">${domain}</a></td>
+      <td style="font-family:monospace;font-size:13px">${inst.port}</td>
+      <td><div class="section-tags">${sections.map(s=>`<span class="section-tag">${s}</span>`).join('')}</div></td>
+      <td><span class="theme-dot" style="background:${theme.primary||'#888'}" title="${theme.primary}"></span> <span class="theme-dot" style="background:${theme.accent||'#888'}" title="${theme.accent}"></span></td>
+      <td>${statusBadge(inst.status)}</td>
+      <td><div class="actions">
+        ${inst.status === 'running' ? `<button class="btn-sm danger" onclick="stopInst('${inst.id}')">Arrêter</button>` : `<button class="btn-sm success" onclick="restartInst('${inst.id}')">Démarrer</button>`}
+        <a class="btn-sm" href="/admin/edit.html?id=${inst.id}">Modifier</a>
+        <button class="btn-sm" onclick="showSsl('${inst.id}','${domain}')">SSL</button>
+        <button class="btn-sm danger" onclick="askDelete('${inst.id}')">Supprimer</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderTable(instances.filter(i => i.name.toLowerCase().includes(q) || i.subdomain.toLowerCase().includes(q) || i.id.toLowerCase().includes(q)));
+});
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function stopInst(id) {
+  const res = await fetch(`/admin-api/instances/${id}/stop`, { method: 'POST' });
+  if (res.ok) { showToast('Instance arrêtée'); loadInstances(); }
+  else { const d = await res.json(); showToast(d.error || 'Erreur', 'error'); }
+}
+
+async function restartInst(id) {
+  const res = await fetch(`/admin-api/instances/${id}/restart`, { method: 'POST' });
+  if (res.ok) { showToast('Instance redémarrée'); loadInstances(); }
+  else { const d = await res.json(); showToast(d.error || 'Erreur', 'error'); }
+}
+
+function askDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('deleteOverlay').classList.add('show');
+}
+document.getElementById('cancelDelete').addEventListener('click', () => {
+  document.getElementById('deleteOverlay').classList.remove('show');
+  pendingDeleteId = null;
+});
+document.getElementById('confirmDelete').addEventListener('click', async () => {
+  if (!pendingDeleteId) return;
+  document.getElementById('deleteOverlay').classList.remove('show');
+  const res = await fetch(`/admin-api/instances/${pendingDeleteId}`, { method: 'DELETE' });
+  pendingDeleteId = null;
+  if (res.ok) { showToast('Instance supprimée'); loadInstances(); }
+  else { const d = await res.json(); showToast(d.error || 'Erreur', 'error'); }
+});
+
+function showSsl(id, domain) {
+  pendingSslId = id;
+  document.getElementById('dnsBox').innerHTML = `TYPE &nbsp;<span>A</span><br>NOM &nbsp;&nbsp;<span>${domain}.</span><br>VALEUR <span>51.77.59.56</span><br>TTL &nbsp;&nbsp;<span>300</span>`;
+  document.getElementById('dnsOverlay').classList.add('show');
+}
+document.getElementById('closeDns').addEventListener('click', () => {
+  document.getElementById('dnsOverlay').classList.remove('show');
+});
+document.getElementById('sslBtn').addEventListener('click', async () => {
+  if (!pendingSslId) return;
+  const btn = document.getElementById('sslBtn');
+  btn.innerHTML = '<span class="spinner"></span> Certbot…';
+  btn.disabled = true;
+  const res = await fetch(`/admin-api/instances/${pendingSslId}/ssl`, { method: 'POST' });
+  btn.disabled = false;
+  btn.textContent = 'Générer SSL';
+  document.getElementById('dnsOverlay').classList.remove('show');
+  if (res.ok) { showToast('SSL activé avec succès !'); loadInstances(); }
+  else { const d = await res.json(); showToast(d.error || 'Certbot échoué — DNS propagé ?', 'error'); }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/admin-api/auth/logout', { method: 'POST' });
+  window.location.href = '/admin/login.html';
+});
+
+checkAuth().then(loadInstances);
+</script>
+</body>
+</html>

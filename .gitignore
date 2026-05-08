@@ -24,6 +24,9 @@ CSS_backup_konoha/
 logs/
 *.log
 
+# Landing API — données runtime (hors repo)
+landing-api/node_modules/
+
 # Claude Code
 .claude/
 

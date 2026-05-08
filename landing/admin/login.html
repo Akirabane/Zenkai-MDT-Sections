@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenkai Admin — Connexion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3d;
+  --accent:#7c5cfc;
+  --accent-glow:rgba(124,92,252,0.3);
+  --text:#e8e8f0;
+  --text-muted:#6b6b8a;
+  --danger:#ef4444;
+}
+body{min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;color:var(--text)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(124,92,252,0.12),transparent);pointer-events:none}
+.card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:40px}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-text{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.logo-sub{font-size:12px;color:var(--text-muted);font-weight:400}
+h1{font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
+.subtitle{font-size:14px;color:var(--text-muted);margin-bottom:32px}
+.field{margin-bottom:20px}
+label{display:block;font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.02em;text-transform:uppercase}
+input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;font-size:15px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.btn{width:100%;background:var(--accent);border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s,transform .1s;margin-top:8px}
+.btn:hover{opacity:.9}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 14px;font-size:13px;color:#fca5a5;margin-bottom:20px;display:none}
+.error.show{display:block}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">Zenkai</div>
+      <div class="logo-sub">MDT Builder</div>
+    </div>
+  </div>
+  <h1>Accès administrateur</h1>
+  <p class="subtitle">Connectez-vous pour gérer les instances MDT.</p>
+  <div class="error" id="error"></div>
+  <form id="loginForm">
+    <div class="field">
+      <label>Identifiant</label>
+      <input type="text" id="username" autocomplete="username" placeholder="admin" required>
+    </div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="••••••••••••" required>
+    </div>
+    <button class="btn" type="submit" id="submitBtn">Se connecter</button>
+  </form>
+</div>
+<script>
+const form = document.getElementById('loginForm');
+const errorEl = document.getElementById('error');
+const btn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  errorEl.classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Connexion…';
+
+  try {
+    const res = await fetch('/admin-api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      window.location.href = '/admin/';
+    } else {
+      errorEl.textContent = data.error || 'Erreur de connexion';
+      errorEl.classList.add('show');
+    }
+  } catch {
+    errorEl.textContent = 'Impossible de joindre le serveur';
+    errorEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  }
+});
+</script>
+</body>
+</html>
