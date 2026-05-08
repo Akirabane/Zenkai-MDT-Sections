@@ -127,8 +127,21 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
 
 /* DISCORD WEBHOOKS */
 .webhook-block{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px}
-.webhook-block-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.webhook-block-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
 .webhook-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.webhook-label-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:4px 0;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;outline:none;margin-bottom:10px}
+.webhook-label-input:focus{border-bottom-color:var(--accent)}
+/* CATEGORY PACKS */
+.pack-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.pack-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s}
+.pack-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* HIERARCHY CARD */
+.hierarchy-card{background:linear-gradient(135deg,rgba(124,92,252,0.08),rgba(124,92,252,0.02));border:1px solid rgba(124,92,252,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;cursor:pointer;transition:all .2s}
+.hierarchy-card:hover{border-color:var(--accent)}
+.hierarchy-card.active{border-color:var(--accent);background:rgba(124,92,252,0.12)}
+.hierarchy-card-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hierarchy-card-text .hc-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.hierarchy-card-text .hc-sub{font-size:12px;color:var(--text-muted)}
 
 /* REVIEW */
 .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -270,11 +283,28 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
     <div class="card">
       <div class="card-title">📂 Catégories</div>
       <div class="card-sub">Définissez les catégories disponibles dans votre MDT pour les dossiers et incidents.</div>
+
+      <div class="hierarchy-card" id="hierarchyCard" onclick="toggleHierarchy()">
+        <div class="hierarchy-card-inner">
+          <div class="hierarchy-card-text">
+            <div class="hc-title">🔗 Utiliser la hiérarchie zkadmin.dev</div>
+            <div class="hc-sub">Synchronise automatiquement les membres et grades depuis l'API Zenkai Admin. La synchronisation sera pré-configurée à l'étape suivante.</div>
+          </div>
+          <div class="toggle" id="hierarchyToggle"></div>
+        </div>
+      </div>
+
       <div class="field">
+        <label>Charger un pack de catégories</label>
+        <div class="pack-btns" id="packBtns"></div>
+        <div class="field-hint" style="margin-top:4px">Charge d'un coup toutes les catégories standards pour une section.</div>
+      </div>
+
+      <div class="field" style="margin-top:4px">
         <label>Catégories actives</label>
         <div class="tag-list" id="catList"></div>
         <div class="tag-add-row"><input type="text" id="catInput" placeholder="Ajouter une catégorie…" maxlength="40"><button class="btn-add" onclick="addCat()">Ajouter</button></div>
-        <div style="margin-top:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Suggestions :</div><div class="cat-presets" id="catPresets"></div></div>
+        <div style="margin-top:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Suggestions à la carte :</div><div class="cat-presets" id="catPresets"></div></div>
       </div>
     </div>
     <div class="wizard-nav"><button class="btn-back" onclick="goTo(3)">← Retour</button><button class="btn-next" onclick="goTo(5)">Comptes →</button></div>
@@ -284,25 +314,27 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
   <div class="panel" id="panel5">
     <div class="card">
       <div class="card-title">🔐 Comptes & Sécurité</div>
-      <div class="card-sub">Compte Justice pour les opérations automatiques, administrateurs initiaux et paramètres d'authentification.</div>
+      <div class="card-sub" id="securitySub">Administrateurs initiaux et paramètres d'authentification.</div>
 
-      <div class="field-row">
-        <div class="field">
-          <label>Pseudo du compte Justice</label>
-          <input type="text" id="justice_pseudo" placeholder="JusticeKonoha">
-          <div class="field-hint">Compte système utilisé pour signer les décisions judiciaires automatiques dans le MDT.</div>
-        </div>
-        <div class="field">
-          <label>Mot de passe du compte Justice</label>
-          <div class="pw-wrap">
-            <input type="password" id="justice_password" placeholder="Mot de passe sécurisé…" autocomplete="new-password">
-            <button class="pw-toggle" onclick="togglePw('justice_password',this)" type="button">👁</button>
+      <div id="justiceBlock" style="display:none">
+        <div class="field-row">
+          <div class="field">
+            <label>Pseudo du compte Justice</label>
+            <input type="text" id="justice_pseudo" placeholder="JusticeKonoha">
+            <div class="field-hint">Compte système utilisé pour signer les décisions judiciaires automatiques dans le MDT.</div>
           </div>
-          <div class="field-hint">Conservez ce mot de passe en lieu sûr. Il ne sera plus affiché après la création.</div>
+          <div class="field">
+            <label>Mot de passe du compte Justice</label>
+            <div class="pw-wrap">
+              <input type="password" id="justice_password" placeholder="Mot de passe sécurisé…" autocomplete="new-password">
+              <button class="pw-toggle" onclick="togglePw('justice_password',this)" type="button">👁</button>
+            </div>
+            <div class="field-hint">Conservez ce mot de passe en lieu sûr. Il ne sera plus affiché après la création.</div>
+          </div>
         </div>
+        <hr class="section-sep">
       </div>
 
-      <hr class="section-sep">
       <div class="field">
         <label>Administrateurs initiaux</label>
         <div class="tag-list" id="adminList"></div>
@@ -348,19 +380,22 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
       <div class="card-sub">Un webhook par module pour router les notifications vers des salons Discord distincts. Tous les champs sont optionnels.</div>
 
       <div class="webhook-block">
-        <div class="webhook-block-title"><span class="webhook-dot" style="background:#5865f2"></span> Casier judiciaire</div>
+        <div class="webhook-block-title"><span class="webhook-dot" style="background:#5865f2"></span></div>
+        <input class="webhook-label-input" type="text" id="wl_casier" placeholder="Nom du canal…" maxlength="40">
         <input type="url" id="discord_casier_webhook" placeholder="https://discord.com/api/webhooks/…">
-        <div class="field-hint" style="margin-top:6px">Notifié lors des créations et modifications de casiers.</div>
+        <div class="field-hint" id="wd_casier" style="margin-top:6px"></div>
       </div>
       <div class="webhook-block">
-        <div class="webhook-block-title"><span class="webhook-dot" style="background:#ed4245"></span> Sanctions & Arrestations</div>
+        <div class="webhook-block-title"><span class="webhook-dot" style="background:#ed4245"></span></div>
+        <input class="webhook-label-input" type="text" id="wl_sanctions" placeholder="Nom du canal…" maxlength="40">
         <input type="url" id="discord_sanctions_webhook" placeholder="https://discord.com/api/webhooks/…">
-        <div class="field-hint" style="margin-top:6px">Notifié lors des arrestations, amendes et sanctions.</div>
+        <div class="field-hint" id="wd_sanctions" style="margin-top:6px"></div>
       </div>
       <div class="webhook-block" style="margin-bottom:0">
-        <div class="webhook-block-title"><span class="webhook-dot" style="background:#faa61a"></span> Plaintes</div>
+        <div class="webhook-block-title"><span class="webhook-dot" style="background:#faa61a"></span></div>
+        <input class="webhook-label-input" type="text" id="wl_plaintes" placeholder="Nom du canal…" maxlength="40">
         <input type="url" id="discord_plaintes_webhook" placeholder="https://discord.com/api/webhooks/…">
-        <div class="field-hint" style="margin-top:6px">Notifié lors du dépôt et traitement de plaintes.</div>
+        <div class="field-hint" id="wd_plaintes" style="margin-top:6px"></div>
       </div>
     </div>
     <div class="wizard-nav"><button class="btn-back" onclick="goTo(5)">← Retour</button><button class="btn-next" onclick="goTo(7)">Synchronisation →</button></div>
@@ -497,20 +532,76 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
 
 <script>
 // STATE
-const state={step:1,name:'',subdomain:'',sections:['police'],theme:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},categories:[],admins:[],services:[],justiceпсевдо:'',registrySyncEnabled:false,bypassCanon:false};
+const state={step:1,name:'',subdomain:'',sections:['police'],theme:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},categories:[],admins:[],services:[],registrySyncEnabled:false,bypassCanon:false,useHierarchy:false};
 
 const PRESETS={konoha:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},suna:{primary:'#b85c20',accent:'#e8a050',dark:'#150b03',border:'#5e3010'},cloud:{primary:'#1565c0',accent:'#42a5f5',dark:'#030d1a',border:'#1e3a5f'},mist:{primary:'#00695c',accent:'#4db6ac',dark:'#031210',border:'#1a4a44'},stone:{primary:'#4a148c',accent:'#9c27b0',dark:'#0d0315',border:'#3a1060'},blood:{primary:'#b71c1c',accent:'#ef5350',dark:'#150303',border:'#5e1010'},void:{primary:'#263238',accent:'#546e7a',dark:'#080c0e',border:'#1c2b30'}};
-const CAT_SUGGESTIONS_BY_SECTION={police:['Arrestation','Contrôle','Verbalisation','Flagrant délit','Garde à vue','Patrouille','Intervention'],medical:['Urgence','Consultation','Chirurgie','Pharmacie','Traumatologie'],scientifique:['Analyse ADN','Balistique','Expertise toxicologique','Rapport forensique','Scène de crime'],economie:['Amende','Transaction suspecte','Saisie','Budget','Contrat'],justice:['Audience','Jugement','Appel','Mandat']};
+const CAT_SUGGESTIONS_BY_SECTION={police:['Arrestation','Contrôle','Verbalisation','Flagrant délit','Garde à vue','Patrouille','Intervention'],medical:['Urgence','Consultation','Chirurgie','Pharmacie','Traumatologie','Décès','Rapport médical'],scientifique:['Analyse ADN','Balistique','Expertise toxicologique','Rapport forensique','Scène de crime'],economie:['Amende','Transaction suspecte','Saisie','Budget','Contrat'],justice:['Audience','Jugement','Appel','Mandat']};
+const WEBHOOK_DEFAULTS={
+  police:[
+    {label:'Casier judiciaire',desc:'Notifié lors des créations et modifications de casiers.'},
+    {label:'Sanctions & Arrestations',desc:'Notifié lors des arrestations, amendes et sanctions.'},
+    {label:'Plaintes',desc:'Notifié lors du dépôt et traitement de plaintes.'},
+  ],
+  medical:[
+    {label:'Dossiers patients',desc:'Notifié lors des créations et mises à jour de dossiers médicaux.'},
+    {label:'Urgences médicales',desc:'Notifié lors des admissions en urgence.'},
+    {label:'Admissions & Sorties',desc:'Notifié lors des entrées et sorties de patients.'},
+  ],
+  scientifique:[
+    {label:'Rapports forensiques',desc:'Notifié lors de la création de rapports d\'expertise.'},
+    {label:'Analyses en cours',desc:'Notifié lors de la prise en charge d\'analyses.'},
+    {label:'Résultats',desc:'Notifié lors de la publication de résultats.'},
+  ],
+  economie:[
+    {label:'Transactions',desc:'Notifié lors de nouvelles transactions ou saisies.'},
+    {label:'Amendes',desc:'Notifié lors des émissions d\'amendes.'},
+    {label:'Budgets',desc:'Notifié lors des modifications de budget.'},
+  ],
+  default:[
+    {label:'Canal 1',desc:'Premier canal de notification Discord.'},
+    {label:'Canal 2',desc:'Deuxième canal de notification Discord.'},
+    {label:'Canal 3',desc:'Troisième canal de notification Discord.'},
+  ],
+};
 
 // NAVIGATION
 function goTo(step){
   if(step===2&&!validateStep1())return;
+  if(step===4)renderPackBtns();
+  if(step===5)refreshStep5();
+  if(step===6)refreshWebhookLabels();
+  if(step===7)refreshStep7();
   if(step===8)buildReview();
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+step).classList.add('active');
   document.querySelectorAll('.step').forEach(s=>{const n=+s.dataset.step;s.classList.toggle('active',n===step);s.classList.toggle('done',n<step);s.querySelector('.step-circle').textContent=n<step?'✓':n;});
   state.step=step;
   window.scrollTo({top:0,behavior:'smooth'});
+}
+function refreshStep5(){
+  const hasPolice=state.sections.includes('police')||state.sections.includes('justice');
+  document.getElementById('justiceBlock').style.display=hasPolice?'block':'none';
+  document.getElementById('securitySub').textContent=hasPolice?'Compte Justice pour les opérations automatiques, administrateurs initiaux et paramètres d\'authentification.':'Administrateurs initiaux et paramètres d\'authentification.';
+}
+function refreshWebhookLabels(){
+  const primary=state.sections.find(s=>WEBHOOK_DEFAULTS[s])||'default';
+  const defs=WEBHOOK_DEFAULTS[primary]||WEBHOOK_DEFAULTS.default;
+  const keys=['casier','sanctions','plaintes'];
+  keys.forEach((k,i)=>{
+    const lbl=document.getElementById('wl_'+k);const desc=document.getElementById('wd_'+k);
+    if(!lbl.dataset.edited||lbl.dataset.edited==='0'){lbl.value=defs[i].label;lbl.dataset.edited='0';}
+    desc.textContent=defs[i].desc;
+  });
+}
+function refreshStep7(){
+  if(!state.useHierarchy)return;
+  if(!state.registrySyncEnabled){
+    state.registrySyncEnabled=true;
+    document.getElementById('registryToggle').classList.add('on');
+    document.getElementById('registryOptions').classList.add('show');
+  }
+  const urlInput=document.getElementById('registry_sync_url');
+  if(!urlInput.value)urlInput.value='https://zkadmin.dev/api/public/v1/divisions/';
 }
 
 // STEP 1
@@ -551,11 +642,31 @@ applyTheme(PRESETS.konoha);
 
 // STEP 4 — CATEGORIES
 function renderCats(){const el=document.getElementById('catList');el.innerHTML=state.categories.map((c,i)=>`<span class="tag tag-purple">${c}<span class="remove" onclick="removeCat(${i})">×</span></span>`).join('')||'<span style="color:var(--text-muted);font-size:13px;padding:4px 8px">Aucune catégorie</span>';}
-function renderCatPresets(){const sugg=[...new Set(state.sections.flatMap(s=>CAT_SUGGESTIONS_BY_SECTION[s]||[]))];document.getElementById('catPresets').innerHTML=sugg.filter(s=>!state.categories.includes(s)).map(s=>`<span class="cat-preset" onclick="addCatByName('${s}')">${s}</span>`).join('');}
+function renderCatPresets(){const sugg=[...new Set(state.sections.flatMap(s=>CAT_SUGGESTIONS_BY_SECTION[s]||[]))];document.getElementById('catPresets').innerHTML=sugg.filter(s=>!state.categories.includes(s)).map(s=>`<span class="cat-preset" onclick="addCatByName('${s.replace(/'/g,"\\'")}')">` +s+'</span>').join('');}
 function addCat(){const inp=document.getElementById('catInput');const v=inp.value.trim();if(v&&!state.categories.includes(v)){state.categories.push(v);inp.value='';renderCats();renderCatPresets();}}
 function addCatByName(n){if(!state.categories.includes(n)){state.categories.push(n);renderCats();renderCatPresets();}}
 function removeCat(i){state.categories.splice(i,1);renderCats();renderCatPresets();}
 document.getElementById('catInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCat();}});
+function renderPackBtns(){
+  const SECTION_LABELS={police:'🚔 Police',medical:'🏥 Médical',scientifique:'🔬 Scientifique',economie:'💼 Économie',justice:'⚖️ Justice'};
+  const el=document.getElementById('packBtns');
+  el.innerHTML=state.sections.map(s=>`<button class="pack-btn" onclick="loadPack('${s}')" type="button">${SECTION_LABELS[s]||s}</button>`).join('');
+  renderCatPresets();
+}
+function loadPack(section){
+  const sugg=CAT_SUGGESTIONS_BY_SECTION[section]||[];
+  sugg.forEach(c=>{if(!state.categories.includes(c))state.categories.push(c);});
+  renderCats();renderCatPresets();
+}
+function toggleHierarchy(){
+  state.useHierarchy=!state.useHierarchy;
+  document.getElementById('hierarchyToggle').classList.toggle('on',state.useHierarchy);
+  document.getElementById('hierarchyCard').classList.toggle('active',state.useHierarchy);
+}
+// Marquer les labels webhook comme édités manuellement
+['casier','sanctions','plaintes'].forEach(k=>{
+  document.getElementById('wl_'+k).addEventListener('input',function(){this.dataset.edited='1';});
+});
 
 // STEP 5 — ADMINS
 let admins=[];
@@ -572,8 +683,8 @@ function addService(){const inp=document.getElementById('serviceInput');const v=
 document.getElementById('serviceInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addService();}});
 
 // TOGGLES
-let registrySyncEnabled=false,bypassCanon=false;
-function toggleSection(togId,optId){const tog=document.getElementById(togId);const on=tog.classList.toggle('on');document.getElementById(optId).classList.toggle('show',on);if(togId==='registryToggle')registrySyncEnabled=on;}
+let bypassCanon=false;
+function toggleSection(togId,optId){const tog=document.getElementById(togId);const on=tog.classList.toggle('on');document.getElementById(optId).classList.toggle('show',on);if(togId==='registryToggle')state.registrySyncEnabled=on;}
 function toggleBool(togId,key){const tog=document.getElementById(togId);const on=tog.classList.toggle('on');if(key==='bypass')bypassCanon=on;}
 function togglePw(id,btn){const inp=document.getElementById(id);inp.type=inp.type==='password'?'text':'password';btn.textContent=inp.type==='password'?'👁':'🙈';}
 
@@ -582,11 +693,15 @@ function buildReview(){
   state.name=document.getElementById('name').value.trim();
   state.subdomain=document.getElementById('subdomain').value.trim().toLowerCase();
   const t=state.theme;
-  const hasJustice=document.getElementById('justice_pseudo').value.trim();
+  const hasJustice=state.sections.includes('police')&&document.getElementById('justice_pseudo').value.trim();
   const casier=document.getElementById('discord_casier_webhook').value.trim();
   const sanctions=document.getElementById('discord_sanctions_webhook').value.trim();
   const plaintes=document.getElementById('discord_plaintes_webhook').value.trim();
-  const webhookCount=[casier,sanctions,plaintes].filter(Boolean).length;
+  const wlCasier=document.getElementById('wl_casier').value||'Canal 1';
+  const wlSanctions=document.getElementById('wl_sanctions').value||'Canal 2';
+  const wlPlaintes=document.getElementById('wl_plaintes').value||'Canal 3';
+  const webhooks=[[wlCasier,casier],[wlSanctions,sanctions],[wlPlaintes,plaintes]].filter(w=>w[1]);
+  const webhookCount=webhooks.length;
 
   document.getElementById('reviewGrid').innerHTML=`
     <div class="review-block">
@@ -616,11 +731,11 @@ function buildReview(){
     </div>
     <div class="review-block">
       <div class="review-block-title">Discord</div>
-      <div class="review-value">${webhookCount?`<span class="review-ok">✓ ${webhookCount} webhook(s) configuré(s)</span>`:'<span class="review-off">Pas de webhook</span>'}</div>
+      <div class="review-value">${webhookCount?`<span class="review-ok">✓ ${webhooks.map(w=>`${w[0]}`).join(', ')}</span>`:'<span class="review-off">Pas de webhook</span>'}</div>
     </div>
     <div class="review-block">
       <div class="review-block-title">Synchronisation</div>
-      <div class="review-value">${registrySyncEnabled?`<span class="review-ok">✓ Activée</span>`:'<span class="review-off">Désactivée</span>'}</div>
+      <div class="review-value">${state.registrySyncEnabled?`<span class="review-ok">✓ Activée${state.useHierarchy?' — Hiérarchie zkadmin.dev':''}</span>`:'<span class="review-off">Désactivée</span>'}</div>
     </div>
     <div class="review-block">
       <div class="review-block-title">Configuration avancée</div>
@@ -650,7 +765,7 @@ async function createMDT(){
     discord_casier_webhook:document.getElementById('discord_casier_webhook').value.trim()||null,
     discord_sanctions_webhook:document.getElementById('discord_sanctions_webhook').value.trim()||null,
     discord_plaintes_webhook:document.getElementById('discord_plaintes_webhook').value.trim()||null,
-    registry_sync_enabled:registrySyncEnabled,
+    registry_sync_enabled:state.registrySyncEnabled,
     registry_sync_url:document.getElementById('registry_sync_url').value.trim()||null,
     registry_sync_api_key:document.getElementById('registry_sync_api_key').value.trim()||null,
     registry_sync_auth_mode:document.getElementById('registry_sync_auth_mode').value,
