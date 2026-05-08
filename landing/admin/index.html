@@ -241,6 +241,7 @@ function renderTable(list) {
       <td>${statusBadge(inst.status)}</td>
       <td><div class="actions">
         ${inst.status === 'running' ? `<button class="btn-sm danger" onclick="stopInst('${inst.id}')">Arrêter</button>` : `<button class="btn-sm success" onclick="restartInst('${inst.id}')">Démarrer</button>`}
+        <a class="btn-sm" href="/admin/edit.html?id=${inst.id}">Modifier</a>
         <button class="btn-sm" onclick="showSsl('${inst.id}','${domain}')">SSL</button>
         <button class="btn-sm danger" onclick="askDelete('${inst.id}')">Supprimer</button>
       </div></td>
