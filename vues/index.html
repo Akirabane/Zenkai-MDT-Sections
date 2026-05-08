@@ -17,11 +17,11 @@
 <script src="JS/presence-ui.js?v=20260409d"></script>
 <script src="JS/service-widget.js?v=20260414c"></script>
 <script src="JS/profile-panel.js?v=20260414e"></script>
+<script src="JS/site-config.js?v=20260508a"></script>
 <script src="JS/site-motion.js?v=20260411b" defer></script>
 <script src="JS/background-interaction.js?v=20260410c" defer></script>
 <script src="JS/page-transitions.js?v=20260409c" defer></script>
 <script>
-  document.title = 'Police Militaire de Konoha — Quartier Général';
   (function() {
     var hasToken = sessionStorage.getItem('policeToken');
     var isGuest  = sessionStorage.getItem('policeGuest') === 'true';
@@ -84,7 +84,7 @@
 </div>
 
 <div class="home-layout" id="home-layout">
-  <aside class="dri-side-panel" id="dri-side-panel" style="display:none">
+  <aside class="dri-side-panel" id="dri-side-panel" style="display:none" data-feature-hide="dri">
     <span class="dri-corner dri-corner-tl">&#10022;</span>
     <span class="dri-corner dri-corner-br">&#10022;</span>
     <div class="dri-watermark">CLASSIFI&Eacute;</div>
@@ -135,7 +135,7 @@
 
   <!-- Title -->
   <div class="title-block">
-    <h1>Police Militaire de Konoha</h1>
+    <h1 class="instance-name">Police Militaire de Konoha</h1>
     <div class="subtitle">Quartier G&eacute;n&eacute;ral &mdash; Acc&egrave;s Restreint</div>
   </div>
 
@@ -202,7 +202,7 @@
       <div class="nav-card-desc">Dossiers individuels des ninjas affect&eacute;s &agrave; la section</div>
         </a>
 
-        <a href="CodePenal.html" class="nav-card nav-card--public">
+        <a href="CodePenal.html" class="nav-card nav-card--public" data-feature-hide="codePenal">
       <span class="nav-card-icon">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="5" y="2" width="26" height="32" rx="2" fill="#2a0a0a" stroke="#b8860b" stroke-width="1.5"/>
@@ -256,11 +256,11 @@
           <circle cx="18" cy="7" r="2.5" fill="#8b1a1a" stroke="#f0c0a0" stroke-width="0.8"/>
         </svg>
       </span>
-      <div class="nav-card-title">Rapport de patrouille</div>
-      <div class="nav-card-desc">Rendre compte d&rsquo;une patrouille, avec mention d&rsquo;&eacute;v&eacute;nement grave si n&eacute;cessaire</div>
+      <div class="nav-card-title" data-label="rapport"><span data-label="rapportShort">Rapport de patrouille</span></div>
+      <div class="nav-card-desc">Rendre compte d&rsquo;une intervention, avec mention d&rsquo;&eacute;v&eacute;nement grave si n&eacute;cessaire</div>
         </a>
 
-        <a href="Plainte.html" class="nav-card nav-card--ops" id="nav-complaint-form" style="display:none">
+        <a href="Plainte.html" class="nav-card nav-card--ops" id="nav-complaint-form" style="display:none" data-feature-hide="plaintes">
       <span class="nav-card-icon">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="4" y="3" width="28" height="30" rx="2.2" fill="#f0d890" stroke="#b8860b" stroke-width="1.5"/>
@@ -353,7 +353,7 @@
       <div class="nav-card-desc">Tracer les grades modifies, rapports ajustes et publications staff</div>
         </a>
 
-        <a href="Gestion_Plaintes.html" class="nav-card nav-card--command" id="nav-complaints-manage" style="display:none">
+        <a href="Gestion_Plaintes.html" class="nav-card nav-card--command" id="nav-complaints-manage" style="display:none" data-feature-hide="plaintes">
       <span class="nav-card-icon">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="4" y="4" width="28" height="28" rx="2" fill="#24170a" stroke="#b8860b" stroke-width="1.5"/>
