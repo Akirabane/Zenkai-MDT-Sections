@@ -177,11 +177,16 @@ router.post('/:id/restart', (req, res) => {
 
   const pm2Name = row.pm2_name || `mdt-${row.id}`;
   const associated = JSON.parse(row.pm2_associated || '[]');
+  const pm2Procs = associated.filter(p => !p.startsWith('systemd:'));
+  const systemdSvcs = associated.filter(p => p.startsWith('systemd:')).map(p => p.slice(8));
 
   try {
     execSync(`pm2 restart ${pm2Name}`, { stdio: 'pipe' });
-    for (const proc of associated) {
+    for (const proc of pm2Procs) {
       try { execSync(`pm2 restart ${proc}`, { stdio: 'pipe' }); } catch {}
+    }
+    for (const svc of systemdSvcs) {
+      try { execSync(`systemctl start ${svc}`, { stdio: 'pipe' }); } catch {}
     }
     db.prepare('UPDATE instances SET status = ? WHERE id = ?').run('running', row.id);
     db.prepare('INSERT INTO audit_log (action, instance_id, details) VALUES (?, ?, ?)').run('restart', row.id, JSON.stringify({ pm2Name, associated }));
@@ -199,10 +204,16 @@ router.post('/:id/stop', (req, res) => {
 
   const pm2Name = row.pm2_name || `mdt-${row.id}`;
   const associated = JSON.parse(row.pm2_associated || '[]');
+  const pm2Procs = associated.filter(p => !p.startsWith('systemd:'));
+  const systemdSvcs = associated.filter(p => p.startsWith('systemd:')).map(p => p.slice(8));
 
   try {
+    // Couper d'abord les watchdogs systemd pour éviter qu'ils relancent les processus
+    for (const svc of systemdSvcs) {
+      try { execSync(`systemctl stop ${svc}`, { stdio: 'pipe' }); } catch {}
+    }
     execSync(`pm2 stop ${pm2Name}`, { stdio: 'pipe' });
-    for (const proc of associated) {
+    for (const proc of pm2Procs) {
       try { execSync(`pm2 stop ${proc}`, { stdio: 'pipe' }); } catch {}
     }
     db.prepare('UPDATE instances SET status = ? WHERE id = ?').run('stopped', row.id);
