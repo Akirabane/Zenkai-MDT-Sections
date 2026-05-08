@@ -142,6 +142,22 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
 .hierarchy-card-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .hierarchy-card-text .hc-title{font-size:14px;font-weight:600;margin-bottom:3px}
 .hierarchy-card-text .hc-sub{font-size:12px;color:var(--text-muted)}
+/* STARTER PACK CARD */
+.starter-pack{border-radius:14px;padding:22px 24px;margin-top:20px;transition:all .2s}
+.sp-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.sp-icon{font-size:28px;line-height:1}
+.sp-name{font-size:16px;font-weight:700;letter-spacing:-0.02em}
+.sp-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+.sp-features{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.sp-features li{font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px}
+.sp-features li::before{content:'✓';color:var(--success);font-weight:700;flex-shrink:0}
+.sp-apply{width:100%;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+/* SECTION PRESETS */
+.presets-section{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.preset-section-pill{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px 6px 8px;cursor:pointer;transition:all .2s;font-size:13px;font-weight:500}
+.preset-section-pill:hover{border-color:var(--accent)}
+.preset-section-pill.active{border-color:var(--accent);background:rgba(124,92,252,0.1)}
+.psp-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
 
 /* REVIEW */
 .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -187,9 +203,14 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
 
 @media(max-width:640px){.field-row,.field-row-3,.review-grid{grid-template-columns:1fr}}
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 22px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--success);color:var(--success)}
 </style>
 </head>
 <body>
+<div class="toast" id="toast"></div>
 <nav>
   <div class="nav-logo"><div class="nav-logo-icon">⚡</div>Zenkai MDT Builder</div>
   <div class="nav-spacer"></div>
@@ -247,6 +268,7 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
         <div class="section-card disabled" data-section="economie"><div class="section-icon">💼</div><div class="section-name">Économie</div><div class="section-desc">Gestion financière, amendes, budgets, transactions.</div><span class="section-badge soon">Bientôt</span></div>
         <div class="section-card disabled" data-section="justice"><div class="section-icon">⚖️</div><div class="section-name">Justice</div><div class="section-desc">Audiences, verdicts, registre juridique.</div><span class="section-badge soon">Bientôt</span></div>
       </div>
+      <div id="starterPackCard" style="display:none"></div>
     </div>
     <div class="wizard-nav"><button class="btn-back" onclick="goTo(1)">← Retour</button><button class="btn-next" onclick="goTo(3)">Thème →</button></div>
   </div>
@@ -256,7 +278,9 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
     <div class="card">
       <div class="card-title">🎨 Thème de couleurs</div>
       <div class="card-sub">Personnalisez l'apparence visuelle du MDT. Choisissez un preset ou définissez vos propres couleurs.</div>
-      <label style="margin-bottom:12px;display:block">Presets</label>
+      <label style="margin-bottom:10px;display:block">Presets par section</label>
+      <div class="presets-section" id="sectionPresets"></div>
+      <label style="margin-bottom:12px;display:block">Villages ninja</label>
       <div class="presets" id="presets">
         <div class="preset active" data-preset="konoha" style="background:linear-gradient(135deg,#2e7d32,#76c442)" title="Konoha — Vert"></div>
         <div class="preset" data-preset="suna" style="background:linear-gradient(135deg,#b85c20,#e8a050)" title="Suna — Orange"></div>
@@ -535,6 +559,49 @@ input[type=color]{position:absolute;opacity:0;width:0;height:0}
 const state={step:1,name:'',subdomain:'',sections:['police'],theme:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},categories:[],admins:[],services:[],registrySyncEnabled:false,bypassCanon:false,useHierarchy:false};
 
 const PRESETS={konoha:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},suna:{primary:'#b85c20',accent:'#e8a050',dark:'#150b03',border:'#5e3010'},cloud:{primary:'#1565c0',accent:'#42a5f5',dark:'#030d1a',border:'#1e3a5f'},mist:{primary:'#00695c',accent:'#4db6ac',dark:'#031210',border:'#1a4a44'},stone:{primary:'#4a148c',accent:'#9c27b0',dark:'#0d0315',border:'#3a1060'},blood:{primary:'#b71c1c',accent:'#ef5350',dark:'#150303',border:'#5e1010'},void:{primary:'#263238',accent:'#546e7a',dark:'#080c0e',border:'#1c2b30'}};
+
+const SECTION_CONFIGS={
+  police:{
+    icon:'🚔',name:'Police',
+    theme:{primary:'#2e7d32',accent:'#76c442',dark:'#081508',border:'#2a5e1e'},
+    categories:['Arrestation','Contrôle','Verbalisation','Flagrant délit','Garde à vue','Patrouille','Intervention'],
+    webhooks:[{label:'Casier judiciaire',desc:'Créations et modifications de casiers'},{label:'Sanctions & Arrestations',desc:'Arrestations, amendes et sanctions'},{label:'Plaintes',desc:'Dépôt et traitement de plaintes'}],
+    advanced:{log_level:'info',jwt_expires_in:'12h',backup_interval:30,login_rate_limit_max:5,login_rate_limit_window:15,login_rate_limit_lock:15},
+    hierarchy:true,
+    color:'#2e7d32',
+    features:['Thème vert Konoha','Catégories police (arrestations, contrôles, patrouilles…)','Webhooks Discord : casier, sanctions, plaintes','Synchronisation hiérarchie zkadmin.dev'],
+  },
+  medical:{
+    icon:'🏥',name:'Médical',
+    theme:{primary:'#0d47a1',accent:'#42a5f5',dark:'#020d1a',border:'#1a3a6e'},
+    categories:['Urgence','Consultation','Chirurgie','Pharmacie','Traumatologie','Décès','Rapport médical','Hospitalisation'],
+    webhooks:[{label:'Dossiers patients',desc:'Créations et mises à jour de dossiers médicaux'},{label:'Urgences médicales',desc:'Admissions en urgence'},{label:'Admissions & Sorties',desc:'Entrées et sorties de patients'}],
+    advanced:{log_level:'warn',jwt_expires_in:'8h',backup_interval:15,login_rate_limit_max:3,login_rate_limit_window:10,login_rate_limit_lock:20},
+    hierarchy:true,
+    color:'#0d47a1',
+    features:['Thème bleu médical','Catégories hospitalières (urgences, chirurgie, pharmacie…)','Webhooks Discord : dossiers, urgences, admissions','JWT 8h & sauvegardes toutes les 15 min (données sensibles)','Synchronisation hiérarchie zkadmin.dev'],
+  },
+  scientifique:{
+    icon:'🔬',name:'Scientifique',
+    theme:{primary:'#4a0080',accent:'#b366ff',dark:'#0a0010',border:'#3a006a'},
+    categories:['Analyse ADN','Balistique','Expertise toxicologique','Rapport forensique','Scène de crime','Identification','Autopsie','Prélèvement'],
+    webhooks:[{label:'Rapports forensiques',desc:"Création et validation de rapports d'expertise"},{label:'Analyses en cours',desc:"Prises en charge et suivi d'analyses"},{label:'Résultats publiés',desc:'Publication et transmission de résultats'}],
+    advanced:{log_level:'info',jwt_expires_in:'12h',backup_interval:30,login_rate_limit_max:5,login_rate_limit_window:15,login_rate_limit_lock:15},
+    hierarchy:true,
+    color:'#4a0080',
+    features:['Thème violet laboratoire','Catégories forensiques (ADN, balistique, autopsie, toxicologie…)','Webhooks Discord : rapports, analyses, résultats','Synchronisation hiérarchie zkadmin.dev'],
+  },
+  economie:{
+    icon:'💼',name:'Économie',
+    theme:{primary:'#bf360c',accent:'#ff8a65',dark:'#120400',border:'#6a2000'},
+    categories:['Amende','Transaction suspecte','Saisie','Budget','Contrat','Audit','Fraude','Blanchiment'],
+    webhooks:[{label:'Transactions',desc:'Nouvelles transactions et mouvements de fonds'},{label:'Infractions financières',desc:'Amendes, saisies et fraudes'},{label:'Rapports budgétaires',desc:'Modifications et clôtures de budget'}],
+    advanced:{log_level:'info',jwt_expires_in:'6h',backup_interval:20,login_rate_limit_max:3,login_rate_limit_window:15,login_rate_limit_lock:30},
+    hierarchy:true,
+    color:'#bf360c',
+    features:['Thème ambre économique','Catégories financières (fraude, saisie, audit, blanchiment…)','Webhooks Discord : transactions, infractions, budgets','JWT 6h (données financières sensibles)','Synchronisation hiérarchie zkadmin.dev'],
+  },
+};
 const CAT_SUGGESTIONS_BY_SECTION={police:['Arrestation','Contrôle','Verbalisation','Flagrant délit','Garde à vue','Patrouille','Intervention'],medical:['Urgence','Consultation','Chirurgie','Pharmacie','Traumatologie','Décès','Rapport médical'],scientifique:['Analyse ADN','Balistique','Expertise toxicologique','Rapport forensique','Scène de crime'],economie:['Amende','Transaction suspecte','Saisie','Budget','Contrat'],justice:['Audience','Jugement','Appel','Mandat']};
 const WEBHOOK_DEFAULTS={
   police:[
@@ -567,11 +634,13 @@ const WEBHOOK_DEFAULTS={
 // NAVIGATION
 function goTo(step){
   if(step===2&&!validateStep1())return;
+  if(step===2)refreshStarterPack();
+  if(step===3)renderSectionPresets();
   if(step===4)renderPackBtns();
   if(step===5)refreshStep5();
   if(step===6)refreshWebhookLabels();
   if(step===7)refreshStep7();
-  if(step===8)buildReview();
+  if(step===8){applyAdvancedDefaults();buildReview();}
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel'+step).classList.add('active');
   document.querySelectorAll('.step').forEach(s=>{const n=+s.dataset.step;s.classList.toggle('active',n===step);s.classList.toggle('done',n<step);s.querySelector('.step-circle').textContent=n<step?'✓':n;});
@@ -620,7 +689,64 @@ document.getElementById('sectionsGrid').addEventListener('click',e=>{
   const sec=card.dataset.section;
   if(state.sections.includes(sec)){if(state.sections.length===1)return;state.sections=state.sections.filter(s=>s!==sec);card.classList.remove('selected');}
   else{state.sections.push(sec);card.classList.add('selected');}
+  refreshStarterPack();
 });
+function getPrimarySection(){return state.sections.find(s=>SECTION_CONFIGS[s])||state.sections[0]||'police';}
+function refreshStarterPack(){
+  const sec=getPrimarySection();
+  const cfg=SECTION_CONFIGS[sec];
+  const el=document.getElementById('starterPackCard');
+  if(!cfg){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div class="starter-pack" style="background:linear-gradient(135deg,${cfg.color}18,${cfg.color}08);border:1px solid ${cfg.color}44">
+    <div class="sp-header">
+      <div class="sp-icon">${cfg.icon}</div>
+      <div><div class="sp-name">Pack de démarrage — ${cfg.name}</div><div class="sp-sub">Applique une configuration complète et cohérente pour un MDT ${cfg.name.toLowerCase()}.</div></div>
+    </div>
+    <ul class="sp-features">${cfg.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+    <button class="sp-apply" onclick="applyStarterPack('${sec}')" type="button" style="background:${cfg.color};color:#fff">🚀 Appliquer le pack ${cfg.name}</button>
+  </div>`;
+}
+function applyStarterPack(sec){
+  const cfg=SECTION_CONFIGS[sec];if(!cfg)return;
+  // Thème
+  applyTheme(cfg.theme);
+  // Catégories
+  state.categories=[...cfg.categories];
+  renderCats();renderCatPresets();
+  // Webhooks labels (sans marquer comme édités manuellement)
+  const keys=['casier','sanctions','plaintes'];
+  keys.forEach((k,i)=>{const el=document.getElementById('wl_'+k);if(el){el.value=cfg.webhooks[i].label;el.dataset.edited='0';}const d=document.getElementById('wd_'+k);if(d)d.textContent=cfg.webhooks[i].desc;});
+  // Hiérarchie
+  if(cfg.hierarchy){state.useHierarchy=true;document.getElementById('hierarchyToggle').classList.add('on');document.getElementById('hierarchyCard').classList.add('active');}
+  // Avancé (stocké dans state pour application à step 8)
+  state.pendingAdvanced=cfg.advanced;
+  // Toast
+  showToast(`Pack ${cfg.name} appliqué ✓`);
+}
+function applyAdvancedDefaults(){
+  if(!state.pendingAdvanced)return;
+  const a=state.pendingAdvanced;
+  const ll=document.getElementById('log_level');if(ll&&!ll.dataset.edited)ll.value=a.log_level;
+  const ji=document.getElementById('jwt_expires_in');if(ji&&!ji.dataset.edited)ji.value=a.jwt_expires_in;
+  const bi=document.getElementById('backup_interval');if(bi&&!bi.dataset.edited)bi.value=a.backup_interval;
+  const lm=document.getElementById('login_rate_limit_max');if(lm&&!lm.dataset.edited)lm.value=a.login_rate_limit_max;
+  const lw=document.getElementById('login_rate_limit_window');if(lw&&!lw.dataset.edited)lw.value=a.login_rate_limit_window;
+  const ll2=document.getElementById('login_rate_limit_lock');if(ll2&&!ll2.dataset.edited)ll2.value=a.login_rate_limit_lock;
+}
+// Marquer les champs avancés comme édités manuellement
+['log_level','jwt_expires_in','backup_interval','login_rate_limit_max','login_rate_limit_window','login_rate_limit_lock'].forEach(id=>{
+  const el=document.getElementById(id);if(el)el.addEventListener('change',function(){this.dataset.edited='1';});
+});
+function renderSectionPresets(){
+  const el=document.getElementById('sectionPresets');
+  const active=state.sections.find(s=>SECTION_CONFIGS[s]);
+  const LABELS={police:'🚔 Police',medical:'🏥 Médical',scientifique:'🔬 Scientifique',economie:'💼 Économie',justice:'⚖️ Justice'};
+  el.innerHTML=Object.entries(SECTION_CONFIGS).map(([k,c])=>{
+    const cur=state.theme.primary===c.theme.primary&&state.theme.accent===c.theme.accent;
+    return `<div class="preset-section-pill${cur?' active':''}" onclick="applyTheme(SECTION_CONFIGS['${k}'].theme);renderSectionPresets();document.querySelectorAll('.preset').forEach(p=>p.classList.remove('active'))"><div class="psp-dot" style="background:linear-gradient(135deg,${c.color},${c.theme.accent})"></div>${LABELS[k]||k}</div>`;
+  }).join('');
+}
 
 // STEP 3
 function applyTheme(theme){
@@ -687,6 +813,7 @@ let bypassCanon=false;
 function toggleSection(togId,optId){const tog=document.getElementById(togId);const on=tog.classList.toggle('on');document.getElementById(optId).classList.toggle('show',on);if(togId==='registryToggle')state.registrySyncEnabled=on;}
 function toggleBool(togId,key){const tog=document.getElementById(togId);const on=tog.classList.toggle('on');if(key==='bypass')bypassCanon=on;}
 function togglePw(id,btn){const inp=document.getElementById(id);inp.type=inp.type==='password'?'text':'password';btn.textContent=inp.type==='password'?'👁':'🙈';}
+function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type==='success'?'success':'');setTimeout(()=>t.classList.remove('show'),3000);}
 
 // REVIEW
 function buildReview(){
