@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="CSS/ergonomics.css?v=20260409c">
 <link rel="stylesheet" href="CSS/background-interaction.css?v=20260409a">
 <link rel="stylesheet" href="CSS/page-transitions.css?v=20260410d">
+<script src="JS/site-config.js?v=20260508a"></script>
 <script src="JS/site-motion.js?v=20260411b" defer></script>
 <script src="JS/background-interaction.js?v=20260410c" defer></script>
 <script src="JS/page-transitions.js?v=20260409c" defer></script>
@@ -17,7 +18,7 @@
 <body>
 
 <div class="auth-shell">
-  <aside class="auth-card auth-card-justice">
+  <aside class="auth-card auth-card-justice" data-feature-hide="justicePanel">
     <div class="card-inner guest-inner justice-inner">
       <div class="guest-kicker justice-kicker">Acces Justice</div>
       <h2 class="guest-title justice-title">Justice de Konoha</h2>
@@ -62,7 +63,7 @@
       </div>
 
       <h1 class="auth-title">Identification des Shinobi</h1>
-      <p class="auth-subtitle">Section Police de Konoha</p>
+      <p class="auth-subtitle instance-name">Section Police de Konoha</p>
       <div class="divider"></div>
 
       <div class="tabs">
@@ -109,7 +110,7 @@
     </div>
   </div>
 
-  <aside class="auth-card auth-card-guest">
+  <aside class="auth-card auth-card-guest" data-feature-hide="codePenal">
     <div class="card-inner guest-inner">
       <div class="guest-kicker">Acc&egrave;s visiteur</div>
       <h2 class="guest-title">Consulter le Code P&eacute;nal</h2>

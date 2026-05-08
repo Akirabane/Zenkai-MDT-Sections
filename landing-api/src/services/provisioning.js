@@ -39,6 +39,7 @@ function generateEnv(instance) {
     `SQLITE_PATH=/var/lib/zenkai-${instance.id}/data/police.db`,
 
     `ENABLED_SECTIONS=${sections.join(',')}`,
+    `VILLAGE=${instance.village || ''}`,
     `CUSTOM_CATEGORIES=${categories.join(',')}`,
 
     `THEME_PRIMARY=${theme.primary}`,

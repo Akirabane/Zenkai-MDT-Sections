@@ -8,8 +8,15 @@ const { globalRateLimit } = require('./core/middleware/globalRateLimit');
 const authRoutes = require('./core/routes/auth');
 const notificationRoutes = require('./core/routes/notifications');
 const presenceRoutes = require('./core/routes/presence');
+const configRoutes = require('./core/routes/config');
 
-const AVAILABLE_SECTIONS = { police: () => require('./sections/police') };
+const policeSection = () => require('./sections/police');
+const AVAILABLE_SECTIONS = {
+  police: policeSection,
+  medical: policeSection,
+  scientifique: policeSection,
+  economie: policeSection,
+};
 
 function getEnabledSections() {
   const raw = process.env.ENABLED_SECTIONS || 'police';
@@ -81,6 +88,7 @@ app.use((req, res, next) => {
 });
 
 // Routes core
+app.use(configRoutes);
 app.use(authRoutes);
 app.use(presenceRoutes);
 app.use(notificationRoutes);

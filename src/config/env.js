@@ -92,7 +92,9 @@ const env = {
   discordPlaintesWebhookUrl: (process.env.DISCORD_PLAINTES_WEBHOOK_URL || '').trim(),
   corsOrigin: process.env.CORS_ORIGIN || '',
   corsOrigins: csvFromEnv('CORS_ORIGIN'),
-  bootstrapAdminPseudos: csvFromEnv('BOOTSTRAP_ADMIN_PSEUDOS')
+  bootstrapAdminPseudos: csvFromEnv('BOOTSTRAP_ADMIN_PSEUDOS'),
+  village: (process.env.VILLAGE || '').trim(),
+  enabledSections: csvFromEnv('ENABLED_SECTIONS').filter(Boolean),
 };
 
 env.logLevel = (process.env.LOG_LEVEL || 'info').trim().toLowerCase();
