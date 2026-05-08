@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenkai Admin — Modifier l'instance</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a26;
+  --border:#2a2a3d;
+  --accent:#7c5cfc;
+  --accent-glow:rgba(124,92,252,0.25);
+  --text:#e8e8f0;
+  --text-muted:#6b6b8a;
+  --success:#22c55e;
+  --danger:#ef4444;
+}
+body{min-height:100vh;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 30% at 50% 0%,rgba(124,92,252,0.08),transparent);pointer-events:none;z-index:0}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;height:60px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.nav-logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.back-link{color:var(--text-muted);text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px;transition:color .15s}
+.back-link:hover{color:var(--text)}
+.nav-spacer{flex:1}
+
+main{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 32px}
+.page-header{margin-bottom:36px}
+.page-title{font-size:28px;font-weight:700;letter-spacing:-0.04em}
+.page-subtitle{font-size:14px;color:var(--text-muted);margin-top:6px}
+.instance-id{display:inline-block;font-family:monospace;font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;color:var(--text-muted);margin-top:8px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;margin-bottom:20px}
+.card-title{font-size:18px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--text-muted);margin-bottom:28px}
+
+.field{margin-bottom:24px}
+label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.04em;text-transform:uppercase}
+input[type=text],input[type=url]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+input::placeholder{color:var(--text-muted)}
+input:disabled{opacity:.5;cursor:not-allowed}
+.field-hint{font-size:12px;color:var(--text-muted);margin-top:6px}
+.readonly-value{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;font-family:monospace;color:var(--text-muted)}
+
+/* SECTIONS */
+.sections-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.section-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;user-select:none}
+.section-card:hover{border-color:var(--accent);background:rgba(124,92,252,0.05)}
+.section-card.selected{border-color:var(--accent);background:rgba(124,92,252,0.12)}
+.section-card.disabled{opacity:0.4;cursor:not-allowed}
+.section-icon{font-size:28px;margin-bottom:10px}
+.section-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.section-desc{font-size:12px;color:var(--text-muted)}
+.section-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin-top:8px;background:rgba(124,92,252,0.2);color:#c4b5fd}
+.section-badge.soon{background:rgba(245,158,11,0.15);color:#fcd34d}
+
+/* THEME */
+.presets{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px}
+.preset{width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s}
+.preset.active{border-color:var(--text) !important;transform:scale(1.1)}
+.color-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.color-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.color-swatch{width:36px;height:36px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);cursor:pointer;flex-shrink:0}
+input[type=color]{position:absolute;opacity:0;width:0;height:0}
+.color-info{flex:1;min-width:0}
+.color-name{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:4px;letter-spacing:0.04em;text-transform:uppercase}
+.color-value{font-size:13px;font-family:monospace;color:var(--text)}
+.theme-preview{border-radius:12px;overflow:hidden;border:1px solid var(--border);height:160px;display:flex;margin-top:24px}
+.preview-sidebar{width:50px;padding:12px 8px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.preview-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3)}
+.preview-dot.active{background:rgba(255,255,255,0.9)}
+.preview-main{flex:1;padding:16px}
+.preview-topbar{height:24px;border-radius:6px;margin-bottom:12px;width:60%;opacity:0.5}
+.preview-card{height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.preview-card-dot{width:8px;height:8px;border-radius:50%}
+.preview-card-line{height:8px;border-radius:4px;opacity:0.4}
+
+/* CATEGORIES */
+.categories-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:40px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.cat-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.3);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;color:#c4b5fd}
+.cat-tag .remove{cursor:pointer;opacity:0.6;font-size:15px;line-height:1}
+.cat-tag .remove:hover{opacity:1;color:var(--danger)}
+.cat-add-row{display:flex;gap:10px}
+.cat-add-row input{flex:1}
+.btn-add{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 18px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+.btn-add:hover{border-color:var(--accent);color:var(--accent)}
+.cat-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cat-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--text-muted);cursor:pointer;transition:all .15s}
+.cat-preset:hover{border-color:var(--accent);color:var(--accent)}
+
+/* DISCORD */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;cursor:pointer}
+.toggle-info{display:flex;align-items:center;gap:14px}
+.toggle-icon{font-size:24px}
+.toggle-title{font-size:15px;font-weight:600}
+.toggle-desc{font-size:13px;color:var(--text-muted)}
+.toggle{width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle.on::after{transform:translateX(20px)}
+.discord-options{display:none}
+.discord-options.show{display:block}
+.events-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.event-chip{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);transition:all .15s;user-select:none}
+.event-chip.selected{border-color:rgba(88,101,242,0.6);background:rgba(88,101,242,0.15);color:#a5b4fc}
+
+/* ACTIONS */
+.form-actions{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:16px;flex-wrap:wrap}
+.btn-save{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:none;border-radius:10px;padding:13px 28px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s,box-shadow .15s}
+.btn-save:hover{opacity:.9;box-shadow:0 4px 20px var(--accent-glow)}
+.btn-save:disabled{opacity:.4;cursor:not-allowed}
+.btn-cancel-link{background:transparent;border:1px solid var(--border);border-radius:10px;padding:13px 22px;font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;font-family:inherit;text-decoration:none;transition:all .15s}
+.btn-cancel-link:hover{border-color:var(--text);color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:14px;font-weight:500;z-index:300;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:360px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-color:rgba(34,197,94,0.4);color:#86efac}
+.toast.error{border-color:rgba(239,68,68,0.4);color:#fca5a5}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">⚡</div>
+    Zenkai MDT Builder
+  </div>
+  <div class="nav-spacer"></div>
+  <a href="/admin/" class="back-link">← Retour au dashboard</a>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div class="page-title" id="pageTitle">Modifier l'instance</div>
+    <div class="page-subtitle">Modifiez la configuration de votre MDT. Les changements sont appliqués immédiatement dans le registry.</div>
+    <span class="instance-id" id="instanceId"></span>
+  </div>
+
+  <!-- IDENTITÉ -->
+  <div class="card">
+    <div class="card-title">Identité</div>
+    <div class="card-sub">Nom affiché dans le dashboard et dans l'interface MDT.</div>
+    <div class="field">
+      <label>Nom de l'instance</label>
+      <input type="text" id="name" placeholder="MDT Konoha — Police" maxlength="60">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="field" style="margin-bottom:0">
+        <label>Sous-domaine (non modifiable)</label>
+        <div class="readonly-value" id="subdomain"></div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Port (non modifiable)</label>
+        <div class="readonly-value" id="port"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  <div class="card">
+    <div class="card-title">Sections</div>
+    <div class="card-sub">Modules actifs dans ce MDT.</div>
+    <div class="sections-grid">
+      <div class="section-card" data-section="police">
+        <div class="section-icon">🚔</div>
+        <div class="section-name">Police</div>
+        <div class="section-desc">Casier, arrestations, plaintes, DRI, investigations, registre.</div>
+        <span class="section-badge">Disponible</span>
+      </div>
+      <div class="section-card disabled" data-section="medical" title="En développement">
+        <div class="section-icon">🏥</div>
+        <div class="section-name">Médical</div>
+        <div class="section-desc">Dossiers patients, urgences, chirurgie, pharmacie.</div>
+        <span class="section-badge soon">Bientôt</span>
+      </div>
+      <div class="section-card disabled" data-section="pompiers" title="En développement">
+        <div class="section-icon">🚒</div>
+        <div class="section-name">Pompiers</div>
+        <div class="section-desc">Interventions, rapports d'incendie, équipements.</div>
+        <span class="section-badge soon">Bientôt</span>
+      </div>
+      <div class="section-card disabled" data-section="justice" title="En développement">
+        <div class="section-icon">⚖️</div>
+        <div class="section-name">Justice</div>
+        <div class="section-desc">Audiences, verdicts, registre juridique.</div>
+        <span class="section-badge soon">Bientôt</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- THEME -->
+  <div class="card">
+    <div class="card-title">Thème de couleurs</div>
+    <div class="card-sub">Personnalisez l'apparence visuelle du MDT.</div>
+    <label style="margin-bottom:12px;display:block">Presets</label>
+    <div class="presets" id="presets">
+      <div class="preset" data-preset="konoha" style="background:linear-gradient(135deg,#2e7d32,#76c442)" title="Konoha — Vert"></div>
+      <div class="preset" data-preset="suna" style="background:linear-gradient(135deg,#b85c20,#e8a050)" title="Suna — Orange"></div>
+      <div class="preset" data-preset="cloud" style="background:linear-gradient(135deg,#1565c0,#42a5f5)" title="Nuée — Bleu"></div>
+      <div class="preset" data-preset="mist" style="background:linear-gradient(135deg,#00695c,#4db6ac)" title="Brume — Cyan"></div>
+      <div class="preset" data-preset="stone" style="background:linear-gradient(135deg,#4a148c,#9c27b0)" title="Pierre — Violet"></div>
+      <div class="preset" data-preset="blood" style="background:linear-gradient(135deg,#b71c1c,#ef5350)" title="Sang — Rouge"></div>
+      <div class="preset" data-preset="void" style="background:linear-gradient(135deg,#263238,#546e7a)" title="Vide — Ardoise"></div>
+    </div>
+    <label style="margin-bottom:12px;display:block">Couleurs personnalisées</label>
+    <div class="color-row">
+      <div class="color-field">
+        <div class="color-swatch" id="swatchPrimary" onclick="document.getElementById('cpPrimary').click()"></div>
+        <input type="color" id="cpPrimary">
+        <div class="color-info"><div class="color-name">Primaire</div><div class="color-value" id="valPrimary"></div></div>
+      </div>
+      <div class="color-field">
+        <div class="color-swatch" id="swatchAccent" onclick="document.getElementById('cpAccent').click()"></div>
+        <input type="color" id="cpAccent">
+        <div class="color-info"><div class="color-name">Accent</div><div class="color-value" id="valAccent"></div></div>
+      </div>
+      <div class="color-field">
+        <div class="color-swatch" id="swatchDark" onclick="document.getElementById('cpDark').click()"></div>
+        <input type="color" id="cpDark">
+        <div class="color-info"><div class="color-name">Fond sombre</div><div class="color-value" id="valDark"></div></div>
+      </div>
+      <div class="color-field">
+        <div class="color-swatch" id="swatchBorder" onclick="document.getElementById('cpBorder').click()"></div>
+        <input type="color" id="cpBorder">
+        <div class="color-info"><div class="color-name">Bordures</div><div class="color-value" id="valBorder"></div></div>
+      </div>
+    </div>
+    <div class="theme-preview">
+      <div class="preview-sidebar" id="pvSidebar">
+        <div class="preview-dot"></div><div class="preview-dot active"></div>
+        <div class="preview-dot"></div><div class="preview-dot"></div>
+      </div>
+      <div class="preview-main" id="pvMain">
+        <div class="preview-topbar" id="pvTopbar"></div>
+        <div class="preview-card" id="pvCard1"><div class="preview-card-dot" id="pvDot1"></div><div class="preview-card-line" id="pvLine1" style="width:45%;height:8px"></div></div>
+        <div class="preview-card" id="pvCard2"><div class="preview-card-dot" id="pvDot2"></div><div class="preview-card-line" id="pvLine2" style="width:60%;height:8px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="card">
+    <div class="card-title">Catégories</div>
+    <div class="card-sub">Catégories disponibles dans ce MDT (dossiers, incidents, etc.).</div>
+    <div class="field">
+      <label>Catégories actives</label>
+      <div class="categories-list" id="catList"></div>
+      <div class="cat-add-row">
+        <input type="text" id="catInput" placeholder="Ajouter une catégorie…" maxlength="40">
+        <button class="btn-add" onclick="addCat()">Ajouter</button>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Suggestions :</div>
+        <div class="cat-presets" id="catPresets"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCORD -->
+  <div class="card">
+    <div class="card-title">Intégration Discord</div>
+    <div class="card-sub">Notifications via webhook lors d'événements MDT.</div>
+    <div class="toggle-row" onclick="toggleDiscord()">
+      <div class="toggle-info">
+        <div class="toggle-icon">🔔</div>
+        <div>
+          <div class="toggle-title">Activer les notifications Discord</div>
+          <div class="toggle-desc">Envoie des messages via webhook à chaque événement sélectionné.</div>
+        </div>
+      </div>
+      <div class="toggle" id="discordToggle"></div>
+    </div>
+    <div class="discord-options" id="discordOptions">
+      <div class="field">
+        <label>URL du webhook Discord</label>
+        <input type="url" id="discordWebhook" placeholder="https://discord.com/api/webhooks/…">
+      </div>
+      <div class="field">
+        <label>Événements à notifier</label>
+        <div class="events-grid" id="eventsGrid">
+          <div class="event-chip" data-event="arrest">Arrestation</div>
+          <div class="event-chip" data-event="complaint">Plainte</div>
+          <div class="event-chip" data-event="investigation">Investigation</div>
+          <div class="event-chip" data-event="dri">DRI</div>
+          <div class="event-chip" data-event="casier">Casier judiciaire</div>
+          <div class="event-chip" data-event="service_start">Prise de service</div>
+          <div class="event-chip" data-event="service_end">Fin de service</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <a href="/admin/" class="btn-cancel-link">Annuler</a>
+    <button class="btn-save" id="saveBtn" onclick="saveChanges()">Enregistrer les modifications</button>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PRESETS = {
+  konoha: { primary:'#2e7d32', accent:'#76c442', dark:'#081508', border:'#2a5e1e' },
+  suna:   { primary:'#b85c20', accent:'#e8a050', dark:'#150b03', border:'#5e3010' },
+  cloud:  { primary:'#1565c0', accent:'#42a5f5', dark:'#030d1a', border:'#1e3a5f' },
+  mist:   { primary:'#00695c', accent:'#4db6ac', dark:'#031210', border:'#1a4a44' },
+  stone:  { primary:'#4a148c', accent:'#9c27b0', dark:'#0d0315', border:'#3a1060' },
+  blood:  { primary:'#b71c1c', accent:'#ef5350', dark:'#150303', border:'#5e1010' },
+  void:   { primary:'#263238', accent:'#546e7a', dark:'#080c0e', border:'#1c2b30' },
+};
+const CAT_SUGGESTIONS = ['Urgence','Vol','Agression','Homicide','Fugitif','Trafic de drogues','Armes illégales','Braquage','Évasion','Corruption','Autre'];
+
+let instanceId = null;
+let cats = [];
+let discordEnabled = false;
+let selectedSections = [];
+
+function getParams() {
+  return new URLSearchParams(window.location.search);
+}
+
+async function init() {
+  const res = await fetch('/admin-api/auth/me');
+  if (!res.ok) { window.location.href = '/admin/login.html'; return; }
+
+  instanceId = getParams().get('id');
+  if (!instanceId) { window.location.href = '/admin/'; return; }
+
+  const r = await fetch(`/admin-api/instances/${instanceId}`);
+  if (r.status === 401) { window.location.href = '/admin/login.html'; return; }
+  if (!r.ok) { showToast('Instance introuvable', 'error'); return; }
+  const inst = await r.json();
+
+  document.getElementById('pageTitle').textContent = `Modifier — ${inst.name}`;
+  document.getElementById('instanceId').textContent = inst.id;
+  document.getElementById('name').value = inst.name;
+  document.getElementById('subdomain').textContent = `${inst.subdomain}.zenkai-police.tech`;
+  document.getElementById('port').textContent = inst.port;
+
+  selectedSections = Array.isArray(inst.sections) ? [...inst.sections] : [];
+  renderSections();
+
+  const theme = typeof inst.theme === 'object' ? inst.theme : {};
+  setColor('Primary', theme.primary || '#2e7d32');
+  setColor('Accent', theme.accent || '#76c442');
+  setColor('Dark', theme.dark || '#081508');
+  setColor('Border', theme.border || '#2a5e1e');
+  updatePreview();
+  highlightPreset();
+
+  cats = Array.isArray(inst.categories) ? [...inst.categories] : [];
+  renderCats();
+  renderCatSuggestions();
+
+  const events = Array.isArray(inst.discord_events) ? inst.discord_events : [];
+  if (inst.discord_webhook) {
+    discordEnabled = true;
+    document.getElementById('discordWebhook').value = inst.discord_webhook;
+    document.getElementById('discordOptions').classList.add('show');
+    document.getElementById('discordToggle').classList.add('on');
+  }
+  events.forEach(ev => {
+    const chip = document.querySelector(`.event-chip[data-event="${ev}"]`);
+    if (chip) chip.classList.add('selected');
+  });
+}
+
+/* SECTIONS */
+function renderSections() {
+  document.querySelectorAll('.section-card:not(.disabled)').forEach(card => {
+    const s = card.dataset.section;
+    card.classList.toggle('selected', selectedSections.includes(s));
+  });
+}
+document.querySelectorAll('.section-card:not(.disabled)').forEach(card => {
+  card.addEventListener('click', () => {
+    const s = card.dataset.section;
+    if (selectedSections.includes(s)) {
+      if (selectedSections.length === 1) return;
+      selectedSections = selectedSections.filter(x => x !== s);
+    } else {
+      selectedSections.push(s);
+    }
+    renderSections();
+  });
+});
+
+/* THEME */
+function setColor(key, val) {
+  document.getElementById(`cp${key}`).value = val;
+  document.getElementById(`swatch${key}`).style.background = val;
+  document.getElementById(`val${key}`).textContent = val;
+}
+function getTheme() {
+  return {
+    primary: document.getElementById('cpPrimary').value,
+    accent: document.getElementById('cpAccent').value,
+    dark: document.getElementById('cpDark').value,
+    border: document.getElementById('cpBorder').value,
+  };
+}
+['Primary','Accent','Dark','Border'].forEach(key => {
+  document.getElementById(`cp${key}`).addEventListener('input', e => {
+    document.getElementById(`swatch${key}`).style.background = e.target.value;
+    document.getElementById(`val${key}`).textContent = e.target.value;
+    updatePreview();
+    highlightPreset();
+  });
+});
+function updatePreview() {
+  const t = getTheme();
+  document.getElementById('pvSidebar').style.background = t.primary;
+  document.getElementById('pvMain').style.background = t.dark;
+  document.getElementById('pvTopbar').style.background = t.accent;
+  ['pvCard1','pvCard2'].forEach(id => {
+    document.getElementById(id).style.borderColor = t.border + '66';
+  });
+  ['pvDot1','pvDot2'].forEach(id => document.getElementById(id).style.background = t.accent);
+  ['pvLine1','pvLine2'].forEach(id => document.getElementById(id).style.background = t.accent);
+}
+function highlightPreset() {
+  const t = getTheme();
+  document.querySelectorAll('.preset').forEach(p => {
+    p.classList.remove('active');
+    const pt = PRESETS[p.dataset.preset];
+    if (pt && pt.primary === t.primary && pt.accent === t.accent && pt.dark === t.dark && pt.border === t.border)
+      p.classList.add('active');
+  });
+}
+document.querySelectorAll('.preset').forEach(p => {
+  p.addEventListener('click', () => {
+    const pt = PRESETS[p.dataset.preset];
+    if (!pt) return;
+    setColor('Primary', pt.primary);
+    setColor('Accent', pt.accent);
+    setColor('Dark', pt.dark);
+    setColor('Border', pt.border);
+    updatePreview();
+    highlightPreset();
+  });
+});
+
+/* CATEGORIES */
+function renderCats() {
+  const el = document.getElementById('catList');
+  el.innerHTML = cats.length ? cats.map((c,i) => `<span class="cat-tag">${c}<span class="remove" onclick="removeCat(${i})">×</span></span>`).join('') : '<span style="color:var(--text-muted);font-size:13px;padding:4px 8px">Aucune catégorie</span>';
+}
+function removeCat(i) { cats.splice(i,1); renderCats(); }
+function addCat() {
+  const inp = document.getElementById('catInput');
+  const val = inp.value.trim();
+  if (val && !cats.includes(val)) { cats.push(val); renderCats(); }
+  inp.value = '';
+}
+document.getElementById('catInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCat(); } });
+function renderCatSuggestions() {
+  document.getElementById('catPresets').innerHTML = CAT_SUGGESTIONS.map(c =>
+    `<span class="cat-preset" onclick="addCatPreset('${c}')">${c}</span>`
+  ).join('');
+}
+function addCatPreset(c) { if (!cats.includes(c)) { cats.push(c); renderCats(); } }
+
+/* DISCORD */
+function toggleDiscord() {
+  discordEnabled = !discordEnabled;
+  document.getElementById('discordToggle').classList.toggle('on', discordEnabled);
+  document.getElementById('discordOptions').classList.toggle('show', discordEnabled);
+}
+document.querySelectorAll('.event-chip').forEach(chip => {
+  chip.addEventListener('click', () => chip.classList.toggle('selected'));
+});
+
+/* TOAST */
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* SAVE */
+async function saveChanges() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enregistrement…';
+
+  const name = document.getElementById('name').value.trim();
+  if (!name) { showToast('Le nom est requis', 'error'); btn.disabled = false; btn.textContent = 'Enregistrer les modifications'; return; }
+
+  const events = [...document.querySelectorAll('.event-chip.selected')].map(c => c.dataset.event);
+  const payload = {
+    name,
+    sections: selectedSections,
+    theme: getTheme(),
+    categories: cats,
+    discord_webhook: discordEnabled ? document.getElementById('discordWebhook').value.trim() : '',
+    discord_events: discordEnabled ? events : [],
+  };
+
+  const res = await fetch(`/admin-api/instances/${instanceId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Enregistrer les modifications';
+
+  if (res.ok) {
+    showToast('Modifications enregistrées');
+    setTimeout(() => window.location.href = '/admin/', 1500);
+  } else {
+    const d = await res.json();
+    showToast(d.error || 'Erreur lors de la sauvegarde', 'error');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
