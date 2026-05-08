@@ -66,6 +66,29 @@ router.post('/', (req, res) => {
   }
 });
 
+router.patch('/:id', (req, res) => {
+  const db = getDb();
+  const row = db.prepare('SELECT * FROM instances WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Instance introuvable' });
+
+  const { name, sections, theme, categories, discord_webhook, discord_events } = req.body;
+  const updates = {};
+  if (name !== undefined) updates.name = name;
+  if (sections !== undefined) updates.sections = JSON.stringify(sections);
+  if (theme !== undefined) updates.theme = JSON.stringify(theme);
+  if (categories !== undefined) updates.categories = JSON.stringify(categories);
+  if (discord_webhook !== undefined) updates.discord_webhook = discord_webhook || null;
+  if (discord_events !== undefined) updates.discord_events = JSON.stringify(discord_events);
+
+  if (!Object.keys(updates).length) return res.status(400).json({ error: 'Aucune donnée à mettre à jour' });
+
+  const setClauses = Object.keys(updates).map(k => `${k} = @${k}`).join(', ');
+  db.prepare(`UPDATE instances SET ${setClauses} WHERE id = @id`).run({ ...updates, id: req.params.id });
+  db.prepare('INSERT INTO audit_log (action, instance_id, details) VALUES (?, ?, ?)').run('update', req.params.id, JSON.stringify(updates));
+
+  res.json(parseInstance(db.prepare('SELECT * FROM instances WHERE id = ?').get(req.params.id)));
+});
+
 router.post('/:id/ssl', (req, res) => {
   const db = getDb();
   const row = db.prepare('SELECT * FROM instances WHERE id = ?').get(req.params.id);
