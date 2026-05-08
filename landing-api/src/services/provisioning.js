@@ -19,7 +19,12 @@ function generateEnv(instance) {
   const theme = typeof instance.theme === 'string' ? JSON.parse(instance.theme) : instance.theme;
   const sections = typeof instance.sections === 'string' ? JSON.parse(instance.sections) : instance.sections;
   const categories = typeof instance.categories === 'string' ? JSON.parse(instance.categories) : instance.categories;
-  const discordEvents = typeof instance.discord_events === 'string' ? JSON.parse(instance.discord_events) : (instance.discord_events || []);
+  const bootstrapAdmins = typeof instance.bootstrap_admins === 'string' ? JSON.parse(instance.bootstrap_admins || '[]') : (instance.bootstrap_admins || []);
+  const monitoredServices = typeof instance.status_monitored_services === 'string' ? JSON.parse(instance.status_monitored_services || '[]') : (instance.status_monitored_services || []);
+
+  const pm2Name = `mdt-${instance.id}`;
+  const statusName = instance.status_service_name || `${pm2Name}-status`;
+  const corsOrigin = instance.cors_origin || `https://${instance.subdomain}.zenkai-police.tech`;
 
   return [
     `PORT=${instance.port}`,
@@ -27,14 +32,52 @@ function generateEnv(instance) {
     `JWT_SECRET=${crypto.randomBytes(48).toString('hex')}`,
     `POLICE_SECRET=${crypto.randomBytes(32).toString('hex')}`,
     `TRUST_PROXY=true`,
+    `CORS_ORIGIN=${corsOrigin}`,
+    `ENV_FILE=/etc/zenkai-${instance.id}/.env`,
+    `DATA_DIR=/var/lib/zenkai-${instance.id}/data`,
+    `UPLOADS_DIR=/var/lib/zenkai-${instance.id}/uploads`,
+    `SQLITE_PATH=/var/lib/zenkai-${instance.id}/data/police.db`,
+
     `ENABLED_SECTIONS=${sections.join(',')}`,
+    `CUSTOM_CATEGORIES=${categories.join(',')}`,
+
     `THEME_PRIMARY=${theme.primary}`,
     `THEME_ACCENT=${theme.accent}`,
     `THEME_DARK=${theme.dark}`,
     `THEME_BORDER=${theme.border || theme.primary}`,
-    `CUSTOM_CATEGORIES=${categories.join(',')}`,
-    instance.discord_webhook ? `DISCORD_WEBHOOK=${instance.discord_webhook}` : '',
-    instance.discord_webhook ? `DISCORD_EVENTS=${discordEvents.join(',')}` : '',
+
+    instance.justice_pseudo ? `JUSTICE_ACCOUNT_PSEUDO=${instance.justice_pseudo}` : '',
+    instance.justice_password ? `JUSTICE_ACCOUNT_PASSWORD=${instance.justice_password}` : '',
+    bootstrapAdmins.length ? `BOOTSTRAP_ADMIN_PSEUDOS=${bootstrapAdmins.join(',')}` : '',
+
+    instance.discord_casier_webhook ? `DISCORD_CASIER_WEBHOOK_URL=${instance.discord_casier_webhook}` : '',
+    instance.discord_sanctions_webhook ? `DISCORD_SANCTIONS_WEBHOOK_URL=${instance.discord_sanctions_webhook}` : '',
+    instance.discord_plaintes_webhook ? `DISCORD_PLAINTES_WEBHOOK_URL=${instance.discord_plaintes_webhook}` : '',
+
+    `LOG_LEVEL=${instance.log_level || 'info'}`,
+    `JWT_EXPIRES_IN=${instance.jwt_expires_in || '12h'}`,
+    `LOGIN_RATE_LIMIT_MAX_ATTEMPTS=${instance.login_rate_limit_max || 5}`,
+    `LOGIN_RATE_LIMIT_WINDOW_MINUTES=${instance.login_rate_limit_window || 15}`,
+    `LOGIN_RATE_LIMIT_LOCK_MINUTES=${instance.login_rate_limit_lock || 15}`,
+
+    `BACKUP_INTERVAL_MINUTES=${instance.backup_interval || 30}`,
+    `BACKUP_MAX_SNAPSHOTS=${instance.backup_max_snapshots || 10}`,
+    `BACKUP_TIMEZONE=${instance.backup_timezone || 'Europe/Paris'}`,
+
+    `STATUS_PORT=${Number(instance.port) + 10}`,
+    `STATUS_SERVICE_NAME=${statusName}`,
+    monitoredServices.length ? `STATUS_MONITORED_SERVICES=${monitoredServices.join(',')}` : `STATUS_MONITORED_SERVICES=${statusName},${pm2Name}`,
+
+    instance.registry_sync_enabled ? `REGISTRY_SYNC_ENABLED=true` : 'REGISTRY_SYNC_ENABLED=false',
+    instance.registry_sync_url ? `REGISTRY_SYNC_URL=${instance.registry_sync_url}` : '',
+    instance.registry_sync_api_key ? `REGISTRY_SYNC_API_KEY=${instance.registry_sync_api_key}` : '',
+    `REGISTRY_SYNC_AUTH_MODE=${instance.registry_sync_auth_mode || 'x-api-key'}`,
+    `REGISTRY_SYNC_INTERVAL_MINUTES=${instance.registry_sync_interval || 5}`,
+    `REGISTRY_SYNC_PAGE_SIZE=${instance.registry_sync_page_size || 100}`,
+    `REGISTRY_SYNC_TIMEOUT_MS=${instance.registry_sync_timeout_ms || 15000}`,
+    instance.registry_sync_bypass_canonicalize ? 'REGISTRY_SYNC_BYPASS_CANONICALIZE=true' : '',
+
+    instance.grade_bot_token ? `GRADE_BOT_TOKEN=${instance.grade_bot_token}` : '',
   ].filter(Boolean).join('\n');
 }
 
