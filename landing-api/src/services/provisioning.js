@@ -2,6 +2,7 @@ const { execSync, exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { applyThemeToInstance } = require('./themeGenerator');
 
 const SOURCE = process.env.MDT_SOURCE || '/var/www/html';
 const INSTANCES_DIR = process.env.MDT_INSTANCES_DIR || '/var/www/instances';
@@ -24,6 +25,8 @@ function generateEnv(instance) {
     `PORT=${instance.port}`,
     `NODE_ENV=production`,
     `JWT_SECRET=${crypto.randomBytes(48).toString('hex')}`,
+    `POLICE_SECRET=${crypto.randomBytes(32).toString('hex')}`,
+    `TRUST_PROXY=true`,
     `ENABLED_SECTIONS=${sections.join(',')}`,
     `THEME_PRIMARY=${theme.primary}`,
     `THEME_ACCENT=${theme.accent}`,
@@ -124,8 +127,8 @@ function provision(instance, db) {
   // 1. Copier le codebase
   execSync(`rsync -a --exclude='.env' --exclude='node_modules' --exclude='DB' --exclude='uploads' --exclude='*.db' ${SOURCE}/ ${instanceDir}/`);
 
-  // 2. Patcher les couleurs CSS dans les fichiers copiés
-  patchTheme(instanceDir, theme);
+  // 2. Appliquer le thème (génère theme-vars.css + injection dans les HTML)
+  applyThemeToInstance(instanceDir, theme);
 
   // 3. Installer les dépendances
   execSync(`cd ${instanceDir} && npm install --omit=dev`, { stdio: 'pipe' });
